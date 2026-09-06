@@ -1,0 +1,1155 @@
+<title>Online Judge LLD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ground:#F5F7F4; --surface:#FFFFFF; --panel:#ECF0EC; --panel-2:#E3E9E4;
+  --ink:#141A17; --ink-2:#525C56; --ink-3:#87908A;
+  --rule:#D6DDD7; --rule-strong:#BCC6BE;
+  --accent:#14567F; --accent-soft:#E2ECF3; --accent-ink:#0E4361;
+  --ac:#1B7A46; --wa:#AF2A20; --tle:#8A5600; --ie:#584C93;
+  --danger-wash:rgba(175,42,32,.045); --danger-edge:rgba(175,42,32,.28);
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E110F; --surface:#151916; --panel:#1B211D; --panel-2:#222925;
+    --ink:#E4E9E5; --ink-2:#9AA49D; --ink-3:#6C766F;
+    --rule:#28302B; --rule-strong:#3A443D;
+    --accent:#6DB2DC; --accent-soft:#14293A; --accent-ink:#9FCEEB;
+    --ac:#5FC98D; --wa:#EF8B81; --tle:#DCA956; --ie:#A79ADD;
+    --danger-wash:rgba(239,139,129,.05); --danger-edge:rgba(239,139,129,.26);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E110F; --surface:#151916; --panel:#1B211D; --panel-2:#222925;
+  --ink:#E4E9E5; --ink-2:#9AA49D; --ink-3:#6C766F;
+  --rule:#28302B; --rule-strong:#3A443D;
+  --accent:#6DB2DC; --accent-soft:#14293A; --accent-ink:#9FCEEB;
+  --ac:#5FC98D; --wa:#EF8B81; --tle:#DCA956; --ie:#A79ADD;
+  --danger-wash:rgba(239,139,129,.05); --danger-edge:rgba(239,139,129,.26);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1220px; margin:0 auto; padding:0 28px 96px}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--rule-strong); padding:52px 0 26px; margin-bottom:40px}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+}
+h1{
+  font-family:var(--serif); font-weight:600; font-size:clamp(34px,5vw,52px);
+  line-height:1.08; letter-spacing:-.015em; margin:0 0 14px; text-wrap:balance;
+}
+.deck{font-size:18px; line-height:1.55; color:var(--ink-2); max-width:60ch; margin:0 0 30px}
+.meta{
+  display:grid; grid-template-columns:repeat(5,1fr);
+  gap:1px; background:var(--rule); border:1px solid var(--rule); margin-bottom:26px;
+}
+.meta div{background:var(--ground); padding:11px 14px}
+.meta dt{
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 3px;
+}
+.meta dd{margin:0; font-size:14px; font-weight:500}
+.legend{display:flex; flex-wrap:wrap; gap:7px; align-items:center}
+.legend .lb{
+  font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); margin-right:4px;
+}
+
+/* ---------- verdict chips: the subject's own vocabulary ---------- */
+.v{
+  font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.06em;
+  padding:2.5px 8px; border:1px solid; border-radius:2px; white-space:nowrap;
+  display:inline-block; line-height:1.4;
+}
+.v-ac{color:var(--ac); border-color:var(--ac)}
+.v-wa{color:var(--wa); border-color:var(--wa)}
+.v-tle{color:var(--tle); border-color:var(--tle)}
+.v-ie{color:var(--ie); border-color:var(--ie)}
+.v-n{color:var(--ink-2); border-color:var(--rule-strong)}
+
+/* ---------- layout ---------- */
+.cols{display:grid; grid-template-columns:212px minmax(0,1fr); gap:56px; align-items:start}
+nav.toc{position:sticky; top:24px}
+nav.toc .lb{
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); display:block; padding-bottom:9px; border-bottom:1px solid var(--rule);
+  margin-bottom:9px;
+}
+nav.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px}
+nav.toc a{
+  display:grid; grid-template-columns:22px 1fr; gap:6px; align-items:baseline;
+  padding:3px 6px 3px 0; text-decoration:none; color:var(--ink-2); font-size:13.5px;
+  line-height:1.35; border-radius:2px;
+}
+nav.toc a span{font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+nav.toc a:hover{color:var(--accent); background:var(--accent-soft)}
+nav.toc a:hover span{color:var(--accent)}
+nav.toc a:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+main{min-width:0; max-width:76ch}
+section{margin-bottom:60px; scroll-margin-top:20px}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:27px; line-height:1.2;
+  letter-spacing:-.01em; margin:0 0 6px; text-wrap:balance;
+  display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:baseline;
+}
+h2 .num{
+  font-family:var(--mono); font-size:13px; font-weight:500; color:var(--accent);
+  letter-spacing:.02em;
+}
+h2::after{content:""; grid-column:1/-1; height:1px; background:var(--rule-strong); margin-top:12px}
+h3{
+  font-family:var(--sans); font-weight:600; font-size:15.5px; letter-spacing:-.005em;
+  margin:32px 0 8px; color:var(--ink);
+}
+h3 .num{font-family:var(--mono); font-size:12.5px; font-weight:500; color:var(--ink-3); margin-right:8px}
+p{margin:0 0 14px; max-width:68ch}
+ul,ol.body{margin:0 0 14px; padding-left:20px; max-width:68ch}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+strong{font-weight:600}
+code{
+  font-family:var(--mono); font-size:.875em; background:var(--panel);
+  padding:1px 4px; border-radius:2px; color:var(--ink);
+}
+
+/* ---------- callouts ---------- */
+.thesis{
+  border-left:3px solid var(--accent); background:var(--accent-soft);
+  padding:16px 20px; margin:0 0 20px;
+}
+.thesis p{margin:0; font-family:var(--serif); font-size:19px; line-height:1.4; color:var(--accent-ink); font-weight:500}
+.note{
+  border:1px solid var(--rule-strong); border-left:3px solid var(--tle);
+  background:var(--surface); padding:14px 18px; margin:0 0 18px;
+}
+.note p{margin:0 0 8px} .note p:last-child{margin:0}
+.note .lb{
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--tle); display:block; margin-bottom:6px; font-weight:600;
+}
+.keypt{
+  border-top:1px solid var(--rule-strong); border-bottom:1px solid var(--rule-strong);
+  padding:14px 0; margin:20px 0;
+}
+.keypt p{margin:0; font-size:15px}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto; margin:0 0 20px; border:1px solid var(--rule)}
+table{border-collapse:collapse; width:100%; font-size:13.5px; background:var(--surface)}
+th{
+  font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--ink-2); text-align:left;
+  padding:9px 13px; border-bottom:1px solid var(--rule-strong); background:var(--panel);
+  white-space:nowrap; vertical-align:bottom;
+}
+td{padding:10px 13px; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.5}
+tr:last-child td{border-bottom:none}
+td.n{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink-2)}
+td.k{font-family:var(--mono); font-size:12.5px; white-space:nowrap}
+td.c{font-family:var(--mono); font-size:12.5px; color:var(--accent); white-space:nowrap}
+
+/* ---------- code ---------- */
+pre{
+  font-family:var(--mono); font-size:12.5px; line-height:1.62; background:var(--panel);
+  border:1px solid var(--rule); padding:16px 18px; overflow-x:auto; margin:0 0 20px;
+  color:var(--ink);
+}
+pre .cm{color:var(--ink-3)}
+pre b{color:var(--accent); font-weight:600}
+
+/* ---------- figures ---------- */
+figure{margin:0 0 24px; max-width:100%}
+figure .fw{overflow-x:auto; border:1px solid var(--rule); background:var(--surface); padding:18px 14px}
+figure svg{display:block; max-width:100%; height:auto; margin:0 auto; color:var(--ink-2)}
+figcaption{
+  font-size:12.5px; color:var(--ink-2); margin-top:9px; line-height:1.5; max-width:68ch;
+}
+figcaption b{
+  font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:600; margin-right:8px;
+}
+svg text{font-family:var(--mono); fill:currentColor}
+svg .bx{fill:var(--surface); stroke:currentColor; stroke-width:1.1}
+svg .bxf{fill:var(--panel); stroke:currentColor; stroke-width:1.1}
+svg .ln{stroke:currentColor; stroke-width:1.1; fill:none}
+svg .dsh{stroke:currentColor; stroke-width:1.1; fill:none; stroke-dasharray:4 3}
+svg .ttl{font-size:12px; font-weight:500; fill:var(--ink)}
+svg .sub{font-size:10px; fill:var(--ink-3)}
+svg .lbl{font-size:10px; fill:var(--ink-2)}
+svg .band{font-size:10px; letter-spacing:.12em; fill:var(--ink-3); font-weight:600}
+svg .acc{stroke:var(--accent); stroke-width:1.8; fill:none}
+svg .acct{font-size:10px; fill:var(--accent); font-weight:500}
+
+/* ---------- modes list ---------- */
+.modes{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin:0 0 20px}
+.mode{background:var(--surface); padding:14px 16px; display:grid; grid-template-columns:26px 1fr; gap:12px}
+.mode .mn{font-family:var(--mono); font-size:12px; color:var(--ink-3); padding-top:2px}
+.mode h4{margin:0 0 2px; font-size:14.5px; font-weight:600}
+.mode .stage{font-size:12.5px; color:var(--ink-2); font-style:italic; margin:0 0 6px}
+.mode p{margin:0; font-size:13.5px; line-height:1.5}
+.mode.hero{background:var(--accent-soft)}
+.mode.hero .mn{color:var(--accent)}
+.grounded{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); border:1px solid var(--accent); padding:1px 5px; margin-left:7px;
+  border-radius:2px; white-space:nowrap; vertical-align:1px;
+}
+
+footer{border-top:1px solid var(--rule-strong); margin-top:24px; padding-top:20px; font-size:13px; color:var(--ink-2)}
+footer p{max-width:68ch}
+
+@media (max-width:860px){
+  .meta{grid-template-columns:repeat(2,1fr)}
+  .meta div:last-child{grid-column:1/-1}
+}
+@media (max-width:940px){
+  .cols{grid-template-columns:1fr; gap:0}
+  nav.toc{position:static; margin-bottom:36px}
+  nav.toc ol{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:0 18px}
+  main{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+<div class="wrap">
+<header class="mast">
+  <p class="eyebrow">Low Level Design · Draft v0.2</p>
+  <h1>Online Judge LLD</h1>
+  <p class="deck">The implementation-level companion to the HLD. Every schema, signature, index, comparator edge case and failure mode you need settled before writing code — plus the two places the HLD is wrong.</p>
+  <dl class="meta"><div><dt>Author</dt><dd>Meet Modi</dd></div><div><dt>Status</dt><dd>Draft — for review</dd></div><div><dt>Date</dt><dd>5 Sep 2026</dd></div><div><dt>Companion</dt><dd>Online Judge Design Spec</dd></div><div><dt>Scope</dt><dd>V0 → V3 implementation</dd></div></dl>
+</header>
+<div class="cols">
+<nav class="toc"><span class="lb">Contents</span><ol><li><a href="#s0"><span>00</span>How to read this</a></li><li><a href="#s1"><span>01</span>Module Map</a></li><li><a href="#s2"><span>02</span>Shared Contracts</a></li><li><a href="#s3"><span>03</span>Data Layer</a></li><li><a href="#s4"><span>04</span>API Service</a></li><li><a href="#s5"><span>05</span>Queue Layer</a></li><li><a href="#s6"><span>06</span>Sandbox Module</a></li><li><a href="#s7"><span>07</span>Judge Worker</a></li><li><a href="#s8"><span>08</span>Event Layer</a></li><li><a href="#s9"><span>09</span>Leaderboard Projector</a></li><li><a href="#s10"><span>10</span>Realtime</a></li><li><a href="#s11"><span>11</span>AI Mentor</a></li><li><a href="#s12"><span>12</span>Ingestor</a></li><li><a href="#s13"><span>13</span>Frontend</a></li><li><a href="#s14"><span>14</span>Configuration</a></li><li><a href="#s15"><span>15</span>Error Envelope and Codes</a></li><li><a href="#s16"><span>16</span>Concurrency and Failure Edge Cases</a></li><li><a href="#s17"><span>17</span>Corrections to the HLD</a></li><li><a href="#s18"><span>18</span>Build Order</a></li></ol></nav>
+<main>
+<section id="s0">
+<h2><span class="num">00</span>How to read this</h2>
+<p>The HLD answers <em>what the system is and why</em>. This document answers <em>how each piece is built</em>, at the level where two people can implement different modules and have them fit together.</p>
+<div class="tw"><table>
+<thead><tr>
+<th>If you want</th>
+<th>Read</th>
+</tr></thead>
+<tbody>
+<tr><td>The architecture, capacity model, tradeoffs</td><td>HLD §7–§11</td></tr>
+<tr><td>Exact schemas, signatures, algorithms, edge cases</td><td>this document</td></tr>
+<tr><td>What changed after detailed design</td><td>§17 — <strong>read this before implementing the sandbox</strong></td></tr>
+</tbody>
+</table></div>
+<p>Everything here is scoped to V0–V3. Nothing depends on Kubernetes, and every module can be exercised from <code>docker-compose up</code>.</p>
+</section>
+<section id="s1">
+<h2><span class="num">01</span>Module Map</h2>
+<figure>
+ <div class="fw">
+  <svg viewBox="0 0 900 428" role="img" aria-label="Module dependency map. The web app talks to the API service. The API service depends on the shared contracts, db and queue packages. The judge worker depends on contracts, db, queue, sandbox and comparators. The AI mentor depends on contracts, db and sandbox. The leaderboard projector depends on contracts and the events package. Every service depends on the contracts package, which depends on nothing.">
+    <defs>
+      <marker id="lm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+      </marker>
+    </defs>
+    <text class="band" x="20" y="26">APPS · deployable processes</text>
+    <rect class="bx" x="20" y="40" width="150" height="52"/>
+    <text class="ttl" x="95" y="62" text-anchor="middle">web</text>
+    <text class="sub" x="95" y="78" text-anchor="middle">React · Vite</text>
+    <rect class="bxf" x="200" y="40" width="150" height="52"/>
+    <text class="ttl" x="275" y="62" text-anchor="middle">api</text>
+    <text class="sub" x="275" y="78" text-anchor="middle">Express</text>
+    <rect class="bxf" x="380" y="40" width="150" height="52"/>
+    <text class="ttl" x="455" y="62" text-anchor="middle">judge-worker</text>
+    <text class="sub" x="455" y="78" text-anchor="middle">N slots</text>
+    <rect class="bxf" x="560" y="40" width="150" height="52"/>
+    <text class="ttl" x="635" y="62" text-anchor="middle">ai-mentor</text>
+    <text class="sub" x="635" y="78" text-anchor="middle">SSE</text>
+    <rect class="bxf" x="740" y="40" width="140" height="52"/>
+    <text class="ttl" x="810" y="62" text-anchor="middle">projector</text>
+    <text class="sub" x="810" y="78" text-anchor="middle">+ ingestor</text>
+    <line class="ln" x1="170" y1="66" x2="194" y2="66" marker-end="url(#lm)"/>
+
+    <text class="band" x="20" y="176">PACKAGES · shared libraries</text>
+    <rect class="bx" x="200" y="190" width="130" height="46"/>
+    <text class="ttl" x="265" y="212" text-anchor="middle">db</text>
+    <text class="sub" x="265" y="226" text-anchor="middle">mongoose models</text>
+    <rect class="bx" x="352" y="190" width="130" height="46"/>
+    <text class="ttl" x="417" y="212" text-anchor="middle">queue</text>
+    <text class="sub" x="417" y="226" text-anchor="middle">BullMQ defs</text>
+    <rect class="bx" x="504" y="190" width="130" height="46"/>
+    <text class="ttl" x="569" y="212" text-anchor="middle">sandbox</text>
+    <text class="sub" x="569" y="226" text-anchor="middle">docker runner</text>
+    <rect class="bx" x="656" y="190" width="130" height="46"/>
+    <text class="ttl" x="721" y="212" text-anchor="middle">events</text>
+    <text class="sub" x="721" y="226" text-anchor="middle">kafka client</text>
+
+    <line class="ln" x1="275" y1="92" x2="270" y2="184" marker-end="url(#lm)"/>
+    <line class="ln" x1="300" y1="92" x2="400" y2="184" marker-end="url(#lm)"/>
+    <line class="ln" x1="440" y1="92" x2="300" y2="184" marker-end="url(#lm)"/>
+    <line class="ln" x1="455" y1="92" x2="430" y2="184" marker-end="url(#lm)"/>
+    <line class="ln" x1="480" y1="92" x2="556" y2="184" marker-end="url(#lm)"/>
+    <line class="ln" x1="620" y1="92" x2="590" y2="184" marker-end="url(#lm)"/>
+    <line class="ln" x1="800" y1="92" x2="740" y2="184" marker-end="url(#lm)"/>
+
+    <text class="band" x="20" y="316">FOUNDATION · depends on nothing</text>
+    <rect x="280" y="330" width="340" height="52" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+    <text class="ttl" x="450" y="352" text-anchor="middle" fill="var(--accent-ink)">contracts</text>
+    <text class="sub" x="450" y="368" text-anchor="middle">zod schemas · verdict union · event envelopes</text>
+    <line class="acc" x1="265" y1="236" x2="330" y2="324" marker-end="url(#lm)"/>
+    <line class="acc" x1="417" y1="236" x2="420" y2="324" marker-end="url(#lm)"/>
+    <line class="acc" x1="569" y1="236" x2="520" y2="324" marker-end="url(#lm)"/>
+    <line class="acc" x1="721" y1="236" x2="608" y2="324" marker-end="url(#lm)"/>
+    <text class="acct" x="640" y="356">every module imports contracts</text>
+    <text class="lbl" x="20" y="410">Arrows point from dependent to dependency. No cycles: a package never imports an app, and contracts imports nothing.</text>
+  </svg>
+ </div>
+ <figcaption><b>Fig 1</b>Five deployable processes over four shared packages. <code>contracts</code> is the foundation — if two services disagree about what a verdict is, they disagree here first, at compile time.</figcaption>
+</figure>
+<div class="tw"><table>
+<thead><tr>
+<th>Module</th>
+<th>Owns</th>
+<th>Must never</th>
+</tr></thead>
+<tbody>
+<tr><td><code>api</code></td><td>HTTP surface, auth, validation, enqueue</td><td>Compile or execute user code</td></tr>
+<tr><td><code>judge-worker</code></td><td>Judging one submission end to end</td><td>Serve HTTP, or trust its own wall clock</td></tr>
+<tr><td><code>ai-mentor</code></td><td>Mode routing, context assembly, leak guard</td><td>Accept client-supplied context</td></tr>
+<tr><td><code>leaderboard-projector</code></td><td>Redis standings projection</td><td>Write to <code>submissions</code></td></tr>
+<tr><td><code>ingestor</code></td><td>Problem import and normalization</td><td>Run on the request path</td></tr>
+<tr><td><code>contracts</code></td><td>Types, zod schemas, event envelopes</td><td>Import anything</td></tr>
+</tbody>
+</table></div>
+<h3><span class="num">1.1</span>Repository layout</h3>
+<pre>oj/
+├── apps/
+│   ├── web/                    React + Vite + Monaco
+│   ├── api/                    Express: auth, problems, submissions, contests
+│   ├── judge-worker/           queue consumer → sandbox → verdict
+│   ├── leaderboard-projector/  Kafka consumer → Redis ZSET
+│   ├── ai-mentor/              mode router, context builder, leak guard
+│   └── ingestor/               source adapters + normalizer
+├── packages/
+│   ├── contracts/              zod schemas + event types, shared FE/BE
+│   ├── db/                     mongoose models + migrations
+│   ├── queue/                  BullMQ queue and job definitions
+│   ├── sandbox/                docker runner, limits, result parsing
+│   └── events/                 kafka producer/consumer wrappers
+├── runners/                    one Dockerfile per language
+├── infra/                      docker-compose (dev) · terraform + k8s (prod)
+└── docs/                       HLD, this document, ADRs, runbooks</pre>
+</section>
+<section id="s2">
+<h2><span class="num">02</span>Shared Contracts</h2>
+<p>One file defines the vocabulary. Everything else imports it, so a rename breaks the build rather than production.</p>
+<pre>// packages/contracts/src/verdict.ts
+export const PENDING  = ['QUEUED','COMPILING','RUNNING'] as const;
+export const TERMINAL = ['AC','WA','TLE','MLE','RE','CE','OLE','IE'] as const;
+export type Pending  = typeof PENDING[number];
+export type Terminal = typeof TERMINAL[number];
+export type Status   = Pending | Terminal;
+export const isTerminal = (s: Status): s is Terminal =&gt;
+  (TERMINAL as readonly string[]).includes(s);
+
+// packages/contracts/src/api.ts
+export const SubmitBody = z.object({
+  problemId: z.string().regex(/^[a-f\d]{24}$/),
+  language:  z.enum(['cpp17','c','python3','java17','node20']),
+  code:      z.string().min(1).max(64 * 1024),   // 64 KB source cap
+  contestId: z.string().regex(/^[a-f\d]{24}$/).optional(),
+});
+export type SubmitBody = z.infer&lt;typeof SubmitBody&gt;;
+
+// packages/contracts/src/events.ts — every Kafka message wears this envelope
+export const Envelope = z.object({
+  eventId:   z.string().uuid(),      // producer-generated, used for dedup
+  type:      z.string(),             // 'submission.judged'
+  version:   z.literal(1),           // bump on breaking payload change
+  occurredAt: z.string().datetime(),
+  producer:  z.string(),             // 'judge-worker@&lt;hostname&gt;'
+  payload:   z.unknown(),
+});</pre>
+<p><strong>Rule:</strong> a payload field is only ever <em>added</em>, never removed or retyped. A breaking change means <code>version: 2</code> and a consumer that handles both until the old one drains.</p>
+</section>
+<section id="s3">
+<h2><span class="num">03</span>Data Layer</h2>
+<h3><span class="num">3.1</span>Base collections</h3>
+<p>Moved here from HLD §10.1, which now carries only a collection-level summary.</p>
+<pre>users {
+  _id, username(unique), email(unique), passwordHash, role: 'user'|'setter'|'admin',
+  rating, solvedCount, createdAt
+}
+
+problems {
+  _id, slug(unique), title, statement(md), inputFormat, outputFormat,
+  difficulty: 'easy'|'medium'|'hard', tags: [String],
+  timeLimitMs: 1000, memoryLimitMb: 256,
+  checkerType: 'exact'|'trim'|'float'|'custom', floatEps,
+  testcaseSetVersion,              // hash — invalidates the worker's local cache
+  source: { site, url, license },  // null for original problems
+  isPublic, createdBy, createdAt
+}
+
+testcases {
+  _id, problemId, idx, isSample,
+  inputRef, outputRef,             // S3 keys in V2, inline strings in V1
+  bytes
+}
+
+submissions {
+  _id, userId, problemId, contestId|null,
+  language, codeRef,               // S3 key — large code is never inlined
+  status: 'QUEUED'|'COMPILING'|'RUNNING'|'AC'|'WA'|'TLE'|'MLE'|'RE'|'CE'|'OLE'|'IE',
+  failedTestcaseIdx|null, passedCount, totalCount,
+  timeMs, memoryKb, compilerLog, stderrTail,     // truncated to 8 KB
+  attempts, judgedBy, submittedAt, judgedAt
+}
+
+contests {
+  _id, title, startAt, endAt, problems: [{problemId, points}],
+  scoring: 'icpc'|'ioi', aiMentorEnabled: false, participants: [userId]
+}
+
+ai_interactions {
+  _id, userId, problemId, mode, promptTokens, completionTokens,
+  cacheHit, leakGuardTriggered, createdAt
+}</pre>
+<p>Submission code and testcase data are object-store references, not embedded documents. A 16 MB BSON limit and a contest's worth of source code do not mix.</p>
+<h3><span class="num">3.2</span>Indexes and the query each one serves</h3>
+<p>An index with no named query is an index nobody can safely delete.</p>
+<div class="tw"><table>
+<thead><tr>
+<th>Collection</th>
+<th>Index</th>
+<th>Serves</th>
+</tr></thead>
+<tbody>
+<tr><td><code>users</code></td><td><code>{username:1}</code> unique</td><td>login, profile page</td></tr>
+<tr><td><code>users</code></td><td><code>{email:1}</code> unique</td><td>registration conflict check</td></tr>
+<tr><td><code>problems</code></td><td><code>{slug:1}</code> unique</td><td><code>GET /api/problems/:slug</code></td></tr>
+<tr><td><code>problems</code></td><td><code>{isPublic:1, difficulty:1, _id:-1}</code></td><td>catalogue list + cursor pagination</td></tr>
+<tr><td><code>problems</code></td><td><code>{tags:1}</code></td><td>tag filter</td></tr>
+<tr><td><code>testcases</code></td><td><code>{problemId:1, idx:1}</code> unique</td><td>worker fetches the ordered set</td></tr>
+<tr><td><code>submissions</code></td><td><code>{userId:1, submittedAt:-1}</code></td><td>"my submissions"</td></tr>
+<tr><td><code>submissions</code></td><td><code>{problemId:1, userId:1, status:1}</code></td><td>"have I solved this?" badge</td></tr>
+<tr><td><code>submissions</code></td><td><code>{contestId:1, submittedAt:1}</code></td><td>projector rebuild, replay in order</td></tr>
+<tr><td><code>submissions</code></td><td><code>{status:1, submittedAt:1}</code> partial: <code>status ∈ PENDING</code></td><td><strong>stuck-job sweeper</strong> — small because it only indexes in-flight rows</td></tr>
+<tr><td><code>refresh_tokens</code></td><td><code>{tokenHash:1}</code> unique</td><td>refresh rotation</td></tr>
+<tr><td><code>refresh_tokens</code></td><td><code>{expiresAt:1}</code> TTL 0</td><td>automatic expiry</td></tr>
+<tr><td><code>outbox</code></td><td><code>{sentAt:1}</code> partial: <code>sentAt == null</code></td><td>relay scan — only unsent rows</td></tr>
+</tbody>
+</table></div>
+<h3><span class="num">3.3</span>Collections added since the HLD</h3>
+<pre>refresh_tokens {
+  _id, userId, tokenHash,        // sha256 of the opaque token — never the token itself
+  familyId,                      // rotation lineage; reuse revokes the whole family
+  replacedBy: ObjectId|null,
+  expiresAt, revokedAt, createdAt, userAgent, ip
+}
+
+outbox {                         // transactional outbox — see 7.6
+  _id, aggregateId,              // submissionId
+  topic, key, envelope,          // the exact bytes to publish
+  sentAt: Date|null, attempts, createdAt
+}
+
+judge_runs {                     // one row per testcase execution, for debugging and the auditor
+  _id, submissionId, testcaseIdx,
+  cpuMs, wallMs, peakMemKb, exitCode, signal, verdict,
+  createdAt                      // TTL 14 days
+}</pre>
+<h3><span class="num">3.4</span>Migrations</h3>
+<p>Numbered, forward-only, idempotent, run by a job on deploy before the new code starts serving.</p>
+<pre>packages/db/migrations/
+  001_initial_indexes.ts
+  002_refresh_token_family.ts
+  003_outbox.ts</pre>
+<p>Each exports <code>async up(db)</code>. Index creation always uses <code>{ background: true }</code>. <strong>No migration may rewrite <code>submissions</code> in place</strong> — that collection is append-mostly and a full rewrite during a contest is an outage.</p>
+</section>
+<section id="s4">
+<h2><span class="num">04</span>API Service</h2>
+<h3><span class="num">4.1</span>Middleware chain — order is load-bearing</h3>
+<pre>requestId            → attaches x-request-id, seeds the OTel span
+helmet               → security headers
+cors                 → allowlist, credentials: true
+bodyParser           → 128 KB limit (source cap is 64 KB, leaves envelope room)
+authenticate         → verifies access JWT, populates req.user; never rejects
+rateLimit            → keyed by req.user?.id ?? ip, so anonymous abuse is bounded
+authorize(role)      → per-route, rejects
+validate(zodSchema)  → body/query/params, rejects with 422 + field paths
+handler
+errorHandler         → last; maps thrown AppError to the envelope in §15</pre>
+<p><code>authenticate</code> never rejects — it only populates. Rejection is <code>authorize</code>'s job. Mixing the two is how endpoints accidentally become public.</p>
+<h3><span class="num">4.2</span>Authentication</h3>
+<div class="tw"><table>
+<thead><tr>
+<th></th>
+<th>Access token</th>
+<th>Refresh token</th>
+</tr></thead>
+<tbody>
+<tr><td>Form</td><td>JWT, HS256</td><td>256-bit opaque random, base64url</td></tr>
+<tr><td>Lifetime</td><td>15 min</td><td>30 days</td></tr>
+<tr><td>Storage</td><td>memory in the SPA</td><td>httpOnly + Secure + SameSite=Lax cookie, <code>Path=/api/auth</code></td></tr>
+<tr><td>Server state</td><td>none</td><td><code>refresh_tokens</code>, stored as sha256</td></tr>
+<tr><td>Payload</td><td><code>{sub, role, jti, iat, exp}</code></td><td>—</td></tr>
+</tbody>
+</table></div>
+<p><strong>Rotation with reuse detection.</strong> Every refresh issues a new token and sets <code>replacedBy</code> on the old one. If a token that already has <code>replacedBy</code> is presented, it has been stolen and replayed:</p>
+<pre>POST /api/auth/refresh
+  row = find({ tokenHash: sha256(cookie) })
+  if !row || row.expiresAt &lt; now       -&gt; 401
+  if row.revokedAt                     -&gt; 401
+  if row.replacedBy                    -&gt; revoke entire familyId, 401   // reuse detected
+  next = issue(userId, familyId = row.familyId)
+  row.replacedBy = next._id
+  return { accessToken } + Set-Cookie(next)</pre>
+<p>Logout revokes the family. Password change revokes every family for the user.</p>
+<h3><span class="num">4.3</span>Rate limiting</h3>
+<p>Token bucket in Redis. Must be atomic, so it is a Lua script — a <code>GET</code> then <code>SET</code> from Node is a race under exactly the load that matters.</p>
+<pre>-- KEYS[1] = bucket key   ARGV = capacity, refillPerSec, nowMs, cost
+local b = redis.call('HMGET', KEYS[1], 'tokens', 'ts')
+local tokens = tonumber(b[1]) or tonumber(ARGV[1])
+local ts     = tonumber(b[2]) or tonumber(ARGV[3])
+local elapsed = math.max(0, tonumber(ARGV[3]) - ts) / 1000
+tokens = math.min(tonumber(ARGV[1]), tokens + elapsed * tonumber(ARGV[2]))
+if tokens &lt; tonumber(ARGV[4]) then
+  return {0, math.ceil((tonumber(ARGV[4]) - tokens) / tonumber(ARGV[2]))}
+end
+redis.call('HMSET', KEYS[1], 'tokens', tokens - tonumber(ARGV[4]), 'ts', ARGV[3])
+redis.call('EXPIRE', KEYS[1], 3600)
+return {1, 0}</pre>
+<div class="tw"><table>
+<thead><tr>
+<th>Route</th>
+<th>Capacity</th>
+<th>Refill</th>
+<th>Cost</th>
+</tr></thead>
+<tbody>
+<tr><td><code>POST /api/run</code></td><td>10</td><td>1 / 6 s</td><td>1</td></tr>
+<tr><td><code>POST /api/submissions</code></td><td>20</td><td>1 / 3 s</td><td>1</td></tr>
+<tr><td><code>POST /api/ai/ask</code></td><td>6</td><td>1 / 30 s</td><td>1</td></tr>
+<tr><td><code>POST /api/auth/login</code></td><td>5 per IP</td><td>1 / 60 s</td><td>1</td></tr>
+<tr><td>everything else</td><td>300</td><td>5 / s</td><td>1</td></tr>
+</tbody>
+</table></div>
+<p><strong>If Redis is unreachable the limiter fails open and logs.</strong> A cache outage must not take down login. The queue is the real backpressure for <code>/submit</code>, not the limiter.</p>
+<h3><span class="num">4.4</span>Pagination</h3>
+<p>Cursor-based, never <code>skip</code>. <code>skip</code> on page 400 of a contest's submissions scans 400 pages.</p>
+<pre>GET /api/problems?limit=25&amp;cursor=&lt;base64 of last _id&gt;
+  find({ isPublic: true, ...filters, _id: { $lt: decoded } }).sort({_id:-1}).limit(limit+1)
+  → { items: first(limit), nextCursor: items.length &gt; limit ? encode(last._id) : null }</pre>
+<h3><span class="num">4.5</span>The submit path</h3>
+<pre>POST /api/submissions
+  1. validate(SubmitBody)
+  2. idempotency: key = req.header('Idempotency-Key')
+     if key: SET idem:{userId}:{key} &lt;placeholder&gt; NX EX 600
+             if not acquired -&gt; return the stored submissionId (200, not 202)
+  3. problem = problems.findOne({_id, isPublic:true})            -&gt; 404
+  4. if contestId: assert now within [startAt, endAt] and user registered  -&gt; 409
+  5. codeRef = s3.put(`code/${submissionId}.${ext}`, code)       // before the DB row
+  6. submissions.insertOne({ _id: submissionId, status:'QUEUED', attempts:0, ... })
+  7. outbox.insertOne({ topic:'submission.created', ... })
+  8. queue.add('judge', { submissionId }, { priority: contestId ? 1 : 5,
+                                            attempts: 3, backoff:{type:'exponential', delay:2000} })
+  9. redis.SET idem:{...} submissionId EX 600
+ 10. return 202 { submissionId, status:'QUEUED' }</pre>
+<p><strong>Step 5 before step 6 is deliberate.</strong> An orphaned S3 object is garbage; a submission row pointing at a missing object is a permanent <code>IE</code>. Order operations so the survivable failure is the one that happens.</p>
+</section>
+<section id="s5">
+<h2><span class="num">05</span>Queue Layer</h2>
+<pre>// packages/queue/src/judge.ts
+export const judgeQueue = new Queue&lt;JudgeJob&gt;('judge', { connection });
+export type JudgeJob = { submissionId: string };   // reference only, never the code</pre>
+<div class="tw"><table>
+<thead><tr>
+<th>Setting</th>
+<th>Value</th>
+<th>Why</th>
+</tr></thead>
+<tbody>
+<tr><td><code>priority</code></td><td>1 contest · 3 <code>/run</code> · 5 practice</td><td>Interactive and contest traffic jump a practice backlog</td></tr>
+<tr><td><code>attempts</code></td><td>3</td><td>Then <code>IE</code> and DLQ</td></tr>
+<tr><td><code>backoff</code></td><td>exponential, 2 s base</td><td>A transient Docker hiccup resolves; a poison pill does not</td></tr>
+<tr><td><code>lockDuration</code></td><td>90 s</td><td>Longer than the worst 25 s judgement, with headroom</td></tr>
+<tr><td><code>lockRenewTime</code></td><td>30 s</td><td>Worker renews while genuinely alive</td></tr>
+<tr><td><code>removeOnComplete</code></td><td>1000</td><td>Recent history for debugging</td></tr>
+<tr><td><code>removeOnFail</code></td><td>false</td><td>Failures are evidence</td></tr>
+</tbody>
+</table></div>
+<p>A separate <code>judge-interactive</code> queue for <code>/run</code> is created in V2 when a single queue's priority handling stops being enough. Until then, priority on one queue is sufficient and simpler.</p>
+</section>
+<section id="s6">
+<h2><span class="num">06</span>Sandbox Module</h2>
+<p>The only module allowed to spawn a process. Everything about it is a contract.</p>
+<pre>export interface SandboxRequest {
+  image:   string;
+  argv:    string[];
+  stdin:   Buffer;
+  cpuset:  string;                  // "3" — the pinned core for this slot
+  limits: {
+    cpuMs: number; wallMs: number;  // wallMs is the kill timer, cpuMs decides TLE
+    memoryMb: number; pids: number;
+    stdoutBytes: number; fileSizeBytes: number;
+  };
+}
+
+export interface SandboxResult {
+  outcome: 'exited' | 'timeout' | 'oom' | 'spawn_error';
+  exitCode: number | null;
+  signal:   string | null;          // 'SIGSEGV' | 'SIGKILL' | ...
+  cpuMs:    number;                 // from the cgroup, see §17
+  wallMs:   number;
+  peakMemKb: number;
+  stdout: Buffer; stderr: Buffer;
+  stdoutTruncated: boolean;
+}
+
+export function runInSandbox(req: SandboxRequest): Promise&lt;SandboxResult&gt;;</pre>
+<h3><span class="num">6.1</span>Lifecycle</h3>
+<pre>create   docker create &lt;flags&gt; &lt;image&gt; &lt;argv&gt;      -&gt; containerId
+start    docker start -ai &lt;containerId&gt;            -&gt; attach stdio
+feed     write stdin, then end it                  // a program blocked on stdin must see EOF
+watch    wallMs timer      -&gt; docker kill -s KILL
+         wallMs + 2000     -&gt; docker rm -f, outcome = 'timeout'
+collect  docker inspect    -&gt; ExitCode, OOMKilled, State.StartedAt/FinishedAt
+metrics  read cgroup files BEFORE removal          // see §17 — this is why --rm is gone
+remove   docker rm -f                              // in finally, always</pre>
+<h3><span class="num">6.2</span>Output handling</h3>
+<p>stdout is consumed as a stream with a running byte count. At <code>stdoutBytes</code> the stream is destroyed, <code>stdoutTruncated</code> is set, and the container is killed — buffering an unbounded pipe is how a worker OOMs on the <em>host</em>.</p>
+<p>stderr is capped at 8 KB, keeping the <strong>last</strong> 8 KB rather than the first: the useful part of a stack trace is at the end.</p>
+<h3><span class="num">6.3</span>Outcome to verdict</h3>
+<p>Applied in this order. The first match wins.</p>
+<div class="tw"><table>
+<thead><tr>
+<th>Condition</th>
+<th>Verdict</th>
+</tr></thead>
+<tbody>
+<tr><td><code>outcome == 'spawn_error'</code></td><td><code>IE</code> — our fault, retry the job</td></tr>
+<tr><td><code>outcome == 'oom'</code> or <code>inspect.OOMKilled</code></td><td><code>MLE</code></td></tr>
+<tr><td><code>outcome == 'timeout'</code> or <code>cpuMs &gt; limits.cpuMs</code></td><td><code>TLE</code></td></tr>
+<tr><td><code>stdoutTruncated</code></td><td><code>OLE</code></td></tr>
+<tr><td><code>signal != null</code></td><td><code>RE</code> — surface the signal name to the user</td></tr>
+<tr><td><code>exitCode != 0</code></td><td><code>RE</code></td></tr>
+<tr><td>output mismatch</td><td><code>WA</code></td></tr>
+<tr><td>otherwise</td><td><code>AC</code></td></tr>
+</tbody>
+</table></div>
+<p><code>MLE</code> before <code>TLE</code> matters: a program thrashing against its memory limit usually trips the wall timer too, and reporting <code>TLE</code> sends the user optimising the wrong axis.</p>
+<h3><span class="num">6.4</span>Container flags</h3>
+<p>Moved here from HLD §10.6, which now states the guarantees rather than the CLI. Every flag exists because of a specific attack.</p>
+<pre>docker create -i \
+  --network=none \                    no exfiltration, no mining, no callbacks
+  --memory=256m --memory-swap=256m \  swap must equal memory, or the limit is meaningless
+  --cpus=1 --cpuset-cpus="&lt;slot&gt;" \   a dedicated core =&gt; reproducible timings
+  --pids-limit=64 \                   the fork bomb dies here
+  --ulimit fsize=67108864 \           64 MB write cap — no filling the disk
+  --ulimit nofile=64 \
+  --read-only \                       rootfs is immutable
+  --tmpfs /box:rw,noexec,nosuid,size=64m \   only writable dir, cannot exec what it writes
+  --cap-drop=ALL \
+  --security-opt=no-new-privileges \
+  --security-opt seccomp=./judge-seccomp.json \
+  --user 65534:65534 \                nobody
+  oj/run-cpp:1 /box/main</pre>
+<p>Note the absence of <code>--rm</code> and of <code>--userns=host</code>. The cgroup must outlive the process (§17.1), and user-namespace remapping is left at the daemon default so container root maps to an unprivileged host uid.</p>
+<p>Images are pinned by digest and rebuilt on a schedule. <code>latest</code> is banned — a runner image that changes underneath the compile cache produces binaries the cache key does not describe.</p>
+<h3><span class="num">6.5</span>Language registry</h3>
+<p>Adding a language is a config entry plus a Dockerfile, never a code change. The MVP ships C++, Python and Java — the minimum of three — then C and JavaScript.</p>
+<pre>const LANGUAGES = {
+  cpp17:   { image:'oj/run-cpp:1',  file:'main.cpp',
+             compile:'g++ -O2 -std=c++17 main.cpp -o main',  run:'./main' },
+  c:       { image:'oj/run-cpp:1',  file:'main.c',
+             compile:'gcc -O2 main.c -o main',               run:'./main' },
+  python3: { image:'oj/run-py:1',   file:'main.py',
+             compile:null,                                   run:'python3 main.py' },
+  java17:  { image:'oj/run-java:1', file:'Main.java',
+             compile:'javac Main.java',
+             run:'java -Xss64m -XX:+UseSerialGC Main',
+             note:'public class MUST be Main — filename is forced, a mismatch is a CE' },
+  node20:  { image:'oj/run-node:1', file:'main.js',
+             compile:null,                                   run:'node main.js' },
+};</pre>
+<p><code>compileTimeoutMs</code> is 10,000 for all. Compiled artefacts are cached by <code>sha256(code + language + imageDigest)</code>.</p>
+<h3><span class="num">6.6</span>The host executor is development-only</h3>
+<p>V0 ships a <code>HostExecutor</code> that shells out with <code>child_process</code> and no isolation at all. It exists so the editor and the <code>/run</code> path can be built before the sandbox is ready. <strong>It must never run in a deployed environment</strong>, and four independent guards enforce that:</p>
+<div class="tw"><table>
+<thead><tr>
+<th>#</th>
+<th>Guard</th>
+<th>Mechanism</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td>Boot</td><td>The module throws at import if <code>NODE_ENV === 'production'</code> or <code>ALLOW_HOST_EXECUTOR !== 'true'</code>. Fails at startup, not on the first request.</td></tr>
+<tr><td>2</td><td>Build</td><td>CI greps the production bundle for any import of <code>packages/executor-host</code>; a match fails the build.</td></tr>
+<tr><td>3</td><td>Config</td><td><code>ALLOW_HOST_EXECUTOR</code> is absent from every non-local env file, and the zod env schema rejects it being <code>true</code> while <code>NODE_ENV</code> is <code>production</code>.</td></tr>
+<tr><td>4</td><td>Deployment</td><td>V0 is never deployed. Staging begins at V1, after the sandbox lands.</td></tr>
+</tbody>
+</table></div>
+<p><strong>The package is deleted outright once V1 merges.</strong> A dev-only escape hatch that survives into the repo's third month becomes production code by accident.</p>
+</section>
+<section id="s7">
+<h2><span class="num">07</span>Judge Worker</h2>
+<h3><span class="num">7.1</span>Structure</h3>
+<pre>JudgeWorker
+├── SlotManager        N slots, slot i pinned to cpuset core i
+├── ArtifactStore      S3 get code
+├── TestcaseCache      local disk, LRU by bytes, key problemId:version
+├── CompileCache       local disk, LRU, key sha256(code + language + imageDigest)
+├── SandboxRunner      §6
+├── Comparators        exact | trim | float | custom
+└── VerdictWriter      CAS to Mongo + outbox insert, in one operation</pre>
+<p><code>N = availableCores - 2</code>. Two cores are reserved for the agent, the Docker daemon and the worker's own event loop. A worker that saturates every core produces unreliable timings for every submission on the box, including the ones it is not judging.</p>
+<h3><span class="num">7.2</span>Caches</h3>
+<div class="tw"><table>
+<thead><tr>
+<th>Cache</th>
+<th>Key</th>
+<th>Eviction</th>
+<th>Invalidation</th>
+</tr></thead>
+<tbody>
+<tr><td>Testcases</td><td><code>{problemId}:{testcaseSetVersion}</code></td><td>LRU, 8 GB budget</td><td>Version bump makes a new key; the old one ages out</td></tr>
+<tr><td>Compiled binary</td><td><code>sha256(code + language + imageDigest)</code></td><td>LRU, 4 GB</td><td>Image digest is in the key, so a runner rebuild invalidates naturally</td></tr>
+</tbody>
+</table></div>
+<p>Including the image digest in the compile key is what stops a rebuilt <code>g++</code> image from silently serving binaries built by the previous compiler.</p>
+<h3><span class="num">7.3</span>Comparators</h3>
+<p>The single largest source of "the judge is broken" reports. Specified exactly.</p>
+<pre>trim(actual, expected):          # the default
+  1. decode UTF-8, replace \r\n and \r with \n
+  2. split into lines
+  3. rstrip each line of spaces and tabs
+  4. drop trailing empty lines from both sides
+  5. equal iff the line arrays are equal
+
+exact(actual, expected):
+  byte-for-byte equality, no normalization at all
+
+float(actual, expected, eps):
+  1. tokenize both on any whitespace run
+  2. token counts must match, else WA
+  3. per pair (a, b):
+       if both parse as finite floats:
+          ok iff |a-b| &lt;= eps  OR  |a-b| / max(1, |b|) &lt;= eps
+       else:
+          ok iff a == b as strings</pre>
+<div class="tw"><table>
+<thead><tr>
+<th>Edge case</th>
+<th>Behaviour</th>
+</tr></thead>
+<tbody>
+<tr><td>Output ends without a trailing newline</td><td><code>trim</code> accepts, <code>exact</code> rejects</td></tr>
+<tr><td>Windows <code>\r\n</code> from a user's file</td><td><code>trim</code> accepts</td></tr>
+<tr><td><code>1.0</code> vs <code>1</code></td><td><code>float</code> accepts, <code>trim</code> rejects</td></tr>
+<tr><td><code>-0.0</code> vs <code>0.0</code></td><td><code>float</code> accepts (difference is 0)</td></tr>
+<tr><td><code>nan</code>, <code>inf</code></td><td>Never accepted — not finite, falls to string compare</td></tr>
+<tr><td>Trailing spaces on a line</td><td><code>trim</code> accepts</td></tr>
+<tr><td>Extra blank line at EOF</td><td><code>trim</code> accepts</td></tr>
+<tr><td>Blank line in the <em>middle</em></td><td>Rejected by all — it is a real structural difference</td></tr>
+</tbody>
+</table></div>
+<p>Every row above is a unit test. They ship before the comparator does.</p>
+<h3><span class="num">7.4</span>Main loop</h3>
+<pre>onJob({ submissionId }):
+  slot = slots.acquire()                                  # blocks until one frees
+  try:
+    sub = CAS(submissionId, PENDING -&gt; 'COMPILING')
+    if !sub: return                                       # another worker owns it
+
+    problem   = problems.get(sub.problemId)
+    code      = artifacts.getCode(sub.codeRef)
+    testcases = testcaseCache.get(problem._id, problem.testcaseSetVersion)
+
+    bin = compileCache.get(key) ?? compile(code, lang, slot)
+    if bin.failed: return finish('CE', { compilerLog: bin.stderr })
+
+    CAS(submissionId, 'COMPILING' -&gt; 'RUNNING')
+
+    for tc in testcases:                                  # sequential, see HLD §9.5
+      r = runInSandbox({ ..., stdin: tc.input, cpuset: slot.core })
+      record(judge_runs, r)
+      v = mapOutcome(r) ?? compare(r.stdout, tc.expected, problem.checkerType)
+      if v != 'AC': return finish(v, { failedTestcaseIdx: tc.idx, ...stats })
+
+    return finish('AC', { timeMs: max(cpuMs), memoryKb: max(peakMemKb) })
+  finally:
+    slot.release(); rmrf(scratch)</pre>
+<p><code>finish()</code> is the only path that writes a terminal status, and it always goes through §7.6.</p>
+<h3><span class="num">7.5</span>The stuck-job sweeper</h3>
+<p>BullMQ redelivers on lock expiry, but a submission can still be stranded — for example if the row was created and the enqueue then failed. A cron every 60 s:</p>
+<pre>submissions.find({ status: { $in: PENDING }, submittedAt: { $lt: now - 5min } })
+  → attempts &lt; 3 ? re-enqueue : finish('IE')</pre>
+<p>This is what the partial index in §3.2 exists for.</p>
+<h3><span class="num">7.6</span>Transactional outbox</h3>
+<p><strong>The bug this prevents:</strong> the worker writes <code>AC</code> to Mongo, then crashes before producing to Kafka. The submission looks solved, the leaderboard never learns, and the contestant's rank is silently wrong.</p>
+<p>The verdict write and the event are one atomic operation:</p>
+<pre>const session = client.startSession();
+await session.withTransaction(async () =&gt; {
+  const r = await submissions.updateOne(
+    { _id, status: { $in: PENDING } },
+    { $set: { status, judgedAt: new Date(), ...stats } },
+    { session });
+  if (r.matchedCount === 0) throw new AlreadyFinished();   // aborts, emits nothing
+  await outbox.insertOne({ topic:'submission.judged', key: contestId ?? userId,
+                           envelope, sentAt: null }, { session });
+});</pre>
+<p>A relay loop polls <code>outbox.find({ sentAt: null })</code>, produces to Kafka, and sets <code>sentAt</code>. Duplicates are possible — publish then crash before marking — which is why every consumer is idempotent on <code>eventId</code> (§9.2). At-least-once delivery with idempotent consumers, not exactly-once, which does not exist.</p>
+</section>
+<section id="s8">
+<h2><span class="num">08</span>Event Layer</h2>
+<h3><span class="num">8.1</span>Producer</h3>
+<pre>new Kafka({ clientId, brokers }).producer({
+  idempotent: true,              // dedup on broker retry
+  maxInFlightRequests: 5,
+  transactionTimeout: 30000,
+});
+send({ topic, messages: [{ key, value: JSON.stringify(envelope) }], acks: -1 });</pre>
+<p><code>acks: -1</code> (all in-sync replicas) is not negotiable for <code>submission.judged</code>. It is the record of a contestant's result.</p>
+<h3><span class="num">8.2</span>Consumer</h3>
+<div class="tw"><table>
+<thead><tr>
+<th>Setting</th>
+<th>Value</th>
+<th>Why</th>
+</tr></thead>
+<tbody>
+<tr><td><code>groupId</code></td><td>one per consumer role</td><td><code>leaderboard-projector</code>, <code>analytics</code></td></tr>
+<tr><td><code>sessionTimeout</code></td><td>30 s</td><td>Long enough to survive a GC pause</td></tr>
+<tr><td><code>heartbeatInterval</code></td><td>3 s</td><td></td></tr>
+<tr><td><code>autoCommit</code></td><td><strong>false</strong></td><td>Commit only after the projection is durable, or a rebalance loses an update</td></tr>
+<tr><td><code>maxBytesPerPartition</code></td><td>1 MB</td><td>Envelopes are small; a big fetch just adds latency</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="s9">
+<h2><span class="num">09</span>Leaderboard Projector</h2>
+<h3><span class="num">9.1</span>Scoring</h3>
+<p>ICPC rules, stated unambiguously because "penalty" means three different things across judges.</p>
+<pre>per (contest, user, problem):
+  solved        = any AC with submittedAt &lt;= contest.endAt
+  solveMinute   = floor((firstAC.submittedAt - contest.startAt) / 60000)
+  wrongBefore   = count of submissions before firstAC with status in
+                  {WA, TLE, MLE, RE, OLE}          # CE and IE do NOT count
+  problemPenalty = solved ? solveMinute + 20 * wrongBefore : 0
+
+per (contest, user):
+  solvedCount = sum(solved)
+  penalty     = sum(problemPenalty)
+  zscore      = solvedCount * 1e9 - penalty</pre>
+<p><code>CE</code> not counting is a deliberate rule choice, matching Codeforces. It is written here so nobody re-derives it differently in six weeks.</p>
+<h3><span class="num">9.2</span>Idempotent projection</h3>
+<pre>on(envelope):
+  if SADD seen:{contestId} envelope.eventId == 0: return    # already applied
+  EXPIRE seen:{contestId} 172800                            # 48 h, outlives any contest
+
+  state = HGETALL contest:{c}:user:{u}                      # per-problem state
+  apply the verdict to state[problemId]
+  if state unchanged: return                                # WA after AC changes nothing
+  HSET  contest:{c}:user:{u} ...
+  ZADD  contest:{c}:board {zscore} {userId}
+  PUBLISH contest:{c}:delta { userId, rank, solvedCount, penalty }
+  commitOffset()</pre>
+<p>Applying a verdict to a user's state is a pure function of the state and the event, so replaying the topic from offset 0 rebuilds the identical board. That is the recovery procedure — there is no backup to restore.</p>
+<h3><span class="num">9.3</span>Reads</h3>
+<pre>GET /api/contests/:id/leaderboard?limit=50&amp;offset=0
+  ZREVRANGE contest:{id}:board offset offset+limit-1 WITHSCORES
+  → unpack: solvedCount = floor(score / 1e9), penalty = solvedCount*1e9 - score
+  → hydrate usernames from a Redis hash, not Mongo</pre>
+<p><code>ZREVRANK</code> gives one user their own rank in O(log N) without reading the page they are not on.</p>
+</section>
+<section id="s10">
+<h2><span class="num">10</span>Realtime</h2>
+<h3><span class="num">10.1</span>SSE — one submission</h3>
+<pre>GET /api/submissions/:id/stream        Accept: text/event-stream
+  authorize: req.user.id === submission.userId, else 403
+  if already terminal: send one event, close                # no dangling connection
+  subscribe redis: sub:{id}
+  every 15 s: write ':ping\n\n'                             # defeats idle proxy timeouts
+  on terminal event: write, then close
+  hard cap 120 s: close with `event: timeout`, client falls back to polling</pre>
+<p>The worker <code>PUBLISH</code>es to <code>sub:{id}</code> on every status transition. Redis pub/sub is fire-and-forget, which is correct here — the durable record is Mongo, and a client that missed a message re-reads <code>GET /api/submissions/:id</code> on reconnect.</p>
+<h3><span class="num">10.2</span>WebSocket — contest standings</h3>
+<p>One room per contest. On join, send a full top-50 snapshot with a <code>seq</code>; then send deltas carrying <code>seq+1</code>. A client that sees a gap in <code>seq</code> requests a fresh snapshot. Without the sequence number a dropped delta leaves a permanently wrong board on that client, and nobody notices until someone screenshots it.</p>
+</section>
+<section id="s11">
+<h2><span class="num">11</span>AI Mentor</h2>
+<h3><span class="num">11.1</span>Mode registry</h3>
+<pre>interface Mode {
+  id: 1|2|3|4|5|6;
+  needsExecution: boolean;
+  model: 'fast' | 'strong';
+  maxOutputTokens: number;
+  contextParts: Array&lt;'statement'|'constraints'|'userCode'|'recentVerdicts'
+                     |'failedSampleIO'|'trace'|'timingCurve'|'catalogueByTag'&gt;;
+  systemPrompt: string;
+}</pre>
+<div class="tw"><table>
+<thead><tr>
+<th>Mode</th>
+<th>Execution</th>
+<th>Model</th>
+<th>Context parts</th>
+</tr></thead>
+<tbody>
+<tr><td>1 Intuition Engine</td><td>no</td><td>fast</td><td>statement, constraints</td></tr>
+<tr><td>2 Brainstorming Partner</td><td>no</td><td>strong</td><td>statement, userCode, recentVerdicts</td></tr>
+<tr><td>3 Dry-Run Simulator</td><td><strong>yes</strong></td><td>strong</td><td>statement, userCode, trace, failedSampleIO</td></tr>
+<tr><td>4 Complexity Auditor</td><td><strong>yes</strong></td><td>strong</td><td>statement, constraints, userCode, timingCurve</td></tr>
+<tr><td>5 Conceptual Translator</td><td>no</td><td>fast</td><td>statement</td></tr>
+<tr><td>6 Foundations Architect</td><td>no</td><td>fast</td><td>statement, catalogueByTag</td></tr>
+</tbody>
+</table></div>
+<h3><span class="num">11.2</span>Context builder</h3>
+<p>Assembled server-side. The client's <code>editorBuffer</code> is the only thing it contributes, and it is capped at 64 KB.</p>
+<pre>build(userId, problemId, mode):
+  problem = problems.get(problemId)
+  if problem.contestId is live and !contest.aiMentorEnabled: throw AI_DISABLED_IN_CONTEST
+  parts = {}
+  if 'statement'      in mode.contextParts: parts.statement = problem.statement
+  if 'recentVerdicts' in mode.contextParts:
+      parts.recentVerdicts = submissions.find({userId, problemId})
+        .sort({submittedAt:-1}).limit(5)
+        .project({ status:1, failedTestcaseIdx:1, timeMs:1 })     # never other users' data
+  if 'failedSampleIO' in mode.contextParts:
+      tc = testcases.findOne({ problemId, idx: lastFailedIdx })
+      parts.failedIO = tc.isSample ? tc : null                    # hidden cases stay hidden
+  ...</pre>
+<p>The <code>isSample</code> guard is the important line. Leaking a hidden test case through the mentor is the same failure as leaking it through the API, and it is much easier to do by accident.</p>
+<h3><span class="num">11.3</span>Mode 3 — the tracer</h3>
+<div class="tw"><table>
+<thead><tr>
+<th>Language</th>
+<th>Mechanism</th>
+<th>Ships</th>
+</tr></thead>
+<tbody>
+<tr><td><code>python3</code></td><td><code>sys.settrace</code> line hook, records <code>(lineno, changed locals)</code></td><td>V3</td></tr>
+<tr><td><code>node20</code></td><td><code>node --inspect-brk</code> + CDP <code>Debugger.stepOver</code></td><td>V3</td></tr>
+<tr><td><code>cpp17</code>, <code>c</code></td><td><code>gdb --batch</code> with a step script, <code>-g -O0</code> build</td><td>V3.1</td></tr>
+<tr><td><code>java17</code></td><td>JDI stepping</td><td>not planned — falls back to mode 2</td></tr>
+</tbody>
+</table></div>
+<p>The trace runs in the same sandbox with a hard cap of <strong>2,000 events</strong> and a 3 s wall limit. Truncated traces are labelled as such in the prompt so the model does not reason about a run it cannot see the end of.</p>
+<pre>{"line": 7, "delta": {"i": 3, "total": 12}}
+{"line": 8, "delta": {"total": 19}}</pre>
+<p><strong>If a language has no tracer, the mode is not offered for it.</strong> Falling back to an LLM pretending to trace, under a UI that says "real execution", is worse than not shipping the feature.</p>
+<h3><span class="num">11.4</span>Mode 4 — the complexity fitter</h3>
+<pre>sizes = [1e2, 1e3, 1e4, 1e5]
+for n in sizes:
+    input = problem.generator(n)                  # setter-provided, else a typed default
+    t[n] = median(3 runs).cpuMs
+drop points where t &lt; 5ms                         # below the measurement noise floor
+if fewer than 3 points remain: return INCONCLUSIVE
+
+# power law: log t = a·log n + b
+a, r2_pow = linreg(log(sizes), log(t))
+# exponential: log t = c·n + d
+c, r2_exp = linreg(sizes, log(t))
+
+if r2_exp &gt; r2_pow and r2_exp &gt; 0.95: return 'exponential'
+if r2_pow &lt; 0.90: return INCONCLUSIVE
+classify a: &lt;0.35 O(1)/O(log n) · 0.8–1.25 O(n) · 1.25–1.6 O(n log n)
+            1.7–2.3 O(n²) · 2.7–3.3 O(n³) · else 'O(n^{a:.1f}), unusual'</pre>
+<p>Returning <code>INCONCLUSIVE</code> honestly is a feature. A confident wrong complexity sends someone rewriting a correct solution.</p>
+<h3><span class="num">11.5</span>Leak guard</h3>
+<p>Runs on the complete response before a single token reaches the client, which is why mode 3 and 4 responses are buffered rather than streamed. Modes 1, 2, 5 and 6 stream, with the guard applied per completed code block.</p>
+<pre>block if ANY:
+  A. a fenced code block with &gt;= 8 non-comment lines
+     AND contains a loop or recursion
+     AND contains a return/print of a result
+     AND the fence language matches the submission language
+  B. normalized similarity to any editorial solution &gt; 0.75
+     (strip comments and whitespace, rename identifiers to positional tokens,
+      then token-level Jaccard over 4-grams)
+  C. the response contains &gt; 60% of the identifiers present in an editorial
+
+on block: replace with the mode's canned nudge, increment leak_guard_triggered,
+          log { userId, problemId, mode, rule } — never log the blocked text</pre>
+<p>Rule A alone would block a legitimate 10-line explanation of a helper. That is the intended trade: <strong>false positives are cheap, a leaked solution is not.</strong></p>
+<h3><span class="num">11.6</span>Budget and cache</h3>
+<pre>cacheKey = sha256(problemId + mode + normalize(code))   # normalize: strip comments + whitespace
+budget:  INCRBY ai:tokens:{userId}:{yyyy-mm-dd} &lt;tokens&gt;, EXPIRE 172800
+         reject with AI_BUDGET_EXCEEDED above the daily cap</pre>
+<p>The budget is checked <em>before</em> the call using the prompt token count plus <code>maxOutputTokens</code> as the pessimistic estimate, then reconciled to actual usage after. Checking only after means one expensive request can blow through any cap.</p>
+<h3><span class="num">11.7</span>Independence from the judge</h3>
+<p>The mentor is an enhancement. The judge is the product. The judging path must never acquire a dependency on the mentor, and that is enforced rather than assumed.</p>
+<div class="tw"><table>
+<thead><tr>
+<th>Rule</th>
+<th>Enforcement</th>
+</tr></thead>
+<tbody>
+<tr><td><code>api</code> and <code>judge-worker</code> never import <code>ai-mentor</code></td><td>Lint rule plus a CI dependency-graph check that fails the build</td></tr>
+<tr><td>No synchronous call from the request or judge path into the mentor</td><td>The mentor is reachable only at <code>POST /api/ai/*</code>; nothing internal calls it</td></tr>
+<tr><td>The mentor holds a read-only database credential</td><td>Separate Mongo user with no write grant on any collection</td></tr>
+<tr><td>The mentor never writes <code>submissions</code>, <code>contests</code> or standings</td><td>Follows from the credential</td></tr>
+<tr><td>Mentor down means 503 on <code>/api/ai/*</code> and nothing else</td><td>Separate deployment, separate health check, its own autoscaler</td></tr>
+<tr><td>Global kill switch</td><td><code>AI_ENABLED=false</code> returns 503 from <code>/api/ai/*</code> immediately; no other behaviour changes</td></tr>
+<tr><td>Provider timeouts cannot consume API capacity</td><td>The mentor owns its own process pool; a hung LLM call blocks a mentor worker, never an API worker</td></tr>
+</tbody>
+</table></div>
+<p><strong>Verification, not assertion.</strong> The V4 chaos drill scales <code>ai-mentor</code> to zero replicas in the middle of a mock contest. Pass condition: every submission is still judged, standings keep updating, and the only user-visible change is the mentor panel reporting itself unavailable.</p>
+</section>
+<section id="s12">
+<h2><span class="num">12</span>Ingestor</h2>
+<pre>interface SourceAdapter {
+  id: string;                                     // 'codeforces'
+  fetchIndex(since?: Date): AsyncIterable&lt;ProblemRef&gt;;
+  fetchOne(ref: ProblemRef): Promise&lt;RawProblem&gt;;
+  readonly policy: 'metadata-only' | 'full';      // see HLD §8.7
+}</pre>
+<p>The normalizer maps <code>RawProblem</code> to our schema, generates a slug, and upserts on <code>(source.site, source.externalId)</code> so a re-run updates rather than duplicates. <code>policy: 'metadata-only'</code> adapters have their <code>statement</code> field dropped at the normalizer, not at the adapter — one enforcement point, not one per source.</p>
+<h3><span class="num">12.1</span>Testcase generation</h3>
+<pre>generator.py &lt;n&gt; &lt;seed&gt;   -&gt; stdout: one test input
+brute.&lt;lang&gt;              -&gt; reads that input, writes the reference output</pre>
+<p>Both run in the standard sandbox with a 10 s limit. The pipeline generates M cases, deduplicates by input hash, and stores the set with <code>testcaseSetVersion = sha256(sorted input hashes)</code>. Requiring the brute force to run in the same sandbox means a generator that hangs fails the import instead of the platform.</p>
+</section>
+<section id="s13">
+<h2><span class="num">13</span>Frontend</h2>
+<div class="tw"><table>
+<thead><tr>
+<th>Route</th>
+<th>Data</th>
+<th>Notes</th>
+</tr></thead>
+<tbody>
+<tr><td><code>/</code></td><td><code>GET /api/problems</code></td><td>Cursor pagination, filters in the URL query so a filtered list is shareable</td></tr>
+<tr><td><code>/problems/:slug</code></td><td>problem + samples</td><td>Monaco, language selector, Run and Submit</td></tr>
+<tr><td><code>/submissions/:id</code></td><td>SSE stream</td><td>Falls back to 2 s polling if SSE closes</td></tr>
+<tr><td><code>/contests/:id</code></td><td>WS room</td><td>Snapshot then deltas, §10.2</td></tr>
+<tr><td><code>/u/:username</code></td><td>profile</td><td></td></tr>
+</tbody>
+</table></div>
+<p><code>useSubmission(id)</code> is the one hook that matters: it opens SSE, reduces status transitions into local state, closes on terminal, and falls back to polling on error. Every other component reads its result. Submission state lives in exactly one place.</p>
+<p><strong>Editor buffer is persisted to <code>localStorage</code> per <code>(problemId, language)</code></strong> and restored on mount. Losing forty minutes of work to an accidental refresh is the single worst experience this product can deliver, and it costs four lines to prevent.</p>
+</section>
+<section id="s14">
+<h2><span class="num">14</span>Configuration</h2>
+<div class="tw"><table>
+<thead><tr>
+<th>Variable</th>
+<th>Service</th>
+<th>Default</th>
+<th>Notes</th>
+</tr></thead>
+<tbody>
+<tr><td><code>MONGO_URI</code></td><td>api, worker, projector</td><td>—</td><td></td></tr>
+<tr><td><code>REDIS_URL</code></td><td>all</td><td>—</td><td></td></tr>
+<tr><td><code>KAFKA_BROKERS</code></td><td>api, worker, projector</td><td>—</td><td>V2+</td></tr>
+<tr><td><code>S3_ENDPOINT</code> <code>S3_BUCKET</code></td><td>api, worker</td><td>MinIO in dev</td><td></td></tr>
+<tr><td><code>JWT_SECRET</code></td><td>api</td><td>—</td><td>Rotating it invalidates every access token, which is the point</td></tr>
+<tr><td><code>JUDGE_SLOTS</code></td><td>worker</td><td><code>cores - 2</code></td><td></td></tr>
+<tr><td><code>JUDGE_CPUSET_BASE</code></td><td>worker</td><td><code>2</code></td><td>First core the slots may use</td></tr>
+<tr><td><code>SANDBOX_IMAGE_TAG</code></td><td>worker</td><td>pinned digest</td><td>Never <code>latest</code></td></tr>
+<tr><td><code>AI_PROVIDER</code> <code>AI_API_KEY</code></td><td>ai-mentor</td><td>—</td><td></td></tr>
+<tr><td><code>AI_DAILY_TOKEN_CAP</code></td><td>ai-mentor</td><td><code>150000</code></td><td>Per user</td></tr>
+<tr><td><code>LOG_LEVEL</code></td><td>all</td><td><code>info</code></td><td></td></tr>
+</tbody>
+</table></div>
+<p>Every service validates its own env with zod at boot and <strong>exits non-zero on a missing variable</strong>. A service that starts with a missing config and fails on the first request fails in production instead of in the deploy.</p>
+</section>
+<section id="s15">
+<h2><span class="num">15</span>Error Envelope and Codes</h2>
+<pre>{ "error": { "code": "RATE_LIMITED", "message": "Too many submissions.",
+             "details": { "retryAfterSec": 4 }, "requestId": "01J..." } }</pre>
+<div class="tw"><table>
+<thead><tr>
+<th>Code</th>
+<th>HTTP</th>
+<th>Meaning</th>
+</tr></thead>
+<tbody>
+<tr><td><code>VALIDATION_FAILED</code></td><td>422</td><td><code>details.fields</code> carries zod paths</td></tr>
+<tr><td><code>UNAUTHENTICATED</code></td><td>401</td><td>Missing or expired access token</td></tr>
+<tr><td><code>TOKEN_REUSE_DETECTED</code></td><td>401</td><td>Family revoked, re-login required</td></tr>
+<tr><td><code>FORBIDDEN</code></td><td>403</td><td>Authenticated, wrong role or not the owner</td></tr>
+<tr><td><code>NOT_FOUND</code></td><td>404</td><td></td></tr>
+<tr><td><code>CONTEST_NOT_RUNNING</code></td><td>409</td><td>Submit outside the window</td></tr>
+<tr><td><code>RATE_LIMITED</code></td><td>429</td><td><code>Retry-After</code> header set</td></tr>
+<tr><td><code>AI_DISABLED_IN_CONTEST</code></td><td>409</td><td></td></tr>
+<tr><td><code>AI_BUDGET_EXCEEDED</code></td><td>429</td><td>Resets at UTC midnight</td></tr>
+<tr><td><code>INTERNAL</code></td><td>500</td><td>Message is always generic; detail goes to logs only</td></tr>
+</tbody>
+</table></div>
+<p><code>requestId</code> appears in the response, in every log line, and as the OTel trace id. A user reporting a bug can paste one string that finds everything.</p>
+</section>
+<section id="s16">
+<h2><span class="num">16</span>Concurrency and Failure Edge Cases</h2>
+<p>The section to re-read before saying a module is done.</p>
+<div class="tw"><table>
+<thead><tr>
+<th>Scenario</th>
+<th>Handling</th>
+</tr></thead>
+<tbody>
+<tr><td>Two workers lease the same job after a lock expiry</td><td>CAS on status; the loser's <code>matchedCount</code> is 0 and it exits silently</td></tr>
+<tr><td>Worker dies after the DB write, before the Kafka emit</td><td>Impossible — same transaction, §7.6. The relay republishes</td></tr>
+<tr><td>Relay publishes, then dies before marking <code>sentAt</code></td><td>Duplicate event; consumer dedups on <code>eventId</code>, §9.2</td></tr>
+<tr><td>Submission row created, enqueue then fails</td><td>Sweeper re-enqueues after 5 min, §7.5</td></tr>
+<tr><td>Contest ends while a submission is being judged</td><td>Counted if <code>submittedAt &lt;= endAt</code>. Judging time is ours, not the contestant's</td></tr>
+<tr><td>Test cases edited during a live contest</td><td><code>testcaseSetVersion</code> bumps; in-flight judgements complete on the old set and are automatically re-queued for rejudge at low priority</td></tr>
+<tr><td>Same code submitted twice</td><td>Compile cache hits, but it is judged again — the user may be checking timing variance</td></tr>
+<tr><td>Rejudge of a whole problem</td><td>Enqueue every submission at priority 9; contest boards rebuild from the topic afterwards</td></tr>
+<tr><td>Redis is flushed mid-contest</td><td>Projector replays <code>submission.judged</code> from the contest-start offset, §9.2</td></tr>
+<tr><td>Redis is down at login</td><td>Rate limiter fails open; login still works, §4.3</td></tr>
+<tr><td>A worker's clock is wrong</td><td>Never consulted. Timings come from the cgroup, ordering from Kafka offsets</td></tr>
+<tr><td>User deletes their account mid-contest</td><td>Soft delete. Submissions and standings are contest records and are retained, anonymized</td></tr>
+<tr><td>Docker daemon dies on a worker</td><td>Health check fails, the node drains, in-flight jobs redeliver elsewhere</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="s17">
+<h2><span class="num">17</span>Corrections to the HLD</h2>
+<p>Detailed design surfaced two places where the HLD was wrong. <strong>Both have since been applied to the HLD</strong>, which now states sandbox guarantees rather than flags; the flag list in §6.4 is authoritative.</p>
+<h3><span class="num">17.1</span><code>--rm</code> and cgroup metrics are mutually exclusive</h3>
+<p>HLD §10.6 shows <code>docker run --rm</code> and HLD §9.5 says CPU time is read from the cgroup after exit. Both cannot be true: <code>--rm</code> deletes the container and its cgroup the instant it exits, so there is nothing left to read.</p>
+<p><strong>Resolution.</strong> Drop <code>--rm</code>. Use the explicit lifecycle in §6.1 — <code>create</code>, <code>start</code>, <code>wait</code>, read <code>cpu.stat</code> and <code>memory.peak</code>, then <code>docker rm -f</code> in a <code>finally</code>. Removal is the worker's responsibility, not Docker's.</p>
+<pre>/sys/fs/cgroup/system.slice/docker-&lt;containerId&gt;.scope/cpu.stat      -&gt; usage_usec
+/sys/fs/cgroup/system.slice/docker-&lt;containerId&gt;.scope/memory.peak   -&gt; bytes</pre>
+<p>Requires cgroup v2, which is the default on every current Linux distribution.</p>
+<h3><span class="num">17.2</span>Timing on macOS development machines is approximate</h3>
+<p>Docker Desktop runs containers inside a VM, so those cgroup paths are not reachable from the host. On macOS the sandbox falls back to wall-clock timing and the <code>OOMKilled</code> flag from <code>docker inspect</code>.</p>
+<p><strong>Consequence:</strong> <code>TLE</code> and <code>MLE</code> verdicts are indicative, not authoritative, in local development. The golden-verdict suite (HLD §13) must therefore run in Linux CI, not on a developer's laptop, or timing-sensitive cases will pass locally and fail in CI — or worse, the reverse.</p>
+</section>
+<section id="s18">
+<h2><span class="num">18</span>Build Order</h2>
+<p>Each row is done when its tests pass and the next row can depend on it.</p>
+<div class="tw"><table>
+<thead><tr>
+<th>#</th>
+<th>Module</th>
+<th>Done when</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td><code>contracts</code></td><td>Types compile, zod schemas round-trip</td></tr>
+<tr><td>2</td><td><code>db</code> + migrations</td><td>Indexes exist, <code>explain()</code> confirms each query in §3.1 uses one</td></tr>
+<tr><td>3</td><td><code>sandbox</code></td><td>Fork bomb → <code>RE</code>, infinite loop → <code>TLE</code>, 1 GB alloc → <code>MLE</code>, network call fails</td></tr>
+<tr><td>4</td><td>Comparators</td><td>Every row of the §7.3 edge case table is a passing test</td></tr>
+<tr><td>5</td><td><code>api</code> auth + problems</td><td>Reuse detection revokes a family; rate limiter is atomic under 100 parallel requests</td></tr>
+<tr><td>6</td><td><code>queue</code> + <code>judge-worker</code></td><td>A submission goes <code>QUEUED → AC</code> end to end</td></tr>
+<tr><td>7</td><td>Outbox + relay</td><td>Kill the worker between write and publish; the event still arrives</td></tr>
+<tr><td>8</td><td><code>events</code> + <code>projector</code></td><td>Replay from offset 0 reproduces a board byte for byte</td></tr>
+<tr><td>9</td><td>SSE + WebSocket</td><td>Standings survive a dropped delta via the <code>seq</code> gap check</td></tr>
+<tr><td>10</td><td><code>ai-mentor</code> modes 1, 2, 5, 6</td><td>Leak guard blocks a pasted full solution</td></tr>
+<tr><td>11</td><td>Modes 3 and 4</td><td>Tracer output is real; fitter returns <code>INCONCLUSIVE</code> on noise</td></tr>
+<tr><td>12</td><td><code>ingestor</code></td><td>Re-running an import updates rather than duplicates</td></tr>
+</tbody>
+</table></div>
+<p>Rows 3 and 4 before row 6 is the important ordering. A judge built on an unverified sandbox produces verdicts nobody can trust, and every bug after that looks like a judge bug.</p>
+</section>
+</main>
+</div>
+</div>

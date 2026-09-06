@@ -1,0 +1,959 @@
+<title>Online Judge Design Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ground:#F5F7F4; --surface:#FFFFFF; --panel:#ECF0EC; --panel-2:#E3E9E4;
+  --ink:#141A17; --ink-2:#525C56; --ink-3:#87908A;
+  --rule:#D6DDD7; --rule-strong:#BCC6BE;
+  --accent:#14567F; --accent-soft:#E2ECF3; --accent-ink:#0E4361;
+  --ac:#1B7A46; --wa:#AF2A20; --tle:#8A5600; --ie:#584C93;
+  --danger-wash:rgba(175,42,32,.045); --danger-edge:rgba(175,42,32,.28);
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E110F; --surface:#151916; --panel:#1B211D; --panel-2:#222925;
+    --ink:#E4E9E5; --ink-2:#9AA49D; --ink-3:#6C766F;
+    --rule:#28302B; --rule-strong:#3A443D;
+    --accent:#6DB2DC; --accent-soft:#14293A; --accent-ink:#9FCEEB;
+    --ac:#5FC98D; --wa:#EF8B81; --tle:#DCA956; --ie:#A79ADD;
+    --danger-wash:rgba(239,139,129,.05); --danger-edge:rgba(239,139,129,.26);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E110F; --surface:#151916; --panel:#1B211D; --panel-2:#222925;
+  --ink:#E4E9E5; --ink-2:#9AA49D; --ink-3:#6C766F;
+  --rule:#28302B; --rule-strong:#3A443D;
+  --accent:#6DB2DC; --accent-soft:#14293A; --accent-ink:#9FCEEB;
+  --ac:#5FC98D; --wa:#EF8B81; --tle:#DCA956; --ie:#A79ADD;
+  --danger-wash:rgba(239,139,129,.05); --danger-edge:rgba(239,139,129,.26);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1220px; margin:0 auto; padding:0 28px 96px}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--rule-strong); padding:52px 0 26px; margin-bottom:40px}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+}
+h1{
+  font-family:var(--serif); font-weight:600; font-size:clamp(34px,5vw,52px);
+  line-height:1.08; letter-spacing:-.015em; margin:0 0 14px; text-wrap:balance;
+}
+.deck{font-size:18px; line-height:1.55; color:var(--ink-2); max-width:60ch; margin:0 0 30px}
+.meta{
+  display:grid; grid-template-columns:repeat(5,1fr);
+  gap:1px; background:var(--rule); border:1px solid var(--rule); margin-bottom:26px;
+}
+.meta div{background:var(--ground); padding:11px 14px}
+.meta dt{
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 3px;
+}
+.meta dd{margin:0; font-size:14px; font-weight:500}
+.legend{display:flex; flex-wrap:wrap; gap:7px; align-items:center}
+.legend .lb{
+  font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); margin-right:4px;
+}
+
+/* ---------- verdict chips: the subject's own vocabulary ---------- */
+.v{
+  font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.06em;
+  padding:2.5px 8px; border:1px solid; border-radius:2px; white-space:nowrap;
+  display:inline-block; line-height:1.4;
+}
+.v-ac{color:var(--ac); border-color:var(--ac)}
+.v-wa{color:var(--wa); border-color:var(--wa)}
+.v-tle{color:var(--tle); border-color:var(--tle)}
+.v-ie{color:var(--ie); border-color:var(--ie)}
+.v-n{color:var(--ink-2); border-color:var(--rule-strong)}
+
+/* ---------- layout ---------- */
+.cols{display:grid; grid-template-columns:212px minmax(0,1fr); gap:56px; align-items:start}
+nav.toc{position:sticky; top:24px}
+nav.toc .lb{
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); display:block; padding-bottom:9px; border-bottom:1px solid var(--rule);
+  margin-bottom:9px;
+}
+nav.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px}
+nav.toc a{
+  display:grid; grid-template-columns:22px 1fr; gap:6px; align-items:baseline;
+  padding:3px 6px 3px 0; text-decoration:none; color:var(--ink-2); font-size:13.5px;
+  line-height:1.35; border-radius:2px;
+}
+nav.toc a span{font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+nav.toc a:hover{color:var(--accent); background:var(--accent-soft)}
+nav.toc a:hover span{color:var(--accent)}
+nav.toc a:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+main{min-width:0; max-width:76ch}
+section{margin-bottom:60px; scroll-margin-top:20px}
+h2{
+  font-family:var(--serif); font-weight:600; font-size:27px; line-height:1.2;
+  letter-spacing:-.01em; margin:0 0 6px; text-wrap:balance;
+  display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:baseline;
+}
+h2 .num{
+  font-family:var(--mono); font-size:13px; font-weight:500; color:var(--accent);
+  letter-spacing:.02em;
+}
+h2::after{content:""; grid-column:1/-1; height:1px; background:var(--rule-strong); margin-top:12px}
+h3{
+  font-family:var(--sans); font-weight:600; font-size:15.5px; letter-spacing:-.005em;
+  margin:32px 0 8px; color:var(--ink);
+}
+h3 .num{font-family:var(--mono); font-size:12.5px; font-weight:500; color:var(--ink-3); margin-right:8px}
+p{margin:0 0 14px; max-width:68ch}
+ul,ol.body{margin:0 0 14px; padding-left:20px; max-width:68ch}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+strong{font-weight:600}
+code{
+  font-family:var(--mono); font-size:.875em; background:var(--panel);
+  padding:1px 4px; border-radius:2px; color:var(--ink);
+}
+
+/* ---------- callouts ---------- */
+.thesis{
+  border-left:3px solid var(--accent); background:var(--accent-soft);
+  padding:16px 20px; margin:0 0 20px;
+}
+.thesis p{margin:0; font-family:var(--serif); font-size:19px; line-height:1.4; color:var(--accent-ink); font-weight:500}
+.note{
+  border:1px solid var(--rule-strong); border-left:3px solid var(--tle);
+  background:var(--surface); padding:14px 18px; margin:0 0 18px;
+}
+.note p{margin:0 0 8px} .note p:last-child{margin:0}
+.note .lb{
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--tle); display:block; margin-bottom:6px; font-weight:600;
+}
+.keypt{
+  border-top:1px solid var(--rule-strong); border-bottom:1px solid var(--rule-strong);
+  padding:14px 0; margin:20px 0;
+}
+.keypt p{margin:0; font-size:15px}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto; margin:0 0 20px; border:1px solid var(--rule)}
+table{border-collapse:collapse; width:100%; font-size:13.5px; background:var(--surface)}
+th{
+  font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--ink-2); text-align:left;
+  padding:9px 13px; border-bottom:1px solid var(--rule-strong); background:var(--panel);
+  white-space:nowrap; vertical-align:bottom;
+}
+td{padding:10px 13px; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.5}
+tr:last-child td{border-bottom:none}
+td.n{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink-2)}
+td.k{font-family:var(--mono); font-size:12.5px; white-space:nowrap}
+td.c{font-family:var(--mono); font-size:12.5px; color:var(--accent); white-space:nowrap}
+
+/* ---------- code ---------- */
+pre{
+  font-family:var(--mono); font-size:12.5px; line-height:1.62; background:var(--panel);
+  border:1px solid var(--rule); padding:16px 18px; overflow-x:auto; margin:0 0 20px;
+  color:var(--ink);
+}
+pre .cm{color:var(--ink-3)}
+pre b{color:var(--accent); font-weight:600}
+
+/* ---------- figures ---------- */
+figure{margin:0 0 24px; max-width:100%}
+figure .fw{overflow-x:auto; border:1px solid var(--rule); background:var(--surface); padding:18px 14px}
+figure svg{display:block; max-width:100%; height:auto; margin:0 auto; color:var(--ink-2)}
+figcaption{
+  font-size:12.5px; color:var(--ink-2); margin-top:9px; line-height:1.5; max-width:68ch;
+}
+figcaption b{
+  font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:600; margin-right:8px;
+}
+svg text{font-family:var(--mono); fill:currentColor}
+svg .bx{fill:var(--surface); stroke:currentColor; stroke-width:1.1}
+svg .bxf{fill:var(--panel); stroke:currentColor; stroke-width:1.1}
+svg .ln{stroke:currentColor; stroke-width:1.1; fill:none}
+svg .dsh{stroke:currentColor; stroke-width:1.1; fill:none; stroke-dasharray:4 3}
+svg .ttl{font-size:12px; font-weight:500; fill:var(--ink)}
+svg .sub{font-size:10px; fill:var(--ink-3)}
+svg .lbl{font-size:10px; fill:var(--ink-2)}
+svg .band{font-size:10px; letter-spacing:.12em; fill:var(--ink-3); font-weight:600}
+svg .acc{stroke:var(--accent); stroke-width:1.8; fill:none}
+svg .acct{font-size:10px; fill:var(--accent); font-weight:500}
+
+/* ---------- modes list ---------- */
+.modes{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin:0 0 20px}
+.mode{background:var(--surface); padding:14px 16px; display:grid; grid-template-columns:26px 1fr; gap:12px}
+.mode .mn{font-family:var(--mono); font-size:12px; color:var(--ink-3); padding-top:2px}
+.mode h4{margin:0 0 2px; font-size:14.5px; font-weight:600}
+.mode .stage{font-size:12.5px; color:var(--ink-2); font-style:italic; margin:0 0 6px}
+.mode p{margin:0; font-size:13.5px; line-height:1.5}
+.mode.hero{background:var(--accent-soft)}
+.mode.hero .mn{color:var(--accent)}
+.grounded{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); border:1px solid var(--accent); padding:1px 5px; margin-left:7px;
+  border-radius:2px; white-space:nowrap; vertical-align:1px;
+}
+
+footer{border-top:1px solid var(--rule-strong); margin-top:24px; padding-top:20px; font-size:13px; color:var(--ink-2)}
+footer p{max-width:68ch}
+
+@media (max-width:860px){
+  .meta{grid-template-columns:repeat(2,1fr)}
+  .meta div:last-child{grid-column:1/-1}
+}
+@media (max-width:940px){
+  .cols{grid-template-columns:1fr; gap:0}
+  nav.toc{position:static; margin-bottom:36px}
+  nav.toc ol{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:0 18px}
+  main{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Technical Specification · Draft v0.2</p>
+  <h1>Online Judge Design Spec</h1>
+  <p class="deck">A system that accepts untrusted source code from strangers, executes it safely, judges it deterministically, and survives the sixty seconds when everyone submits at once — designed end to end before a line of code is written.</p>
+  <dl class="meta">
+    <div><dt>Author</dt><dd>Meet Modi</dd></div>
+    <div><dt>Status</dt><dd>Revised after review</dd></div>
+    <div><dt>Date</dt><dd>5 Sep 2026</dd></div>
+    <div><dt>Scope</dt><dd>Level 1 → Level 4</dd></div>
+    <div><dt>Companion</dt><dd>Online Judge LLD</dd></div>
+  </dl>
+  <div class="legend">
+    <span class="lb">Verdict vocabulary</span>
+    <span class="v v-ac">AC</span><span class="v v-wa">WA</span><span class="v v-tle">TLE</span>
+    <span class="v v-tle">MLE</span><span class="v v-wa">RE</span><span class="v v-n">CE</span>
+    <span class="v v-n">OLE</span><span class="v v-ie">IE</span>
+  </div>
+</header>
+
+<div class="cols">
+
+<nav class="toc">
+  <span class="lb">Contents</span>
+  <ol>
+    <li><a href="#s1"><span>01</span>Problem Statement</a></li>
+    <li><a href="#s2"><span>02</span>Overview</a></li>
+    <li><a href="#s3"><span>03</span>Scope</a></li>
+    <li><a href="#s4"><span>04</span>Users &amp; Journeys</a></li>
+    <li><a href="#s5"><span>05</span>Roadmap L1 → L4</a></li>
+    <li><a href="#s6"><span>06</span>Requirements</a></li>
+    <li><a href="#s7"><span>07</span>Capacity Model</a></li>
+    <li><a href="#s8"><span>08</span>High Level Design</a></li>
+    <li><a href="#s9"><span>09</span>Challenges</a></li>
+    <li><a href="#s10"><span>10</span>Interface Summary</a></li>
+    <li><a href="#s11"><span>11</span>Security Posture</a></li>
+    <li><a href="#s12"><span>12</span>Decisions</a></li>
+    <li><a href="#s13"><span>13</span>Deployment</a></li>
+    <li><a href="#s14"><span>14</span>Testing</a></li>
+    <li><a href="#s15"><span>15</span>Observability</a></li>
+    <li><a href="#s16"><span>16</span>Risks</a></li>
+    <li><a href="#s17"><span>17</span>Milestones</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="s1">
+  <h2><span class="num">01</span>Problem Statement</h2>
+  <p>A coding challenge is a competitive event in which participants solve algorithmic problems within a fixed timeframe. Solutions are submitted as source code, evaluated automatically against concealed test cases, and scored on the results.</p>
+  <p>An <strong>Online Judge</strong> is the platform that hosts these challenges. It must accept untrusted source code from thousands of strangers, execute it safely, evaluate it deterministically, and return a trustworthy verdict — while staying up during the exact minute everyone submits at once.</p>
+  <p>Two things make this hard, and they are the whole project:</p>
+  <ol class="body">
+    <li><strong>You are running arbitrary code from the internet on your own machines.</strong> Every submission is a potential fork bomb, an <code>rm -rf /</code>, a crypto miner, or an attempt to read the test case files sitting next to it.</li>
+    <li><strong>Load is not uniform.</strong> An online judge is idle for twenty-three hours and then takes its entire day's traffic in the final ninety seconds of a contest.</li>
+  </ol>
+</section>
+
+<section id="s2">
+  <h2><span class="num">02</span>Overview</h2>
+  <div class="thesis"><p>Online Judge = Online Compiler + Processing Logic</p></div>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Input</th><th>Output</th><th>Semantics</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Online Compiler</strong></td><td>code + <em>optional</em> custom stdin</td><td>raw stdout / stderr / exit code</td><td>Synchronous. No judgement.<br><span class="v v-n">POST /run</span></td></tr>
+      <tr><td><strong>Online Judge</strong></td><td>code + <code>problem_id</code></td><td>a <strong>verdict</strong></td><td>Asynchronous. Same executor, N hidden test cases, plus comparison.<br><span class="v v-n">POST /submit</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>The judge is the compiler, plus a comparison loop, plus a scoring model. Build the compiler correctly and the judge is a thin layer on top; build it badly and no amount of judge logic saves you.</p>
+  <div class="keypt"><p><strong>What makes this build different.</strong> Most online judge clones stop at “submit → verdict”. This one adds an AI Mentor whose answers are <strong>grounded in real execution, not an LLM's guess</strong> — the Dry-Run Simulator traces your code for real, and the Complexity Auditor measures your runtime at N = 10², 10³, 10⁴, 10⁵ and fits the curve. The execution plane built for judging becomes the mentor's evidence source. See §8.6.</p></div>
+</section>
+
+<section id="s3">
+  <h2><span class="num">03</span>Scope</h2>
+  <p><strong>In scope by end of Level 4:</strong> auth, problem catalogue, code editor, online compiler, sandboxed judging, contests, live leaderboard, profiles, problem ingestion, AI Mentor (six modes), deployment, load testing, observability.</p>
+  <p><strong>Explicitly out of scope:</strong> plagiarism detection (MOSS), payments, mobile apps, collaborative editing, video editorials, and writing our own compiler — we shell out to <code>g++</code>, <code>javac</code> and <code>python3</code>.</p>
+</section>
+
+<section id="s4">
+  <h2><span class="num">04</span>Users &amp; Core Journeys</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Persona</th><th>Core journey</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Learner</strong></td><td>Browse problems → open one → write code → <em>Run</em> with custom input → <em>Submit</em> → read verdict → get unstuck via the AI Mentor</td></tr>
+      <tr><td><strong>Contestant</strong></td><td>Join contest → solve under time pressure → watch live standings → review after</td></tr>
+      <tr><td><strong>Setter / Admin</strong></td><td>Author or ingest a problem → attach or generate test cases → set limits → publish</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s5">
+  <h2><span class="num">05</span>Roadmap: Level 1 → Level 4</h2>
+  <p>The spine of the project. Each version is independently shippable and demoable — nothing from V3 starts before V2 is deployed.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Ver</th><th>Level</th><th>Theme</th><th>What lands</th></tr></thead>
+    <tbody>
+      <tr><td class="c">V0</td><td class="n">L1–L2</td><td>Skeleton</td><td>Express + Mongo + React. JWT auth. Problem CRUD. Monaco editor. <code>POST /run</code> executing on the host via <code>child_process</code>. Runs on <code>localhost</code> only — <strong>V0 is never deployed</strong>, and the host executor is unreachable outside local development by four independent guards (§11.5).</td></tr>
+      <tr><td class="c">V1</td><td class="n">L3</td><td>Product</td><td>Docker sandbox replaces host execution. Test cases and real verdicts. <code>POST /submit</code> goes async through a Redis/BullMQ work queue with a separate worker. Contests, history, profile. One <code>docker-compose</code> stack on a single EC2 box.</td></tr>
+      <tr><td class="c">V2</td><td class="n">L4a</td><td>Distributed</td><td>Kafka as the event backbone. Leaderboard becomes an event-sourced Redis projection with WebSocket push. Test cases move to S3. Worker fleet autoscales on queue depth. Gateway, rate limiting, OpenTelemetry. Ingestion service.</td></tr>
+      <tr><td class="c">V3</td><td class="n">L4b</td><td>Intelligence</td><td>AI Mentor: six modes, execution-grounded, with a solution-leak guard, response cache and per-user token budget.</td></tr>
+      <tr><td class="c">V4</td><td class="n">L4c</td><td>Hardening</td><td>Load tests, chaos drills, golden-verdict regression suite, blue/green deploys, runbooks, cost model.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s6">
+  <h2><span class="num">06</span>Non-Functional Requirements</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Requirement</th><th>Target</th></tr></thead>
+    <tbody>
+      <tr><td>Verdict latency at contest peak</td><td class="n">p50 &lt; 5 s · p95 &lt; 30 s · p99 &lt; 60 s</td></tr>
+      <tr><td><code>POST /submit</code> API response</td><td class="n">&lt; 200 ms — it only enqueues, it never judges</td></tr>
+      <tr><td><code>POST /run</code> round trip</td><td class="n">&lt; 8 s (5 s execution cap + overhead)</td></tr>
+      <tr><td>Availability</td><td>99.5% overall. <strong>Submission ingestion must survive a total judge-fleet outage</strong> — the queue absorbs, verdicts drain later.</td></tr>
+      <tr><td>Verdict correctness</td><td>100% deterministic and reproducible for the same (code, test case, limits)</td></tr>
+      <tr><td>Isolation</td><td>No submission reaches the network, the host filesystem, another submission, or the test case store</td></tr>
+      <tr><td>Fairness</td><td>Timing measured as <strong>CPU time on a dedicated core</strong>, never wall-clock under contention</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s7">
+  <h2><span class="num">07</span>Capacity Model</h2>
+  <p>Sizing is done for one realistic contest, not a hand-wave.</p>
+<pre><span class="cm">Design target        : 10,000 registered users, 2,000 concurrent in a 2-hour contest</span>
+Submissions          : 2,000 users x 8 submissions          = 16,000 submissions
+Average rate         : 16,000 / 7,200 s                     ~ 2.2 submissions/s
+Peak (last 10 min)   : ~25% of volume in ~10% of the window ~ 5.5/s sustained, ~20/s spike
+
+<span class="cm">Cost of one judgement</span>
+  compile (C++, cached on repeat)                           ~ 0.6 s
+  20 test cases x ~0.15 s typical                           ~ 3.0 s
+  container start / teardown                                ~ 0.4 s
+  ----------------------------------------------------------------------
+  <b>p50 ~ 4 s</b>     worst case (all 20 cases hit a 1 s limit)  ~ 25 s
+
+<span class="cm">Concurrency needed — Little's Law, L = lambda x W</span>
+  steady : 5.5/s x 4 s   ~  22 judge slots
+  spike  : 20/s  x 4 s   ~  80 judge slots
+
+<span class="cm">Slot footprint: 1 vCPU + 256 MB. A 16-vCPU node hosts ~14 slots.</span>
+  <b>=&gt; 2 worker nodes steady, 6-8 at peak. Autoscale on queue depth, not CPU.</b></pre>
+  <div class="keypt"><p><strong>The queue is what makes this work.</strong> We do not size the fleet for the spike. We size for the steady rate, absorb the spike in the queue, and hold the p95 by draining. That is the entire answer to the thundering-herd problem.</p></div>
+  <h3>Validating these assumptions</h3>
+  <p>Every number above is a planning hypothesis derived from guesses about user behaviour. <strong>None of it is treated as settled.</strong> The computed fleet size sets the initial autoscaling bounds — it is not a fixed capacity, and it is not a commitment.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Assumption</th><th>Value used</th><th>Replaced by</th><th>Sensitivity</th></tr></thead>
+    <tbody>
+      <tr><td>Submissions per user per contest</td><td class="n">8</td><td>Beta contest telemetry</td><td>Linear on fleet size</td></tr>
+      <tr><td>Median judge duration</td><td class="n">4 s</td><td>k6 run over the golden submission mix</td><td><strong>Linear, and the dominant term</strong></td></tr>
+      <tr><td>Test cases per problem</td><td class="n">20</td><td>Catalogue statistics at ~100 problems</td><td>Linear on judge duration</td></tr>
+      <tr><td>Container start overhead</td><td class="n">400 ms</td><td>Measured on the target instance type</td><td>Decides whether the warm pool is worth it (§12)</td></tr>
+      <tr><td>Peak concentration</td><td class="n">25% in 10%</td><td>Contest telemetry</td><td>Affects queue depth and p95, not steady fleet size</td></tr>
+      <tr><td>Slots per node</td><td class="n">cores − 2</td><td>Load test with timing-variance checks</td><td>If timings degrade under load, fewer slots per node</td></tr>
+    </tbody>
+  </table></div>
+  <p>The V4 load test (§14) exists to replace this table's left column with measurements. <strong>Its deliverable is a revised §7, not a pass/fail.</strong> Until that revision exists, treat the worker count here as an order-of-magnitude estimate that happens to have arithmetic behind it.</p>
+</section>
+
+<section id="s8">
+  <h2><span class="num">08</span>High Level Design</h2>
+
+  <h3><span class="num">8.1</span>Architecture</h3>
+  <p>The system splits into three planes with different trust levels, different scaling curves, and different failure blast radii.</p>
+
+  <figure>
+   <div class="fw">
+    <svg viewBox="0 0 960 684" role="img" aria-label="Three-plane architecture: a trusted control plane holding the API, MongoDB, Redis, a work queue and Kafka; a zero-trust execution plane holding the Docker judge worker fleet, the leaderboard projector, Redis sorted set and S3; and an intelligence plane holding the AI mentor, which reuses the judge sandbox, and the problem ingestor. Verdict events flow through Kafka to the leaderboard projection and back to the browser over WebSocket.">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+        </marker>
+        <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <!-- plane bands -->
+      <rect x="8" y="112" width="944" height="222" fill="var(--panel)" opacity=".5"/>
+      <rect x="8" y="342" width="944" height="196" fill="var(--danger-wash)" stroke="var(--danger-edge)" stroke-dasharray="5 4"/>
+      <rect x="8" y="546" width="944" height="118" fill="var(--panel)" opacity=".5"/>
+      <text class="band" x="24" y="134">CONTROL PLANE · TRUSTED</text>
+      <text class="band" x="24" y="364" fill="var(--wa)">EXECUTION PLANE · ZERO TRUST</text>
+      <text class="band" x="24" y="568">INTELLIGENCE PLANE</text>
+
+      <!-- websocket return channel -->
+      <polyline class="dsh" points="620,476 900,476 900,20 115,20 115,44" marker-end="url(#ah)"/>
+      <text class="lbl" x="560" y="13" text-anchor="middle">WebSocket · live standings pushed back to the browser</text>
+
+      <!-- top row -->
+      <rect class="bx" x="40" y="44" width="150" height="44"/>
+      <text class="ttl" x="115" y="63" text-anchor="middle">Browser</text>
+      <text class="sub" x="115" y="77" text-anchor="middle">React · Monaco</text>
+
+      <rect class="bx" x="250" y="44" width="200" height="44"/>
+      <text class="ttl" x="350" y="63" text-anchor="middle">API Gateway</text>
+      <text class="sub" x="350" y="77" text-anchor="middle">TLS · authn · rate limit</text>
+
+      <line class="ln" x1="190" y1="66" x2="244" y2="66" marker-end="url(#ah)"/>
+      <text class="lbl" x="217" y="36" text-anchor="middle">HTTPS</text>
+      <line class="ln" x1="350" y1="88" x2="350" y2="144" marker-end="url(#ah)"/>
+
+      <!-- control plane -->
+      <rect class="bxf" x="250" y="150" width="200" height="62"/>
+      <text class="ttl" x="350" y="174" text-anchor="middle">API service · Express</text>
+      <text class="sub" x="350" y="190" text-anchor="middle">auth · problems · submissions</text>
+      <text class="sub" x="350" y="203" text-anchor="middle">contests · reads</text>
+
+      <rect class="bx" x="500" y="146" width="140" height="30"/>
+      <text class="ttl" x="570" y="165" text-anchor="middle">MongoDB</text>
+      <rect class="bx" x="500" y="182" width="140" height="30"/>
+      <text class="ttl" x="570" y="201" text-anchor="middle">Redis · cache</text>
+      <line class="ln" x1="450" y1="161" x2="494" y2="161" marker-end="url(#ah)"/>
+      <line class="ln" x1="450" y1="197" x2="494" y2="197" marker-end="url(#ah)"/>
+
+      <rect class="bxf" x="190" y="258" width="190" height="56"/>
+      <text class="ttl" x="285" y="281" text-anchor="middle">Work queue</text>
+      <text class="sub" x="285" y="296" text-anchor="middle">Redis / BullMQ · dispatch</text>
+
+      <rect class="bxf" x="440" y="258" width="250" height="56"/>
+      <text class="ttl" x="565" y="281" text-anchor="middle">Kafka · event log</text>
+      <text class="sub" x="565" y="296" text-anchor="middle">replayable fan-out · audit</text>
+
+      <line class="ln" x1="305" y1="212" x2="288" y2="252" marker-end="url(#ah)"/>
+      <text class="lbl" x="278" y="240" text-anchor="end">enqueue job</text>
+      <line class="ln" x1="400" y1="212" x2="470" y2="252" marker-end="url(#ah)"/>
+      <text class="lbl" x="418" y="238">emit event</text>
+
+      <!-- execution plane -->
+      <rect class="bx" x="190" y="380" width="200" height="96"/>
+      <text class="ttl" x="290" y="402" text-anchor="middle">Judge worker fleet</text>
+      <rect x="206" y="414" width="168" height="48" fill="var(--panel-2)" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2"/>
+      <text class="ttl" x="290" y="434" text-anchor="middle">Docker sandbox</text>
+      <text class="sub" x="290" y="450" text-anchor="middle">net=none · caps dropped</text>
+
+      <line class="ln" x1="285" y1="314" x2="285" y2="374" marker-end="url(#ah)"/>
+      <text class="lbl" x="295" y="348">lease · 90 s</text>
+
+      <rect class="bx" x="440" y="380" width="180" height="52"/>
+      <text class="ttl" x="530" y="401" text-anchor="middle">Leaderboard</text>
+      <text class="ttl" x="530" y="417" text-anchor="middle">projector</text>
+
+      <rect class="bx" x="660" y="380" width="150" height="52"/>
+      <text class="ttl" x="735" y="401" text-anchor="middle">Analytics</text>
+      <text class="ttl" x="735" y="417" text-anchor="middle">&amp; audit</text>
+
+      <line class="ln" x1="530" y1="314" x2="530" y2="374" marker-end="url(#ah)"/>
+      <text class="lbl" x="540" y="348">submission.judged</text>
+      <line class="ln" x1="640" y1="314" x2="720" y2="374" marker-end="url(#ah)"/>
+
+      <line class="ln" x1="392" y1="398" x2="466" y2="320" marker-end="url(#ah)"/>
+      <text class="lbl" x="400" y="368">verdict</text>
+
+      <rect class="bx" x="440" y="456" width="180" height="40"/>
+      <text class="ttl" x="530" y="481" text-anchor="middle">Redis ZSET · standings</text>
+      <line class="ln" x1="530" y1="432" x2="530" y2="450" marker-end="url(#ah)"/>
+
+      <rect class="bx" x="190" y="496" width="200" height="34"/>
+      <text class="ttl" x="290" y="518" text-anchor="middle">S3 · code &amp; test cases</text>
+      <line class="ln" x1="290" y1="476" x2="290" y2="490" marker-end="url(#ah)"/>
+
+      <!-- intelligence plane -->
+      <rect class="bxf" x="190" y="584" width="200" height="56"/>
+      <text class="ttl" x="290" y="607" text-anchor="middle">AI Mentor service</text>
+      <text class="sub" x="290" y="622" text-anchor="middle">6 modes · leak guard</text>
+
+      <rect class="bxf" x="440" y="584" width="180" height="56"/>
+      <text class="ttl" x="530" y="607" text-anchor="middle">Ingestor</text>
+      <text class="sub" x="530" y="622" text-anchor="middle">adapters · normalizer</text>
+      <line class="ln" x1="620" y1="612" x2="690" y2="612" marker-end="url(#ah)"/>
+      <text class="lbl" x="698" y="616">problems</text>
+
+      <!-- the X-factor edge -->
+      <polyline class="acc" points="190,612 148,612 148,428 184,428" marker-end="url(#aha)"/>
+      <text class="acct" x="156" y="536">reuses the sandbox</text>
+      <text class="acct" x="156" y="549">for real traces</text>
+    </svg>
+   </div>
+   <figcaption><b>Fig 1</b>Untrusted code executes only inside the dashed zero-trust band; the control plane never compiles or runs anything. The accented edge is the project's differentiator — the AI Mentor borrows the same sandbox to produce evidence rather than guesses.</figcaption>
+  </figure>
+
+  <h3><span class="num">8.2</span>Why three planes</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Plane</th><th>Trust</th><th>Scales with</th><th>Failure impact</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Control</strong></td><td>Trusted</td><td>Users online</td><td>Site down — but no data loss</td></tr>
+      <tr><td><strong>Execution</strong></td><td><strong>Zero trust</strong> — hostile code runs here</td><td>Submissions/sec</td><td>Verdicts delayed, queue keeps filling. Site stays up.</td></tr>
+      <tr><td><strong>Intelligence</strong></td><td>Trusted code, untrusted output</td><td>AI requests + token budget</td><td>Mentor unavailable. Judging unaffected.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="keypt"><p>Keeping these separate is the single most important structural decision. <strong>The API server must never compile or execute code.</strong> If it does, one fork bomb takes down the website.</p></div>
+  <p>The second structural rule is that dependencies point <em>inward</em>, never outward. The control plane depends on nothing in the intelligence plane; the execution plane depends on neither. Concretely: <strong>the judging path can run with the entire intelligence plane deleted</strong>, and that is verified by a chaos drill rather than assumed (§8.6).</p>
+
+  <h3><span class="num">8.3</span>Flow: <code>POST /run</code> — the Online Compiler</h3>
+  <p>Synchronous, no verdict, custom stdin, tighter limits.</p>
+  <ol class="body">
+    <li>API validates <code>{ language, code, stdin? }</code> and enforces a per-user token bucket in Redis.</li>
+    <li>Job pushed to the <strong>high-priority</strong> queue — interactive traffic must never queue behind a contest backlog.</li>
+    <li>Worker writes <code>&lt;uuid&gt;.&lt;ext&gt;</code> to a scratch dir, compiles, runs sandboxed with a 5 s wall cap and 256 MB.</li>
+    <li>Returns <code>{ stdout, stderr, exitCode, timeMs, memoryKb }</code>, output truncated at 64 KB.</li>
+    <li>Scratch dir deleted in a <code>finally</code> block — always, including on timeout.</li>
+  </ol>
+
+  <h3><span class="num">8.4</span>Flow: <code>POST /submit</code> — the Judge</h3>
+  <figure>
+   <div class="fw">
+    <svg viewBox="0 0 940 428" role="img" aria-label="Sequence diagram: the client posts a submission, the API inserts it as QUEUED, enqueues a job, emits submission.created to Kafka and immediately returns 202 with a submission id. A worker leases the job, compiles and runs the test cases, writes the verdict with a compare-and-set, and emits submission.judged. The projector consumes that event and pushes a leaderboard delta to the client over WebSocket, while the client receives the verdict over server-sent events.">
+      <defs>
+        <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <!-- lanes -->
+      <g>
+        <rect class="bxf" x="20" y="14" width="112" height="30"/><text class="ttl" x="76" y="34" text-anchor="middle">Client</text>
+        <rect class="bxf" x="176" y="14" width="112" height="30"/><text class="ttl" x="232" y="34" text-anchor="middle">API</text>
+        <rect class="bxf" x="332" y="14" width="112" height="30"/><text class="ttl" x="388" y="34" text-anchor="middle">Work queue</text>
+        <rect class="bxf" x="488" y="14" width="112" height="30"/><text class="ttl" x="544" y="34" text-anchor="middle">Worker</text>
+        <rect class="bxf" x="644" y="14" width="112" height="30"/><text class="ttl" x="700" y="34" text-anchor="middle">Kafka</text>
+        <rect class="bxf" x="800" y="14" width="120" height="30"/><text class="ttl" x="860" y="34" text-anchor="middle">Projector</text>
+      </g>
+      <g class="dsh" opacity=".65">
+        <line x1="76" y1="44" x2="76" y2="404"/><line x1="232" y1="44" x2="232" y2="404"/>
+        <line x1="388" y1="44" x2="388" y2="404"/><line x1="544" y1="44" x2="544" y2="404"/>
+        <line x1="700" y1="44" x2="700" y2="404"/><line x1="860" y1="44" x2="860" y2="404"/>
+      </g>
+
+      <line class="ln" x1="76" y1="74" x2="226" y2="74" marker-end="url(#ah2)"/>
+      <text class="lbl" x="151" y="68" text-anchor="middle">POST /submit</text>
+
+      <rect x="182" y="86" width="132" height="24" fill="var(--panel-2)" stroke="currentColor" stroke-width="1"/>
+      <text class="lbl" x="248" y="102" text-anchor="middle">insert status = QUEUED</text>
+
+      <line class="ln" x1="232" y1="130" x2="382" y2="130" marker-end="url(#ah2)"/>
+      <text class="lbl" x="307" y="124" text-anchor="middle">enqueue</text>
+
+      <line class="ln" x1="232" y1="158" x2="694" y2="158" marker-end="url(#ah2)"/>
+      <text class="lbl" x="463" y="152" text-anchor="middle">submission.created</text>
+
+      <line class="dsh" x1="232" y1="186" x2="82" y2="186" marker-end="url(#ah2)"/>
+      <text class="lbl" x="157" y="180" text-anchor="middle">202 { submissionId }</text>
+      <text class="acct" x="20" y="204">API is done in &lt; 200 ms — it never waits for a verdict</text>
+
+      <line class="ln" x1="388" y1="232" x2="538" y2="232" marker-end="url(#ah2)"/>
+      <text class="lbl" x="463" y="226" text-anchor="middle">lease job</text>
+
+      <rect x="470" y="244" width="148" height="40" fill="var(--panel-2)" stroke="currentColor" stroke-width="1"/>
+      <text class="lbl" x="544" y="260" text-anchor="middle">compile · run N cases</text>
+      <text class="lbl" x="544" y="274" text-anchor="middle">compare · CAS write</text>
+
+      <line class="ln" x1="544" y1="304" x2="694" y2="304" marker-end="url(#ah2)"/>
+      <text class="lbl" x="619" y="298" text-anchor="middle">submission.judged</text>
+
+      <line class="ln" x1="700" y1="332" x2="854" y2="332" marker-end="url(#ah2)"/>
+      <text class="lbl" x="777" y="326" text-anchor="middle">consume</text>
+
+      <line class="dsh" x1="860" y1="366" x2="82" y2="366" marker-end="url(#ah2)"/>
+      <text class="lbl" x="470" y="360" text-anchor="middle">WebSocket · leaderboard delta</text>
+
+      <line class="dsh" x1="232" y1="394" x2="82" y2="394" marker-end="url(#ah2)"/>
+      <text class="lbl" x="157" y="388" text-anchor="middle">SSE · verdict</text>
+    </svg>
+   </div>
+   <figcaption><b>Fig 2</b>The request path and the verdict path are different paths. The API acknowledges and exits; the verdict arrives later over a channel the client is already holding open.</figcaption>
+  </figure>
+  <div class="keypt"><p>The verdict write is a <strong>compare-and-set on status</strong> (<code>QUEUED|COMPILING|RUNNING → final</code>), so a redelivered job can never overwrite a verdict that already landed. That is how we get idempotency without distributed transactions.</p></div>
+
+  <h3><span class="num">8.5</span>Leaderboard</h3>
+  <p>Read-heavy (everyone refreshes) and write-light (only on judged submissions) — so it is a <strong>materialized projection</strong>, never a live query against the submissions collection.</p>
+  <ul>
+    <li>The projector consumes <code>submission.judged</code> and maintains a Redis <strong>sorted set</strong> per contest.</li>
+    <li>ICPC-style score packed into one double so a single <code>ZREVRANGE</code> is the whole read: <code>score = solved × 10⁹ − penaltySeconds</code>. Safe — doubles hold 2⁵³ ≈ 9×10¹⁵ exactly.</li>
+    <li>Clients get the top 50 over WebSocket. Deltas are pushed, not polled.</li>
+    <li><strong>Degradation:</strong> if Redis is cold or lost, the projector replays the Kafka topic from the contest-start offset and rebuilds. Nothing is lost, because the event log — not Redis — is the source of truth.</li>
+  </ul>
+
+  <h3><span class="num">8.6</span>AI Mentor — the X-factor</h3>
+  <p>Six modes, each mapped to a specific place a learner gets stuck. The design principle: <strong>an answer the system can verify beats an answer the model asserts.</strong></p>
+  <div class="modes">
+    <div class="mode"><div class="mn">01</div><div>
+      <h4>Intuition Engine</h4><p class="stage">“I have no clue.”</p>
+      <p>Breaks down the statement, classifies the pattern (sliding window, two pointers, grid search), names the edge cases — without dumping code.</p></div></div>
+    <div class="mode"><div class="mn">02</div><div>
+      <h4>Brainstorming Partner</h4><p class="stage">“I have a clue and started.”</p>
+      <p>A sounding board for partial logic. Finds structural gaps, validates edge-case reasoning, nudges toward code without writing it.</p></div></div>
+    <div class="mode hero"><div class="mn">03</div><div>
+      <h4>Dry-Run Simulator<span class="grounded">Real execution</span></h4><p class="stage">“Written an approach, not sure it's correct.”</p>
+      <p>Not a model pretending to be a CPU. The code is instrumented and run in the sandbox on a small input; the <strong>actual variable trace</strong> is fed to the model, which narrates it and points at the exact line where state diverges.</p></div></div>
+    <div class="mode hero"><div class="mn">04</div><div>
+      <h4>Complexity Auditor<span class="grounded">Real measurement</span></h4><p class="stage">“Solved, but TLE.”</p>
+      <p>Generates inputs at N = 10², 10³, 10⁴, 10⁵, measures runtime, fits the curve to an <strong>empirical complexity</strong>, then explains the hotspot and the optimisation that removes it.</p></div></div>
+    <div class="mode"><div class="mn">05</div><div>
+      <h4>Conceptual Translator</h4><p class="stage">“I don't understand this data structure.”</p>
+      <p>Drops code entirely. Metaphors, diagrams and invariants — why a segment tree query is O(log N), how a trie routes nodes.</p></div></div>
+    <div class="mode"><div class="mn">06</div><div>
+      <h4>Foundations Architect</h4><p class="stage">“New to this data structure.”</p>
+      <p>Primitives first — operations, insertion and deletion, memory layout — then the three canonical problems, pulled from our own catalogue by tag.</p></div></div>
+  </div>
+  <p>Modes 3 and 4 are the differentiator, and they are only possible because we already built a safe execution plane. Reuse it.</p>
+  <p><strong>Three guardrails, non-negotiable:</strong></p>
+  <ol class="body">
+    <li><strong>Leak guard.</strong> The mentor must never emit a working solution. Enforced in layers: mode-scoped system prompts; an output filter that rejects a response containing a complete compilable solution (full signature + control flow + return, above a length threshold); and per-problem editorial-similarity checks.</li>
+    <li><strong>Contest mode.</strong> The mentor is disabled during a rated contest, or its usage is recorded on the submission. Decided per contest, never left implicit.</li>
+    <li><strong>Context is assembled server-side.</strong> The client sends <code>{ problemId, mode, editorBuffer }</code>. It does not get to declare what it is allowed to see — the service pulls the statement, the user's own recent verdicts, and sample-only test data.</li>
+  </ol>
+  <p><strong>Cost control:</strong> responses cached on <code>(problemId, mode, sha256(code))</code>; a per-user daily token budget in Redis; a cheap model for modes 1, 5 and 6 and a stronger one for 3 and 4; SSE streaming so time-to-first-token stays low.</p>
+
+  <h3><span class="num">8.7</span>Problem Ingestion</h3>
+  <p>An offline pipeline, never on the hot path. A pluggable <code>SourceAdapter</code> per site → normalizer → <code>problems</code> collection, retaining <code>source</code>, <code>sourceUrl</code> and attribution.</p>
+  <div class="note">
+    <span class="lb">Flagging this honestly</span>
+    <p>Scraping statements from LeetCode or Codeforces raises copyright and terms-of-service issues. Default behaviour is <strong>metadata plus link only</strong> (title, tags, difficulty, URL) for third-party sources; full statements are stored only for our own or permissively-licensed problems. Codeforces has an official API — prefer it. This keeps the pipeline useful and the project publishable.</p>
+  </div>
+  <p>Scraped problems arrive without test cases. So the setter path is <strong><code>generator.py</code> + <code>brute.cpp</code></strong> — generate M inputs, run the brute-force reference to produce expected outputs, store the set with a <code>version</code> hash. This is how test data is actually authored in competitive programming, and it makes the platform self-sufficient.</p>
+
+  <h3><span class="num">8.8</span>The mentor is optional by construction</h3>
+  <p>The judge is the product; the mentor is an enhancement. If the intelligence plane is what takes the platform down during a contest, the differentiator has become the liability. So the independence is structural rather than a matter of care:</p>
+  <ul>
+    <li><strong>No inbound dependency.</strong> <code>api</code> and <code>judge-worker</code> never import the mentor. A lint rule and a CI dependency-graph check fail the build if that changes.</li>
+    <li><strong>No synchronous call from the hot path.</strong> The mentor is reachable only at <code>POST /api/ai/*</code>. Nothing internal calls it, so an LLM provider timeout can never occupy an API worker or delay a submission.</li>
+    <li><strong>Read-only data access.</strong> The mentor holds a database credential with no write grant. It cannot corrupt a submission, a verdict or a standing even through a bug.</li>
+    <li><strong>Separate deployment and a kill switch.</strong> Its own process, health check and autoscaler; <code>AI_ENABLED=false</code> disables it instantly without touching anything else.</li>
+  </ul>
+  <div class="keypt"><p><strong>Verified, not asserted.</strong> A V4 chaos drill scales the mentor to zero replicas mid-contest. Pass condition: every submission still judged, standings still updating, and the only visible change is the mentor panel reporting itself unavailable. Contract detail in <strong>LLD §11.7</strong>.</p></div>
+</section>
+
+<section id="s9">
+  <h2><span class="num">09</span>Challenges &amp; Solutions</h2>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Challenge</th><th>Solution</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td><strong>Thundering herd</strong> — 2,000 people submit in the last 60 seconds</td><td>Never judge inline. <code>POST /submit</code> writes <span class="v v-n">QUEUED</span> and enqueues in under 200 ms. Workers drain at a fixed rate. Size for the steady rate, absorb the spike in the queue, hold p95 by draining. Autoscale on queue depth.</td></tr>
+      <tr><td class="n">2</td><td><strong>Malicious code</strong> — fork bombs, <code>rm -rf</code>, miners, reading the test case files</td><td>Docker sandbox: <code>--network=none</code>, read-only rootfs, tmpfs workdir, non-root user, all capabilities dropped, pid and memory and CPU caps, seccomp profile, host-side kill timer. Guarantees in §11.2; exact configuration in LLD §6.4.</td></tr>
+      <tr><td class="n">3</td><td><strong>Verdict tampering</strong></td><td>Verdicts are written only by workers, only via CAS, only over the internal network. No client-supplied verdict field is ever trusted. Every transition is emitted to Kafka as an immutable audit log.</td></tr>
+      <tr><td class="n">4</td><td><strong>Leaderboard read storm</strong></td><td>Event-sourced Redis ZSET projection plus WebSocket push. Zero submission-table queries on the read path.</td></tr>
+      <tr><td class="n">5</td><td><strong>False <span class="v v-tle">TLE</span> from noisy neighbours</strong></td><td>Measure <strong>CPU time from the cgroup</strong>, not wall-clock. Pin each judge slot to a dedicated core. Run a submission's test cases <strong>sequentially</strong> — parallelising them inside one submission creates contention and non-reproducible timings.</td></tr>
+      <tr><td class="n">6</td><td><strong>The AI hands out the answer</strong></td><td>Three-layer leak guard (§8.6) plus a contest-mode kill switch.</td></tr>
+      <tr><td class="n">7</td><td><strong>AI cost runs away</strong></td><td>Cache on (problem, mode, code hash), per-user token budgets, model routing by mode.</td></tr>
+      <tr><td class="n">8</td><td><strong>Large test data</strong></td><td>Test cases live in S3 — not in Kafka messages, not in Mongo documents. Workers cache them on local disk keyed by <code>testcaseSetVersion</code>. Messages carry references, never payloads.</td></tr>
+      <tr><td class="n">9</td><td><strong>Poison-pill submissions</strong> that crash the worker every time</td><td>Attempt counter on the job. After three failures the submission is marked <span class="v v-ie">IE</span>, routed to a DLQ and alerted on — it never blocks the queue.</td></tr>
+      <tr><td class="n">10</td><td><strong>Container escape</strong> — a kernel CVE defeats the sandbox entirely</td><td>Treated as inevitable rather than impossible. Containment is designed so an escaped attacker lands on a credential-less, network-isolated, 24-hour-lifetime node with no route to the control plane, the database or the internet. Full posture and blast-radius statement in §11.3.</td></tr>
+      <tr><td class="n">11</td><td><strong>Language gotchas</strong></td><td>Java requires <code>public class Main</code> in <code>Main.java</code>. The filename is forced, and a mismatch surfaces as a clear <span class="v v-n">CE</span> rather than a confusing failure. Language registry in LLD §6.5.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s10">
+  <h2><span class="num">10</span>Interface Summary</h2>
+  <p>The contracts between components, at the level a reviewer needs to judge the architecture. Field-by-field schemas, indexes, middleware ordering, comparator semantics and every algorithm live in the companion <strong>Online Judge LLD</strong>, which is authoritative wherever the two documents differ.</p>
+
+  <h3><span class="num">10.1</span>Data model</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Collection</th><th>Holds</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="k">users</td><td>Account, role, rating, solved count</td><td>—</td></tr>
+      <tr><td class="k">problems</td><td>Statement, limits, checker type, test case set version</td><td>The version hash is what invalidates worker caches</td></tr>
+      <tr><td class="k">testcases</td><td>Input/output references, sample flag</td><td>Data itself lives in S3 from V2</td></tr>
+      <tr><td class="k">submissions</td><td>One row per submit: status, verdict detail, timing</td><td>Append-mostly and the hot collection — never rewritten in bulk</td></tr>
+      <tr><td class="k">contests</td><td>Window, problem set, scoring mode, mentor flag</td><td>—</td></tr>
+      <tr><td class="k">refresh_tokens</td><td>Rotation lineage for auth</td><td>Stored hashed; reuse revokes the family</td></tr>
+      <tr><td class="k">outbox</td><td>Verdict events awaiting publish</td><td>Guarantees a verdict is never lost between the database and Kafka</td></tr>
+      <tr><td class="k">judge_runs</td><td>Per-test-case execution record</td><td>14-day TTL; feeds debugging and the Complexity Auditor</td></tr>
+    </tbody>
+  </table></div>
+  <p>Submission source and test case data are object-store references, never embedded documents. Full schemas and the query each index serves: <strong>LLD §3</strong>.</p>
+
+  <h3><span class="num">10.2</span>API surface</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Method</th><th>Route</th><th>Auth</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td class="c">POST</td><td class="k">/api/auth/register</td><td>—</td><td>Create user, bcrypt hash</td></tr>
+      <tr><td class="c">POST</td><td class="k">/api/auth/login</td><td>—</td><td>Access JWT (15 min) + refresh token in an httpOnly cookie</td></tr>
+      <tr><td class="c">POST</td><td class="k">/api/auth/logout</td><td>user</td><td>Revoke refresh token</td></tr>
+      <tr><td class="c">GET</td><td class="k">/api/problems</td><td>—</td><td>Paginated list; filters <code>tags</code>, <code>difficulty</code>, <code>q</code></td></tr>
+      <tr><td class="c">GET</td><td class="k">/api/problems/:slug</td><td>—</td><td>Statement, limits, and <strong>sample test cases only</strong></td></tr>
+      <tr><td class="c">POST</td><td class="k">/api/problems</td><td>setter</td><td>Create problem</td></tr>
+      <tr><td class="c">POST</td><td class="k">/api/run</td><td>user</td><td><code>{language, code, stdin?}</code> → stdout, stderr, exit code, timing. Rate limited 10/min.</td></tr>
+      <tr><td class="c">POST</td><td class="k">/api/submissions</td><td>user</td><td><code>{problemId, language, code, contestId?}</code> → <strong>202</strong> <code>{submissionId, status:'QUEUED'}</code></td></tr>
+      <tr><td class="c">GET</td><td class="k">/api/submissions/:id</td><td>owner</td><td>Current status and verdict detail</td></tr>
+      <tr><td class="c">GET</td><td class="k">/api/submissions/:id/stream</td><td>owner</td><td>SSE — pushes each status transition until terminal</td></tr>
+      <tr><td class="c">GET</td><td class="k">/api/users/:username</td><td>—</td><td>Profile and solved stats</td></tr>
+      <tr><td class="c">GET</td><td class="k">/api/contests/:id/leaderboard</td><td>—</td><td>Top-N straight from the Redis ZSET</td></tr>
+      <tr><td class="c">WS</td><td class="k">/ws/contests/:id</td><td>user</td><td>Live standings deltas</td></tr>
+      <tr><td class="c">POST</td><td class="k">/api/ai/ask</td><td>user</td><td><code>{problemId, mode, editorBuffer}</code> → SSE stream. Budget-checked, leak-guarded.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Per-route behaviour — middleware order, token rotation, rate limit buckets, pagination, the submit sequence: <strong>LLD §4</strong>.</p>
+
+  <h3><span class="num">10.3</span>Events</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Topic</th><th>Key</th><th>Parts</th><th>Consumers</th><th>Why this key</th></tr></thead>
+    <tbody>
+      <tr><td class="k">submission.created</td><td class="k">submissionId</td><td class="n">12</td><td>analytics</td><td>Even spread, no ordering requirement</td></tr>
+      <tr><td class="k">submission.judged</td><td class="k">contestId ?? userId</td><td class="n">12</td><td>projector, analytics, notifications</td><td><strong>All events for one contest land in one partition</strong>, so the projector sees them in order with no cross-partition coordination. Tradeoff: a hot partition per contest — fine at 20 events/s.</td></tr>
+      <tr><td class="k">problem.ingested</td><td class="k">problemId</td><td class="n">3</td><td>search indexer</td><td>—</td></tr>
+      <tr><td class="k">ai.interaction.logged</td><td class="k">userId</td><td class="n">3</td><td>budget accounting</td><td>—</td></tr>
+      <tr><td class="k">submission.judged.dlq</td><td class="k">submissionId</td><td class="n">1</td><td>on-call alerting</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <p>Envelope schema, producer and consumer settings, offset handling: <strong>LLD §2 and §8</strong>.</p>
+
+  <h3><span class="num">10.4</span>Verdict lifecycle</h3>
+  <figure>
+   <div class="fw">
+    <svg viewBox="0 0 900 300" role="img" aria-label="Verdict state machine: a submission enters QUEUED, moves to COMPILING when a worker leases it, and either fails compilation to CE or proceeds to RUNNING. From RUNNING it reaches AC when all test cases pass, or one of WA, TLE, MLE, RE or OLE on the first failure. Any unrecoverable worker failure after three attempts becomes IE and goes to the dead letter queue. All of these are terminal states.">
+      <defs>
+        <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+        </marker>
+      </defs>
+
+      <text class="lbl" x="12" y="140">submit</text>
+      <line class="ln" x1="12" y1="152" x2="52" y2="152" marker-end="url(#ah3)"/>
+
+      <rect class="bxf" x="58" y="132" width="104" height="42"/>
+      <text class="ttl" x="110" y="158" text-anchor="middle">QUEUED</text>
+
+      <rect class="bxf" x="228" y="132" width="118" height="42"/>
+      <text class="ttl" x="287" y="158" text-anchor="middle">COMPILING</text>
+
+      <rect class="bxf" x="412" y="132" width="106" height="42"/>
+      <text class="ttl" x="465" y="158" text-anchor="middle">RUNNING</text>
+
+      <line class="ln" x1="162" y1="153" x2="222" y2="153" marker-end="url(#ah3)"/>
+      <text class="lbl" x="192" y="145" text-anchor="middle">lease</text>
+
+      <line class="ln" x1="346" y1="153" x2="406" y2="153" marker-end="url(#ah3)"/>
+      <text class="lbl" x="376" y="145" text-anchor="middle">ok</text>
+
+      <!-- CE -->
+      <rect x="248" y="42" width="78" height="36" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.4"/>
+      <text class="ttl" x="287" y="65" text-anchor="middle">CE</text>
+      <line class="ln" x1="287" y1="126" x2="287" y2="84" marker-end="url(#ah3)"/>
+      <text class="lbl" x="297" y="110">compile fails</text>
+
+      <!-- AC -->
+      <rect x="600" y="42" width="78" height="36" fill="var(--surface)" stroke="var(--ac)" stroke-width="1.6"/>
+      <text class="ttl" x="639" y="65" text-anchor="middle" fill="var(--ac)">AC</text>
+      <line class="ln" x1="504" y1="136" x2="596" y2="80" marker-end="url(#ah3)"/>
+      <text class="lbl" x="516" y="106">all cases pass</text>
+
+      <!-- failures -->
+      <rect x="574" y="196" width="288" height="44" fill="var(--surface)" stroke="var(--wa)" stroke-width="1.6"/>
+      <text class="ttl" x="718" y="215" text-anchor="middle" fill="var(--wa)">WA · TLE · MLE · RE · OLE</text>
+      <text class="sub" x="718" y="231" text-anchor="middle">first failing test case is recorded</text>
+      <line class="ln" x1="510" y1="172" x2="568" y2="206" marker-end="url(#ah3)"/>
+      <text class="lbl" x="516" y="196">first failure</text>
+
+      <!-- IE -->
+      <rect x="248" y="240" width="140" height="40" fill="var(--surface)" stroke="var(--ie)" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <text class="ttl" x="318" y="258" text-anchor="middle" fill="var(--ie)">IE</text>
+      <text class="sub" x="318" y="272" text-anchor="middle">→ dead letter queue</text>
+      <line class="dsh" x1="287" y1="176" x2="300" y2="234" marker-end="url(#ah3)"/>
+      <line class="dsh" x1="440" y1="176" x2="386" y2="248" marker-end="url(#ah3)"/>
+      <text class="lbl" x="398" y="212">3 attempts exhausted</text>
+
+    </svg>
+   </div>
+   <figcaption><b>Fig 3</b>Every terminal state is written once. <span class="v v-ie">IE</span> is dashed because it is reachable from anywhere and means <em>our</em> failure, not the user's — it is the state that keeps a poison pill from blocking the queue.</figcaption>
+  </figure>
+  <div class="keypt"><p>Every terminal status is written exactly once, by a compare-and-set against the pending states. A worker whose write matches zero documents knows another worker already finished and exits quietly — that is how a redelivered job is made harmless without distributed transactions. The write and its Kafka event share one transaction; see <strong>LLD §7.6</strong>.</p></div>
+</section>
+
+<section id="s11">
+  <h2><span class="num">11</span>Security Posture</h2>
+  <p>This platform's core function is to execute code written by anonymous strangers. Security is therefore not a section appended to the design — it is the constraint the architecture was shaped around. This section states what is defended, by what, and what an attacker gets when a layer fails.</p>
+
+  <h3><span class="num">11.1</span>The trust boundary</h3>
+  <p>There is exactly one: the edge of the execution plane (Fig 1, dashed band). Untrusted code runs inside it and nowhere else. The API service, the projector and the mentor never compile or execute a submission, so no amount of hostile input to them results in code execution.</p>
+
+  <h3><span class="num">11.2</span>What the sandbox guarantees</h3>
+  <p>Stated as properties rather than flags. The exact container configuration is <strong>LLD §6.4</strong>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Property</th><th>Mechanism</th></tr></thead>
+    <tbody>
+      <tr><td>No network access of any kind</td><td>The container joins no network — not a restricted one, none</td></tr>
+      <tr><td>Bounded memory</td><td>Hard limit with swap disabled, so exceeding it is <span class="v v-tle">MLE</span> and not a host OOM</td></tr>
+      <tr><td>Bounded, measurable CPU</td><td>One pinned core; CPU time accounted from the cgroup, not the wall clock</td></tr>
+      <tr><td>No fork bombs</td><td>Process-count limit inside the container</td></tr>
+      <tr><td>No privilege escalation</td><td>All capabilities dropped, <code>no-new-privileges</code>, non-root uid, seccomp allowlist</td></tr>
+      <tr><td>Immutable filesystem</td><td>Read-only rootfs; the single writable mount is <code>noexec</code></td></tr>
+      <tr><td>No disk exhaustion</td><td>File-size ulimit plus a 64 KB output cap → <span class="v v-n">OLE</span></td></tr>
+      <tr><td>No access to answers</td><td>Test cases arrive on stdin; nothing is ever mounted into the container</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3><span class="num">11.3</span>Infrastructure containment — assuming the sandbox fails</h3>
+  <div class="keypt"><p>A container boundary is one kernel bug away from not being a boundary. The design assumption here is that it <em>will</em> eventually fail — a kernel CVE, a runtime regression, a flag we got wrong. So the question this section answers is not “can they escape” but <strong>“what do they get if they do”</strong>.</p></div>
+  <p>The answer is: a bare, credential-less node with no route to anything that matters.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Control</th><th>What it denies an attacker who is already root on the node</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Dedicated, tainted node pool</strong></td><td>No control-plane component, no API pod, no projector and no other service shares that kernel. Judge nodes run judge workers and nothing else.</td></tr>
+      <tr><td><strong>No cloud credentials on the node</strong></td><td>Instance metadata is blocked at the network layer (IMDSv2, hop limit 1, plus a firewall rule on <code>169.254.169.254</code>). The node's instance profile grants nothing. The worker's S3 access is a short-lived scoped token held in process memory, never written to disk.</td></tr>
+      <tr><td><strong>No cluster secrets</strong></td><td><code>automountServiceAccountToken: false</code>, no image-pull secrets, no kubeconfig, no database password anywhere on the host.</td></tr>
+      <tr><td><strong>Egress denied by default</strong></td><td>The judge subnet has no NAT gateway and no internet route. Outbound is allowed only to the S3 VPC endpoint, Redis and Kafka, on specific ports. <strong>An escaped process cannot phone home, exfiltrate, or pull a second stage.</strong></td></tr>
+      <tr><td><strong>Ingress denied</strong></td><td>No inbound rules except the health check from the load balancer subnet.</td></tr>
+      <tr><td><strong>Nothing durable on the node</strong></td><td>Ephemeral root volume, tmpfs scratch, and a 24-hour maximum node lifetime. An implant does not survive the day.</td></tr>
+      <tr><td><strong>Least-privilege data reach</strong></td><td>A VPC endpoint policy scopes S3 to the code and test case prefixes, read-only for test cases. Reaching S3 does not mean reaching the bucket.</td></tr>
+      <tr><td><strong>Kernel hygiene</strong></td><td>Auto-patched node images, a forced monthly AMI roll, and user-namespace remapping so container root maps to an unprivileged host uid.</td></tr>
+      <tr><td><strong>Upgrade path</strong></td><td>If we ever host public untrusted contests, the runtime moves to gVisor or Firecracker microVMs — a per-submission kernel boundary rather than a shared one. Costed in §16, not adopted speculatively.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="keypt"><p><strong>Blast radius.</strong> The worst realistic outcome is one compromised, credential-less, network-isolated node that is destroyed within twenty-four hours. It holds no user data beyond the test cases for problems being judged at that moment, and it cannot reach the control plane, the database, the object store beyond two prefixes, or the internet.</p></div>
+
+  <h3><span class="num">11.4</span>Detection and response</h3>
+  <p>Containment without detection means an attacker gets twenty-four hours undisturbed. Judge nodes run a syscall monitor (Falco, or auditd rules) alerting on:</p>
+  <ul>
+    <li><code>execve</code> of anything outside the runner's allowlisted binaries</li>
+    <li>writes outside the tmpfs scratch mount</li>
+    <li>any outbound connection attempt — there should never be one</li>
+    <li><code>setuid</code>, kernel module loads, or writes to <code>/proc/sys</code></li>
+  </ul>
+  <p>An alert cordons the node automatically, snapshots it for forensics, and replaces it. Every alert carries the <code>submissionId</code> occupying that slot at the time, so the responsible source code is one query away — and it is retained for 14 days alongside the per-test-case execution record.</p>
+
+  <h3><span class="num">11.5</span>Invariant: host execution never leaves a laptop</h3>
+  <p>V0 executes code directly on the host with <code>child_process</code> and no isolation, so that the editor and the <code>/run</code> path can be built before the sandbox exists. This is a development affordance and a serious vulnerability if it ever ships.</p>
+  <div class="keypt"><p><strong>Invariant.</strong> The host executor is unreachable outside local development, enforced independently at four levels — a boot guard that throws on <code>NODE_ENV=production</code>, a CI check that fails the build if the production bundle imports it, an env schema that rejects the enabling flag in production, and the fact that <strong>V0 is never deployed at all</strong>: staging begins at V1, after the sandbox lands. The package is deleted outright when V1 merges. Implementation in <strong>LLD §6.6</strong>.</p></div>
+</section>
+
+<section id="s12">
+  <h2><span class="num">12</span>Key Decisions &amp; Tradeoffs</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Decision</th><th>Chosen</th><th>Alternative</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Dispatch vs event log</strong></td>
+        <td>Redis/BullMQ for the <strong>work queue</strong>, Kafka for the <strong>event log</strong></td>
+        <td>Kafka for both</td>
+        <td>Kafka is a log, not a work queue — no per-message ack, no visibility timeout, no priorities, and long-running consumers trigger rebalance storms. A work queue gives us leases, retries and a priority lane for <code>/run</code>; Kafka gives us replayable fan-out for the leaderboard, analytics and audit. Using each for what it is good at is the honest answer, and a better interview answer than “we added Kafka”.<br><br><strong>Adoption trigger — Kafka is not built until it is earned.</strong> V1 ships BullMQ alone, with the worker updating the standings projection directly. Kafka enters in V2 <em>only if a second independent consumer of judged events actually exists</em> — analytics, notifications, or an audit trail somebody queries. If the projector is still the only consumer when V2 opens, Kafka is deferred and revisited at V3. Two message systems is a real operational cost, and it has to be paid for by a real second consumer rather than by an architecture diagram.</td>
+      </tr>
+      <tr>
+        <td><strong>Isolation</strong></td><td>Docker + seccomp</td><td>gVisor, Firecracker, <code>isolate</code></td>
+        <td>Docker with dropped capabilities is enough for a self-hosted, non-nation-state threat model and is by far the fastest to ship. Upgrade path to gVisor documented for the day we host untrusted public contests.</td>
+      </tr>
+      <tr>
+        <td><strong>Primary datastore</strong></td><td>MongoDB</td><td>PostgreSQL</td>
+        <td>Chosen for MERN continuity and flexible statements. Noted risk: contest scoring is inherently relational and transactional. If scoring correctness bites, submissions and contests move to Postgres while problems stay in Mongo.</td>
+      </tr>
+      <tr>
+        <td><strong>Container strategy</strong></td><td>Cold <code>docker run</code> per submission in V1, warm pool in V3</td><td>Warm pool from day one</td>
+        <td>A ~400 ms cold start is affordable at our rate and is the strictly safer default — a fresh filesystem every time. Optimise when measurements demand it, not before.</td>
+      </tr>
+      <tr>
+        <td><strong>Verdict delivery</strong></td><td>SSE per submission, WebSocket for standings</td><td>Polling everywhere</td>
+        <td>Polling at contest scale is exactly the read storm the projection was built to avoid.</td>
+      </tr>
+      <tr>
+        <td><strong>AI grounding</strong></td><td>Execution-backed for modes 3 and 4</td><td>Pure LLM for all six</td>
+        <td>A traced run and a measured runtime curve are facts. This is the project's differentiator and it costs little, because the execution plane already exists.</td>
+      </tr>
+      <tr>
+        <td><strong>AI coupling</strong></td><td>None — separate service, separate failure domain</td><td>Mentor embedded in the API service</td>
+        <td>Embedding is simpler right up until the first provider outage, at which point hung LLM calls occupy API workers and submissions queue behind them. The differentiator must not be able to take down the product. Enforced by lint and a dependency-graph check, verified by a chaos drill — §8.8.</td>
+      </tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s13">
+  <h2><span class="num">13</span>Deployment</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Environment</th><th>Shape</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Local</strong></td><td><code>docker-compose up</code> — api, web, mongo, redis, kafka (redpanda), minio, one worker</td></tr>
+      <tr><td><strong>Staging</strong></td><td>Single EC2, the same compose file, real domain, Let's Encrypt</td></tr>
+      <tr><td><strong>Production (L4)</strong></td><td>ECS or EKS. API, projector and mentor on a general node group. <strong>Judge workers on a dedicated, tainted node group</strong> — untrusted workloads never share a node with the control plane, and that pool is hardened as described in §11.3: no cloud credentials, no cluster secrets, no egress route, ephemeral 24-hour nodes. Autoscaled by KEDA on queue depth, within bounds derived from the measured values in §7. S3 for code and test cases. Blue/green, with the golden-verdict suite as the promotion gate.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s14">
+  <h2><span class="num">14</span>Testing Strategy</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Layer</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Unit</strong></td><td>Comparators (trailing newline, CRLF, float tolerance), score packing, state machine transitions</td></tr>
+      <tr><td><strong>Integration</strong></td><td>Real Docker. A fork bomb must yield <span class="v v-wa">RE</span>, an infinite loop <span class="v v-tle">TLE</span>, a 1 GB allocation <span class="v v-tle">MLE</span>, and a network call must fail.</td></tr>
+      <tr><td><strong>Golden verdicts</strong></td><td>~50 fixed (problem, code, expected verdict) pairs covering every terminal state. Runs on every deploy; one mismatch blocks promotion. This is the regression net that keeps the judge trustworthy.</td></tr>
+      <tr><td><strong>Load</strong></td><td>k6 contest profile — 2,000 VUs, 8 submissions each, 30% concentrated in the last ten minutes. Pass = p95 verdict under 30 s and zero dropped submissions.</td></tr>
+      <tr><td><strong>Capacity validation</strong></td><td>Re-derive every assumption in §7 from the load test — judge duration, container overhead, slots per node, peak concentration — and rewrite §7 with measured values. <strong>The deliverable is an amended capacity model, not a pass/fail.</strong> Autoscaling bounds are set from the result, not from the estimate.</td></tr>
+      <tr><td><strong>Chaos</strong></td><td><code>kill -9</code> a worker mid-judge (the verdict must still land via redelivery); flush Redis mid-contest (standings must rebuild from Kafka); scale the mentor to zero mid-contest (judging and standings must be completely unaffected — §8.8).</td></tr>
+      <tr><td><strong>Security</strong></td><td>Attempt filesystem escape, network egress, <code>/proc</code> snooping, and reading another submission's scratch dir. All must fail. Separately, verify the containment layer directly: from a shell on a judge node, confirm instance metadata is unreachable, no cloud credential resolves, and no outbound connection to the internet succeeds.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s15">
+  <h2><span class="num">15</span>Observability</h2>
+  <p><strong>Metrics.</strong> <code>submission_queue_depth</code> (the autoscaling signal), <code>judge_duration_seconds</code> (histogram by language), <code>verdict_total{verdict}</code>, <code>sandbox_oom_total</code>, <code>sandbox_timeout_total</code>, <code>worker_slots_busy</code>, <code>ai_tokens_total{mode}</code>, <code>leak_guard_triggered_total</code>.</p>
+  <p><strong>Traces.</strong> One OpenTelemetry trace per submission spanning API → enqueue → worker → Kafka → projector. <code>submissionId</code> is the correlation ID everywhere, logs included.</p>
+  <p><strong>Alerts.</strong> Queue depth above 500 for five minutes · p95 verdict above 60 s · DLQ non-empty · <span class="v v-ie">IE</span> rate above 1% · fewer than two healthy workers.</p>
+</section>
+
+<section id="s16">
+  <h2><span class="num">16</span>Risks &amp; Open Questions</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Risk</th><th>Mitigation / decision needed</th></tr></thead>
+    <tbody>
+      <tr><td>Scraping third-party statements — copyright and ToS</td><td>Metadata-only by default, official APIs where they exist, our own problems for the flagship set. <strong>Decide before writing the ingestor.</strong></td></tr>
+      <tr><td>Docker escape via a kernel CVE</td><td>Assumed to happen eventually. Blast radius bounded by §11.3 — credential-less, egress-denied, ephemeral nodes — and detected by syscall monitoring (§11.4). Migration to gVisor or Firecracker is costed and ready if we ever host public untrusted contests.</td></tr>
+      <tr><td>Capacity assumptions wrong by more than 2×</td><td>Autoscaling bounds come from measurements, not from §7's arithmetic; the queue absorbs the error and the p95 SLO is the guardrail that surfaces it. The V4 load test (§14) is scheduled before the first real contest, not after.</td></tr>
+      <tr><td>Running two message systems is more operational load than the project can carry</td><td>Kafka is gated on a second real consumer existing (§12). If it never does, the system stays on BullMQ and loses nothing.</td></tr>
+      <tr><td>AI cost at scale</td><td>Budgets and caching from day one, not retrofitted. Track cost per active user weekly.</td></tr>
+      <tr><td>Mongo for contest scoring</td><td>Accepted for now. Revisit if scoring bugs appear — see §12.</td></tr>
+      <tr><td>Scope creep across four versions</td><td>Each version is independently shippable and demoable. Nothing from V3 starts before V2 is deployed.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s17">
+  <h2><span class="num">17</span>Milestones</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Weeks</th><th>Deliverable</th><th>Demo that proves it</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1–2</td><td><strong>V0</strong> — auth, problems, editor, <code>/run</code> on host</td><td>Run “sum of two numbers” from the browser</td></tr>
+      <tr><td class="n">3–5</td><td><strong>V1</strong> — Docker sandbox, test cases, async <code>/submit</code>, verdicts, contests</td><td>Submit a wrong answer and get <span class="v v-wa">WA</span> on test case 7</td></tr>
+      <tr><td class="n">6–8</td><td><strong>V2</strong> — Kafka, live leaderboard, S3, autoscaling, tracing</td><td>Run a 200-user mock contest with live standings</td></tr>
+      <tr><td class="n">9–11</td><td><strong>V3</strong> — AI Mentor, six modes, execution-grounded</td><td>The Dry-Run Simulator finds an off-by-one; the Complexity Auditor calls an O(n²)</td></tr>
+      <tr><td class="n">12+</td><td><strong>V4</strong> — load tests, chaos, blue/green, runbooks</td><td>k6 report: 2,000 VUs, p95 under 30 s</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>
+  <p><strong>Glossary.</strong> <span class="v v-ac">AC</span> Accepted · <span class="v v-wa">WA</span> Wrong Answer · <span class="v v-tle">TLE</span> Time Limit Exceeded · <span class="v v-tle">MLE</span> Memory Limit Exceeded · <span class="v v-wa">RE</span> Runtime Error · <span class="v v-n">CE</span> Compilation Error · <span class="v v-n">OLE</span> Output Limit Exceeded · <span class="v v-ie">IE</span> Internal Error, our fault rather than the user's · <strong>DLQ</strong> Dead Letter Queue · <strong>CAS</strong> Compare-And-Set · <strong>Checker</strong> the component that decides whether output matches expected.</p>
+</footer>
+
+</main>
+</div>
+</div>

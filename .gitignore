@@ -1,0 +1,27 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# build
+dist/
+build/
+*.tsbuildinfo
+
+# runtime
+*.log
+coverage/
+.scratch/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+.claude/
+
+# docs pipeline output (regenerate with docs/build-pdf.sh)
+docs/*-print.html
