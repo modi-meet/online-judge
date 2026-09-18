@@ -21,7 +21,7 @@ coverage/
 .DS_Store
 .idea/
 .vscode/
-.claude/
+.claude/settings.local.json
 
 # docs pipeline output (regenerate with docs/build-pdf.sh)
 docs/*-print.html
