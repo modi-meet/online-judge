@@ -42,7 +42,15 @@ export function useSubmission() {
     src.addEventListener('status', (ev) => {
       const data = JSON.parse((ev as MessageEvent).data) as Partial<SubmissionView> & { status: Status };
       setCurrent((c) => ({ ...(c ?? ({} as SubmissionView)), ...data }));
-      if (isTerminal(data.status)) stop();
+      if (isTerminal(data.status)) {
+        // the first terminal event is the worker's status update, which has no
+        // judgedAt; the full row follows but closing the stream here can drop
+        // it, and a row that never looks judged keeps the submit button
+        // disabled. mark it judged now, then read the durable row once.
+        stop();
+        setCurrent((c) => (c ? { ...c, judgedAt: c.judgedAt ?? new Date().toISOString() } : c));
+        api<{ submission: SubmissionView }>('GET', `/api/submissions/${id}`).then((r) => setCurrent(r.submission)).catch(() => undefined);
+      }
     });
     src.addEventListener('timeout', fallback);
     src.onerror = () => { src.close(); fallback(); };
