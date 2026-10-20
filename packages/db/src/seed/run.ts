@@ -2,7 +2,7 @@
 // idempotent — re-running updates in place. never run against production.
 import { createHash } from 'node:crypto';
 import { connect, disconnect } from '../connect.js';
-import { ProblemModel, TestcaseModel, UserModel } from '../index.js';
+import { ContestModel, ProblemModel, TestcaseModel, UserModel } from '../index.js';
 
 const uri = process.env['MONGO_URI'];
 if (!uri) { console.error('MONGO_URI is required'); process.exit(1); }
@@ -71,4 +71,14 @@ for (const p of problems) {
   })));
   console.log(`seeded ${p.slug} (${cases.length} cases)`);
 }
+// one running contest over three of the problems, so the standings page has something to show
+const picks = await ProblemModel.find({ slug: { $in: ['sum-of-two', 'two-sum-sorted', 'lis-length'] } }).select('_id slug').lean();
+const order = ['sum-of-two', 'two-sum-sorted', 'lis-length'];
+await ContestModel.findOneAndUpdate(
+  { title: 'practice round 1' },
+  { $set: { title: 'practice round 1', startAt: new Date(Date.now() - 10 * 60_000), endAt: new Date(Date.now() + 3 * 3600_000),
+    problems: order.map((slug, i) => ({ problemId: picks.find((p) => p.slug === slug)!._id, points: 100 * (i + 1) })), scoring: 'icpc' } },
+  { upsert: true, new: true },
+);
+console.log('seeded contest: practice round 1 (running for 3h)');
 await disconnect();
