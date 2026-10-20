@@ -6,6 +6,14 @@ services:
     image: mongo:7
     ports: ["27017:27017"]
     volumes: [mongo-data:/data/db]
+    # single-node replica set: the verdict write and its outbox row share a
+    # transaction (lld §7.6), and transactions need a replica set.
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'try { rs.status().ok } catch (e) { rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"localhost:27017\"}]}).ok }'"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
   redis:
     image: redis:7-alpine

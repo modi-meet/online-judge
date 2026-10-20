@@ -3,6 +3,8 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import type { Queue } from 'bullmq';
+import type { JudgeJob } from '@oj/queue';
 import type { Executor } from '@oj/sandbox';
 import { config } from './config.js';
 import { logger } from './logger.js';
@@ -11,16 +13,24 @@ import { requestId } from './middleware/requestId.js';
 import { authRouter } from './routes/auth.js';
 import { problemsRouter } from './routes/problems.js';
 import { runRouter } from './routes/run.js';
+import { submissionsRouter } from './routes/submissions.js';
 import { usersRouter } from './routes/users.js';
 
 // chain order is load-bearing. lld §4.1
-export function createApp(deps: { executor: Executor }) {
+export function createApp(deps: { executor: Executor; queue: Queue<JudgeJob> }) {
   const app = express();
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
 
   app.use(requestId);
-  app.use(pinoHttp({ logger, genReqId: (req) => (req as express.Request).id, autoLogging: config.NODE_ENV !== 'test' }));
+  app.use(pinoHttp({
+    logger,
+    genReqId: (req) => (req as express.Request).id,
+    autoLogging: config.NODE_ENV !== 'test',
+    // never log a token that rode in on the query string
+    customProps: () => ({}),
+    serializers: { req: (r: { url: string; method: string; id: string }) => ({ id: r.id, method: r.method, url: r.url.replace(/([?&])access_token=[^&]*/, '$1access_token=[redacted]') }) },
+  }));
   app.use(helmet());
   app.use(cors({ origin: config.CORS_ORIGIN, credentials: true }));
   app.use(express.json({ limit: '128kb' }));
@@ -30,6 +40,7 @@ export function createApp(deps: { executor: Executor }) {
   app.use('/api/auth', authRouter);
   app.use('/api/problems', problemsRouter);
   app.use('/api/run', runRouter(deps.executor));
+  app.use('/api/submissions', submissionsRouter(deps.queue));
   app.use('/api/users', usersRouter);
 
   app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'no such route', requestId: res.getHeader('x-request-id') } }));

@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LANGUAGES, LANGUAGE_SPEC, type Language, type RunResult } from '@oj/contracts';
 import { ApiError, api } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useSubmission, type SubmissionView } from '../lib/useSubmission';
+import { VerdictChip, VerdictPanel } from '../components/Verdict';
 
 interface ProblemView {
   problem: { id: string; slug: string; title: string; statement: string; inputFormat: string; outputFormat: string;
@@ -36,6 +38,29 @@ export function ProblemPage() {
   const [stdin, setStdin] = useState('');
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
+  const [tab, setTab] = useState<'run' | 'submit'>('run');
+  const [mine, setMine] = useState<SubmissionView[]>([]);
+  const sub = useSubmission();
+
+  const loadMine = async (pid: string) => {
+    if (!user) return;
+    const r = await api<{ items: SubmissionView[] }>('GET', `/api/submissions?problemId=${pid}&limit=10`).catch(() => ({ items: [] }));
+    setMine(r.items);
+  };
+  useEffect(() => { if (view) void loadMine(view.problem.id); }, [view?.problem.id, user?.id]);
+  useEffect(() => {
+    // a finished verdict refreshes the history
+    if (sub.current && sub.current.judgedAt && view) void loadMine(view.problem.id);
+  }, [sub.current?.status]);
+
+  const doSubmit = async () => {
+    if (!user || !view) return nav('/login', { state: { from: loc.pathname } });
+    setTab('submit'); setError(null);
+    try { await sub.submit(view.problem.id, language, code); } catch (e) {
+      const msg = e instanceof ApiError && e.code === 'RATE_LIMITED' ? `slow down — try again in ${(e.details as { retryAfterSec: number }).retryAfterSec}s` : (e as Error).message;
+      setError(msg);
+    }
+  };
 
   useEffect(() => {
     api<ProblemView>('GET', `/api/problems/${slug}`)
@@ -103,8 +128,8 @@ export function ProblemPage() {
           </select>
           <div className="row">
             <button className="secondary" onClick={() => onChange(STARTER[language])}>reset</button>
-            <button onClick={() => void run()} disabled={running}>{running ? 'running…' : 'run'}</button>
-            <button disabled title="lands in v1 with the docker judge">submit</button>
+            <button className="secondary" onClick={() => { setTab('run'); void run(); }} disabled={running}>{running ? 'running…' : 'run'}</button>
+            <button onClick={() => void doSubmit()} disabled={!!sub.current && !sub.current.judgedAt}>submit</button>
           </div>
         </div>
         <Editor
@@ -115,6 +140,11 @@ export function ProblemPage() {
           theme="vs-dark"
           options={{ fontSize: 14, minimap: { enabled: false }, scrollBeyondLastLine: false, tabSize: 4 }}
         />
+        <div className="row tabs">
+          <button className={`link ${tab === 'run' ? 'on' : ''}`} onClick={() => setTab('run')}>run with custom input</button>
+          <button className={`link ${tab === 'submit' ? 'on' : ''}`} onClick={() => setTab('submit')}>submissions{mine.length ? ` (${mine.length})` : ''}</button>
+        </div>
+        {tab === 'run' && (
         <div className="io">
           <div>
             <div className="lbl">stdin</div>
@@ -136,6 +166,29 @@ export function ProblemPage() {
             </pre>
           </div>
         </div>
+        )}
+        {tab === 'submit' && (
+          <div>
+            {error && <p className="error">{error}</p>}
+            {sub.error && <p className="error">{sub.error}</p>}
+            {sub.current && <VerdictPanel s={sub.current} />}
+            {mine.length > 0 && (
+              <table className="subs">
+                <tbody>
+                  {mine.map((m) => (
+                    <tr key={m.id} className={sub.current?.id === m.id ? 'sel' : ''} onClick={() => { sub.setCurrent(m); if (!m.judgedAt) sub.watch(m.id); }}>
+                      <td><VerdictChip status={m.status} /></td>
+                      <td className="mono">{LANGUAGE_SPEC[m.language as Language]?.name ?? m.language}</td>
+                      <td className="mono muted">{m.timeMs !== null ? `${m.timeMs} ms` : ''}</td>
+                      <td className="muted">{new Date(m.submittedAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {!sub.current && mine.length === 0 && <p className="muted">no submissions yet. write a solution and hit submit.</p>}
+          </div>
+        )}
       </section>
     </div>
   );

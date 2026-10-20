@@ -1,0 +1,24 @@
+{
+  "name": "@oj/judge-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@oj/contracts": "workspace:*",
+    "@oj/db": "workspace:*",
+    "@oj/judge": "workspace:*",
+    "@oj/queue": "workspace:*",
+    "@oj/sandbox": "workspace:*",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.4.1",
+    "pino": "^9.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": { "pino-pretty": "^11.3.0" }
+}

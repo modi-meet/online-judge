@@ -4,14 +4,29 @@
     {
       "name": "api",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/api && pnpm dev"],
+      "runtimeArgs": [
+        "-c",
+        "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/api && pnpm dev"
+      ],
       "port": 4000
     },
     {
       "name": "web",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/web && pnpm dev"],
+      "runtimeArgs": [
+        "-c",
+        "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/web && pnpm dev"
+      ],
       "port": 5173
+    },
+    {
+      "name": "judge-worker",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/judge-worker && pnpm dev"
+      ],
+      "port": 4001
     }
   ]
 }

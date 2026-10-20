@@ -11,13 +11,14 @@ export class ApiError extends Error {
   }
 }
 
-async function raw<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function raw<T>(method: string, path: string, body?: unknown, extra: Record<string, string> = {}): Promise<T> {
   const res = await fetch(path, {
     method,
     credentials: 'include',
     headers: {
       ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
       ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
+      ...extra,
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -31,13 +32,13 @@ async function raw<T>(method: string, path: string, body?: unknown): Promise<T> 
 }
 
 /** one silent refresh on 401, then give up and let the caller show the login page. */
-export async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
+export async function api<T>(method: string, path: string, body?: unknown, extra?: Record<string, string>): Promise<T> {
   try {
-    return await raw<T>(method, path, body);
+    return await raw<T>(method, path, body, extra);
   } catch (e) {
     if (e instanceof ApiError && e.status === 401 && !path.startsWith('/api/auth/')) {
       const ok = await refresh();
-      if (ok) return raw<T>(method, path, body);
+      if (ok) return raw<T>(method, path, body, extra);
     }
     throw e;
   }

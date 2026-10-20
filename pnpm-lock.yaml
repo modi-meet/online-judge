@@ -29,12 +29,18 @@ importers:
       '@oj/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@oj/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
       '@oj/sandbox':
         specifier: workspace:*
         version: link:../../packages/sandbox
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
+      bullmq:
+        specifier: ^5.28.2
+        version: 5.81.5
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -94,6 +100,40 @@ importers:
         specifier: ^7.0.0
         version: 7.3.1
 
+  apps/judge-worker:
+    dependencies:
+      '@oj/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@oj/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@oj/judge':
+        specifier: workspace:*
+        version: link:../../packages/judge
+      '@oj/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@oj/sandbox':
+        specifier: workspace:*
+        version: link:../../packages/sandbox
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.6.1
+      ioredis:
+        specifier: ^5.4.1
+        version: 5.11.1
+      pino:
+        specifier: ^9.5.0
+        version: 9.14.0
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      pino-pretty:
+        specifier: ^11.3.0
+        version: 11.3.0
+
   apps/web:
     dependencies:
       '@monaco-editor/react':
@@ -145,6 +185,9 @@ importers:
       '@oj/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@oj/db':
+        specifier: workspace:*
+        version: link:../db
       '@oj/sandbox':
         specifier: workspace:*
         version: link:../sandbox
