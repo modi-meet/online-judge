@@ -28,6 +28,8 @@ a sandboxed, queue-backed online judge (c++/python/java first) with an ai mentor
 ## where things are (v4)
 
 - `apps/ai-mentor` — the intelligence plane, `:4002`. verifies the api's jwt with the shared secret; `MONGO_URI_RO` in prod. fake provider when `AI_API_KEY` is empty
+- `apps/ingestor` — a cli job: `FileAdapter` → `normalize()` (pure, tested) → `ingest()` upsert on `(source.site, externalId)`. new sources implement `Adapter` in `src/adapters`
+- `apps/api/test/edges.test.ts` — the user-mistake suite; add a case there when a new way to misuse the api appears
 - `packages/mentor` — pure parts of the mentor (modes, fitter, leak guard) with unit tests; no io
 - `chaos/` — three drills, each prints PASS/FAIL. `kill-worker.sh` starts its own worker, stop the dev one first
 - `load/` — `burst.mjs` (no deps) and `k6/contest.js`; results go to `docs/load-results.md`

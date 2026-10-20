@@ -15,6 +15,11 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     res.status(413).json({ error: { code: 'VALIDATION_FAILED', message: 'payload too large', requestId: req.id } });
     return;
   }
+  // a body that is not json is the client's mistake, not ours: 400 with the envelope, no log noise
+  if (err && typeof err === 'object' && 'type' in err && err.type === 'entity.parse.failed') {
+    res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'body is not valid json', requestId: req.id } });
+    return;
+  }
   logger.error({ err, requestId: req.id }, 'unhandled error');
   res.status(500).json({ error: { code: 'INTERNAL', message: 'something went wrong', requestId: req.id } });
 };
