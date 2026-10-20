@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/api && pnpm dev"],
+      "port": 4000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/web && pnpm dev"],
+      "port": 5173
+    }
+  ]
+}
