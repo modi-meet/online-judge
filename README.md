@@ -158,6 +158,6 @@ pnpm dev                       # api :4000, web :5173, judge worker
 
 ## status
 
-`v1` — judging works end to end locally. submit goes through bullmq to a docker judge worker (one container per run, cpu time and peak rss from gnu time, read-only scratch, no network), the verdict is written by compare-and-set in the same transaction as its outbox row, and reaches the browser over sse. contests and the leaderboard are next.
+`v1` — judging works end to end locally. submit goes through bullmq to a docker judge worker (one container per run, cpu time and peak rss from gnu time, read-only scratch, no network), the verdict is written by compare-and-set in the same transaction as its outbox row, and reaches the browser over sse. contests run with icpc standings projected into a redis sorted set straight from the worker (kafka stays gated until a second consumer exists). the seed includes a running practice contest.
 
 seed a setter account (`setter` / `setter-password`) and five problems with `pnpm --filter @oj/db seed`.
