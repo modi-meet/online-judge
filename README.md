@@ -146,13 +146,17 @@ regenerate the pdfs with `pnpm docs:pdf`.
 ## running locally
 
 ```bash
-nvm use                 # node 22
+nvm use                        # node 22
 pnpm install
-pnpm stack:up           # mongo, redis, minio
+pnpm stack:up                  # mongo + redis (minio: --profile s3, v2+)
 cp .env.example .env
-pnpm dev
+pnpm --filter @oj/db migrate   # indexes
+pnpm --filter @oj/db seed      # sample problems
+pnpm dev                       # api :4000, web :5173
 ```
 
 ## status
 
-`v0` — scaffolding. nothing runs yet.
+`v0` — runs locally. auth, problem catalogue, monaco editor and `/run` on the host executor. `submit` lands in v1 with the docker judge.
+
+seed a setter account (`setter` / `setter-password`) and five problems with `pnpm --filter @oj/db seed`.

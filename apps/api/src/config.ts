@@ -1,5 +1,9 @@
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
 import { z } from 'zod';
+
+// the .env lives at the repo root; services run from their own folder. real
+// env always wins over the file.
+loadEnv({ path: new URL('../../../.env', import.meta.url) });
 
 // every service validates its own env at boot and exits non-zero on a missing
 // variable. failing in the deploy beats failing on the first request.
