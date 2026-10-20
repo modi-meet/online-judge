@@ -16,6 +16,7 @@ const Env = z.object({
   JUDGE_PIN_CORES: z.enum(['true', 'false']).default('false'),
   JUDGE_SCRATCH_ROOT: z.string().optional(),
   LOG_LEVEL: z.string().default('info'),
+  METRICS_PORT: z.coerce.number().int().default(9101),
 });
 
 const parsed = Env.safeParse(process.env);

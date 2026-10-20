@@ -17,6 +17,7 @@
     "@oj/queue": "workspace:*",
     "@oj/sandbox": "workspace:*",
     "@oj/storage": "workspace:*",
+    "@oj/telemetry": "workspace:*",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.28.2",
     "cookie-parser": "^1.4.7",
