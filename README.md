@@ -117,21 +117,27 @@ the mentor is optional by construction: no inbound import from the judge path, a
 ```
 oj/
 ├── apps/
-│   ├── web/                    react + vite + monaco
-│   ├── api/                    express: auth, problems, submissions, contests
-│   ├── judge-worker/           queue consumer → sandbox → verdict
-│   ├── leaderboard-projector/  kafka consumer → redis zset
-│   ├── ai-mentor/              mode router, context builder, leak guard
-│   └── ingestor/               source adapters + normalizer
+│   ├── web/                    react + vite + monaco, mentor panel
+│   ├── api/                    express: auth, problems, submissions, contests, sse, ws
+│   ├── judge-worker/           queue consumer → sandbox → verdict (+ outbox row)
+│   ├── outbox-relay/           outbox rows → redis streams
+│   ├── leaderboard-projector/  stream consumer → redis zset → ws deltas
+│   └── ai-mentor/              own process on :4002 — modes, context, guard, budget
 ├── packages/
 │   ├── contracts/              zod schemas + event types, shared fe/be
-│   ├── db/                     mongoose models + migrations
+│   ├── db/                     mongoose models, migrations, seed
 │   ├── queue/                  bullmq queue and job definitions
 │   ├── sandbox/                docker runner, limits, result parsing
-│   └── events/                 kafka producer/consumer wrappers
+│   ├── judge/                  comparators, verdict mapping, judge loop, standings, golden suite
+│   ├── events/                 transport interface + redis streams (kafka stays gated)
+│   ├── storage/                s3 / file object store, inline refs
+│   ├── mentor/                 mode registry, complexity fitter, leak guard
+│   └── telemetry/              prometheus registry, the hld metrics
 ├── runners/                    one dockerfile per language
-├── infra/                      docker-compose (dev) · terraform + k8s (prod)
-└── docs/                       hld, lld, build pipeline
+├── load/                       k6 contest profile, zero-dep burst, token pool seeder
+├── chaos/                      the three hld §14 drills as scripts
+├── infra/                      compose (dev, prod), dockerfiles, nginx, k8s (keda, blue/green)
+└── docs/                       hld, lld, runbooks, load results
 ```
 
 ## design docs
@@ -158,6 +164,11 @@ pnpm dev                       # api :4000, web :5173, judge worker
 
 ## status
 
-`v1` — judging works end to end locally. submit goes through bullmq to a docker judge worker (one container per run, cpu time and peak rss from gnu time, read-only scratch, no network), the verdict is written by compare-and-set in the same transaction as its outbox row, and reaches the browser over sse. contests run with icpc standings projected into a redis sorted set straight from the worker (kafka stays gated until a second consumer exists). the seed includes a running practice contest.
+`v4` — all four versions have landed locally.
 
-seed a setter account (`setter` / `setter-password`) and five problems with `pnpm --filter @oj/db seed`.
+- **v1** judging works end to end. submit goes through bullmq to a docker judge worker (one container per run, cpu time and peak rss from gnu time, read-only scratch, no network), the verdict is written by compare-and-set in the same transaction as its outbox row, and reaches the browser over sse. contests run with icpc standings.
+- **v2** the outbox is relayed to redis streams behind an `EventTransport` (kafka stays gated until a second consumer exists), a projector keeps standings in a redis sorted set and pushes deltas over websocket, code and test cases go to s3 or a local store, every process exposes `/metrics`, and there are dockerfiles, a prod compose, an nginx gateway and k8s manifests with keda scaling workers on queue depth.
+- **v3** the ai mentor runs as its own process on `:4002`. six modes; modes 3 and 4 run the learner's code in the sandbox first (a `sys.settrace` line trace, timings at four input sizes fitted to a growth class). the context is built server-side from sample cases only, a leak guard holds every code fence until it has seen it whole, a redis budget caps tokens per day and per user, identical questions are served from cache. no api key means a fake provider: the whole pipeline, no bill.
+- **v4** a 31-fixture golden-verdict suite (every terminal state plus the containment cases) runs against real docker and is the blue/green promotion gate; three chaos drills (`kill -9` a worker mid-judge, flush redis mid-contest, stop the mentor) pass as scripts; a load generator measured `/submit` at 40 ms p95 and zero dropped submissions on a laptop (`docs/load-results.md`); runbooks cover the alerts that exist.
+
+seed a setter account (`setter` / `setter-password`) and five problems with `pnpm --filter @oj/db seed`. the mentor panel appears on every problem page once `AI_ENABLED=true`.

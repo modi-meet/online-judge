@@ -22,6 +22,17 @@ a sandboxed, queue-backed online judge (c++/python/java first) with an ai mentor
 - the v0 host executor is dev-only and guarded four ways (lld §6.6); delete it when v1 merges
 - the mentor never gets a hidden test case, never gets imported by api/worker, holds a read-only db credential
 - kafka is not added until a second real consumer of judged events exists (hld §12)
+- the golden-verdict suite (`packages/judge/test/golden`) is the promotion gate; a new verdict path means a new fixture
+- load generators never register users through the api (the login bucket is per ip); `load/seed-users.mjs` mints the token pool
+
+## where things are (v4)
+
+- `apps/ai-mentor` — the intelligence plane, `:4002`. verifies the api's jwt with the shared secret; `MONGO_URI_RO` in prod. fake provider when `AI_API_KEY` is empty
+- `packages/mentor` — pure parts of the mentor (modes, fitter, leak guard) with unit tests; no io
+- `chaos/` — three drills, each prints PASS/FAIL. `kill-worker.sh` starts its own worker, stop the dev one first
+- `load/` — `burst.mjs` (no deps) and `k6/contest.js`; results go to `docs/load-results.md`
+- `docs/runbooks/` — one page per alert; `promote.md` is the blue/green flip (`infra/k8s/promote.sh`)
+- `.github/workflows/ci.yml` — unit job, plus the golden suite on linux (tle/mle are indicative on macos, lld §17.2)
 
 ## build order
 

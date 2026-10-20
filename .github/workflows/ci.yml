@@ -1,0 +1,35 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    services:
+      redis: { image: redis:7, ports: ["6379:6379"] }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.12.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r --filter './packages/*' build
+      - run: pnpm -r typecheck
+      - run: pnpm --filter @oj/contracts --filter @oj/mentor --filter @oj/storage test
+      - run: pnpm --filter @oj/judge exec vitest run test/compare.test.ts test/verdict.test.ts test/standings.test.ts
+        env: { REDIS_URL: redis://localhost:6379/2 }
+  golden:
+    # the promotion gate. linux only: tle and mle are indicative on macos (lld §17.2).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.12.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r --filter './packages/*' build
+      - run: runners/build.sh dev
+      - run: pnpm --filter @oj/judge exec vitest run test/golden.test.ts
+        env: { JUDGE_SCRATCH_ROOT: /tmp/oj-scratch }
