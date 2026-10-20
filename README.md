@@ -106,7 +106,7 @@ the mentor is optional by construction: no inbound import from the judge path, a
 
 | version | level | theme | what lands |
 |---|---|---|---|
-| **v0** | l1–l2 | skeleton | express + mongo + react, jwt auth, problem crud, monaco, `/run` on the host. **localhost only, never deployed.** |
+| **v0** | l1–l2 | skeleton | express + mongo + react, jwt auth, problem crud, monaco, `/run` on the host. **localhost only, never deployed; deleted once v1 landed.** |
 | **v1** | l3 | product | docker sandbox, test cases, real verdicts, async `/submit` via bullmq, contests, profile. one compose stack on one box. |
 | **v2** | l4a | distributed | kafka event backbone, event-sourced live leaderboard, s3 test cases, autoscaled workers, gateway, tracing. |
 | **v3** | l4b | intelligence | ai mentor — six modes, execution-grounded, leak guard, token budgets. |
@@ -152,11 +152,12 @@ pnpm stack:up                  # mongo + redis (minio: --profile s3, v2+)
 cp .env.example .env
 pnpm --filter @oj/db migrate   # indexes
 pnpm --filter @oj/db seed      # sample problems
-pnpm dev                       # api :4000, web :5173
+./runners/build.sh dev         # judge images (needs docker)
+pnpm dev                       # api :4000, web :5173, judge worker
 ```
 
 ## status
 
-`v0` — runs locally. auth, problem catalogue, monaco editor and `/run` on the host executor. `submit` lands in v1 with the docker judge.
+`v1` — judging works end to end locally. submit goes through bullmq to a docker judge worker (one container per run, cpu time and peak rss from gnu time, read-only scratch, no network), the verdict is written by compare-and-set in the same transaction as its outbox row, and reaches the browser over sse. contests and the leaderboard are next.
 
 seed a setter account (`setter` / `setter-password`) and five problems with `pnpm --filter @oj/db seed`.

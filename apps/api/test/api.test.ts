@@ -2,11 +2,11 @@ import './setup.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { connect, disconnect, mongoose } from '@oj/db';
-import { HostExecutor } from '@oj/sandbox';
+import { DockerExecutor } from '@oj/sandbox';
 import { createApp } from '../src/app.js';
 import { redis } from '../src/redis.js';
 
-const app = createApp({ executor: new HostExecutor(), queue: { add: async () => undefined } as never });
+const app = createApp({ executor: new DockerExecutor({ imageTag: 'dev' }), queue: { add: async () => undefined } as never });
 const agent = () => request(app);
 
 beforeAll(async () => {
