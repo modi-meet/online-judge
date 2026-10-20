@@ -38,6 +38,13 @@ services:
     env_file: ../.env
     environment: { MONGO_URI: "mongodb://mongo:27017/oj?directConnection=true", REDIS_URL: "redis://redis:6379" }
     depends_on: [api]
+  # the intelligence plane. the api has no dependency on it; nginx routes /api/ai here.
+  ai-mentor:
+    build: { context: .., dockerfile: infra/Dockerfile.service, args: { APP: ai-mentor } }
+    env_file: ../.env
+    environment: { MONGO_URI: "mongodb://mongo:27017/oj?directConnection=true", REDIS_URL: "redis://redis:6379", JUDGE_SCRATCH_ROOT: /data/scratch, PORT: "4002" }
+    volumes: [scratch:/data/scratch, /var/run/docker.sock:/var/run/docker.sock]
+    depends_on: { mongo: { condition: service_healthy }, redis: { condition: service_started } }
   web:
     build: { context: .., dockerfile: infra/Dockerfile.web }
     ports: ["80:80"]
