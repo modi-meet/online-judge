@@ -25,3 +25,5 @@ coverage/
 
 # docs pipeline output (regenerate with docs/build-pdf.sh)
 docs/*-print.html
+load/.tokens.json
+load/results/
