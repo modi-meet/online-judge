@@ -1,0 +1,48 @@
+{
+  "site": "oj-samples",
+  "problems": [
+    {
+      "externalId": "vowels",
+      "title": "Count the Vowels",
+      "statement": "read one line and print how many of its characters are vowels (a, e, i, o, u, in either case).\n\nconstraints: 1 <= length <= 10^5",
+      "inputFormat": "one line of printable ascii.",
+      "outputFormat": "a single integer.",
+      "difficulty": 800,
+      "tags": ["strings", "Implementation"],
+      "license": "cc-by-4.0",
+      "testcases": [
+        { "input": "hello world\n", "output": "3\n", "isSample": true },
+        { "input": "AEIOU\r\n", "output": "5" },
+        { "input": "rhythm\n", "output": "0\n" },
+        { "input": "The quick brown fox jumps over the lazy dog\n", "output": "11\n" }
+      ]
+    },
+    {
+      "externalId": "fib-mod",
+      "title": "Fibonacci Modulo",
+      "statement": "print the n-th fibonacci number modulo 10^9+7, with f(0)=0 and f(1)=1.\n\nconstraints: 0 <= n <= 10^18. an o(n) loop will not pass.",
+      "difficulty": 1600,
+      "tags": ["math", "matrix-exponentiation"],
+      "timeLimitMs": 500,
+      "testcases": [
+        { "input": "10\n", "output": "55\n", "isSample": true },
+        { "input": "0\n", "output": "0\n" },
+        { "input": "1\n", "output": "1\n" },
+        { "input": "1000000000000000000\n", "output": "209783453\n" }
+      ]
+    },
+    {
+      "externalId": "brackets",
+      "title": "Balanced Brackets",
+      "statement": "read a string of (), [] and {} and print yes if it is balanced, otherwise no.\n\nconstraints: 1 <= length <= 10^5",
+      "difficulty": "easy",
+      "tags": ["stack"],
+      "testcases": [
+        { "input": "([]{})\n", "output": "yes\n", "isSample": true },
+        { "input": "([)]\n", "output": "no\n" },
+        { "input": "((((\n", "output": "no\n" },
+        { "input": "{}\n", "output": "yes\n" }
+      ]
+    }
+  ]
+}

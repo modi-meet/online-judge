@@ -185,6 +185,21 @@ importers:
         specifier: ^7.0.0
         version: 7.3.1
 
+  apps/ingestor:
+    dependencies:
+      '@oj/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@oj/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.6.1
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+
   apps/judge-worker:
     dependencies:
       '@oj/contracts':
