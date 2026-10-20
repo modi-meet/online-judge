@@ -3,10 +3,16 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { connect, disconnect, mongoose } from '@oj/db';
 import { DockerExecutor } from '@oj/sandbox';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { FileStore } from '@oj/storage';
 import { createApp } from '../src/app.js';
+
+const store = new FileStore(mkdtempSync(join(tmpdir(), 'oj-test-store-')));
 import { redis } from '../src/redis.js';
 
-const app = createApp({ executor: new DockerExecutor({ imageTag: 'dev' }), queue: { add: async () => undefined } as never });
+const app = createApp({ executor: new DockerExecutor({ imageTag: 'dev' }), queue: { add: async () => undefined } as never, store });
 const agent = () => request(app);
 
 beforeAll(async () => {

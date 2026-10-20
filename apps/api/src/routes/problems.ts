@@ -2,11 +2,13 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { ListQuery, ProblemBody, TestcaseBody, objectId } from '@oj/contracts';
 import { ProblemModel, TestcaseModel, Types } from '@oj/db';
+import { putOrInline, type ObjectStore } from '@oj/storage';
 import { AppError, notFound } from '../errors.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
-export const problemsRouter = Router();
+export function problemsRouter(store: ObjectStore) {
+const problemsRouter = Router();
 
 const enc = (id: Types.ObjectId) => Buffer.from(String(id)).toString('base64url');
 const dec = (c: string) => {
@@ -53,7 +55,7 @@ problemsRouter.get('/:slug', authenticate, async (req, res, next) => {
         inputFormat: p.inputFormat, outputFormat: p.outputFormat, difficulty: p.difficulty,
         tags: p.tags, timeLimitMs: p.timeLimitMs, memoryLimitMb: p.memoryLimitMb, isPublic: p.isPublic,
       },
-      samples: samples.map((t) => ({ idx: t.idx, input: t.inputRef.replace(/^inline:/, ''), output: t.outputRef.replace(/^inline:/, '') })),
+      samples: await Promise.all(samples.map(async (t) => ({ idx: t.idx, input: await store.get(t.inputRef), output: await store.get(t.outputRef) }))),
     });
   } catch (e) { next(e); }
 });
@@ -79,17 +81,21 @@ problemsRouter.put('/:id/testcases', authenticate, authorize('setter'), validate
     if (!p) throw notFound('problem');
     const { testcases } = req.body as z.infer<typeof TestcasesBody>;
     await TestcaseModel.deleteMany({ problemId: p._id });
-    await TestcaseModel.insertMany(
-      testcases.map((t, idx) => ({
-        problemId: p._id, idx, isSample: t.isSample,
-        inputRef: `inline:${t.input}`, outputRef: `inline:${t.output}`,
-        bytes: Buffer.byteLength(t.input) + Buffer.byteLength(t.output),
-      })),
-    );
     // a version bump invalidates every worker's cache of the old set
     const { createHash } = await import('node:crypto');
-    p.testcaseSetVersion = createHash('sha256').update(JSON.stringify(testcases)).digest('hex').slice(0, 16);
+    const version = createHash('sha256').update(JSON.stringify(testcases)).digest('hex').slice(0, 16);
+    await TestcaseModel.insertMany(
+      await Promise.all(testcases.map(async (t, idx) => ({
+        problemId: p._id, idx, isSample: t.isSample,
+        inputRef: await putOrInline(store, `testcases/${String(p._id)}/${version}/${idx}.in`, t.input),
+        outputRef: await putOrInline(store, `testcases/${String(p._id)}/${version}/${idx}.out`, t.output),
+        bytes: Buffer.byteLength(t.input) + Buffer.byteLength(t.output),
+      }))),
+    );
+    p.testcaseSetVersion = version;
     await p.save();
     res.json({ count: testcases.length, testcaseSetVersion: p.testcaseSetVersion });
   } catch (e) { next(e); }
 });
+return problemsRouter;
+}

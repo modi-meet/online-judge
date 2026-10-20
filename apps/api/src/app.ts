@@ -6,6 +6,7 @@ import { pinoHttp } from 'pino-http';
 import type { Queue } from 'bullmq';
 import type { JudgeJob } from '@oj/queue';
 import type { Executor } from '@oj/sandbox';
+import type { ObjectStore } from '@oj/storage';
 import { config } from './config.js';
 import { logger } from './logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -18,7 +19,7 @@ import { submissionsRouter } from './routes/submissions.js';
 import { usersRouter } from './routes/users.js';
 
 // chain order is load-bearing. lld §4.1
-export function createApp(deps: { executor: Executor; queue: Queue<JudgeJob> }) {
+export function createApp(deps: { executor: Executor; queue: Queue<JudgeJob>; store: ObjectStore }) {
   const app = express();
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
@@ -39,9 +40,9 @@ export function createApp(deps: { executor: Executor; queue: Queue<JudgeJob> }) 
 
   app.get('/health', (_req, res) => res.json({ ok: true, executor: deps.executor.kind }));
   app.use('/api/auth', authRouter);
-  app.use('/api/problems', problemsRouter);
+  app.use('/api/problems', problemsRouter(deps.store));
   app.use('/api/run', runRouter(deps.executor));
-  app.use('/api/submissions', submissionsRouter(deps.queue));
+  app.use('/api/submissions', submissionsRouter(deps.queue, deps.store));
   app.use('/api/users', usersRouter);
   app.use('/api/contests', contestsRouter);
 

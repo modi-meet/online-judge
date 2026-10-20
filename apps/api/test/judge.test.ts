@@ -5,7 +5,13 @@ import { Redis } from 'ioredis';
 import { connect, disconnect, mongoose, OutboxModel, SubmissionModel, UserModel } from '@oj/db';
 import { judgeSubmission } from '@oj/judge';
 import { DockerExecutor } from '@oj/sandbox';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { FileStore } from '@oj/storage';
 import { createApp } from '../src/app.js';
+
+const store = new FileStore(mkdtempSync(join(tmpdir(), 'oj-test-store-')));
 import { redis } from '../src/redis.js';
 import { closeStatusBus } from '../src/services/statusBus.js';
 
@@ -14,8 +20,8 @@ import { closeStatusBus } from '../src/services/statusBus.js';
 const executor = new DockerExecutor({ imageTag: 'dev' });
 const pub = new Redis(process.env['REDIS_URL']!);
 const jobs: string[] = [];
-const app = createApp({ executor, queue: { add: async (_n: string, d: { submissionId: string }) => { jobs.push(d.submissionId); } } as never });
-const judge = (id: string) => judgeSubmission(id, { executor, workerId: 'test', publish: (sid, ev) => pub.publish(`sub:${sid}`, JSON.stringify(ev)).then(() => undefined) });
+const app = createApp({ executor, queue: { add: async (_n: string, d: { submissionId: string }) => { jobs.push(d.submissionId); } } as never, store });
+const judge = (id: string) => judgeSubmission(id, { executor, workerId: 'test', store, publish: (sid, ev) => pub.publish(`sub:${sid}`, JSON.stringify(ev)).then(() => undefined) });
 
 let setter = '';
 let user = '';
