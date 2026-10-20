@@ -7,6 +7,7 @@ import type { Queue } from 'bullmq';
 import type { JudgeJob } from '@oj/queue';
 import type { Executor } from '@oj/sandbox';
 import type { ObjectStore } from '@oj/storage';
+import { metrics, registry } from '@oj/telemetry';
 import { config } from './config.js';
 import { logger } from './logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -25,6 +26,12 @@ export function createApp(deps: { executor: Executor; queue: Queue<JudgeJob>; st
   app.disable('x-powered-by');
 
   app.use(requestId);
+  app.use((req, res, next) => {
+    const end = metrics.httpDuration.startTimer();
+    res.on('finish', () => end({ method: req.method, route: (req.route?.path as string | undefined) ?? req.baseUrl ?? req.path, status: String(res.statusCode) }));
+    next();
+  });
+  app.get('/metrics', async (_req, res) => { res.setHeader('content-type', registry.contentType); res.send(await registry.metrics()); });
   app.use(pinoHttp({
     logger,
     genReqId: (req) => (req as express.Request).id,

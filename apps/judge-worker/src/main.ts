@@ -5,6 +5,7 @@ import { judgeSubmission, sweepStuck } from '@oj/judge';
 import { judgeQueue, judgeWorker, PRIORITY } from '@oj/queue';
 import { DockerExecutor } from '@oj/sandbox';
 import { storeFromEnv } from '@oj/storage';
+import { metrics, serveMetrics } from '@oj/telemetry';
 import { config } from './config.js';
 
 const log = pino({ level: config.LOG_LEVEL, ...(config.NODE_ENV === 'development' ? { transport: { target: 'pino-pretty' } } : {}) });
@@ -33,6 +34,7 @@ const release = (i: number) => { const w = waiters.shift(); if (w) w(i); else fr
 const worker = judgeWorker(config.REDIS_URL, config.JUDGE_SLOTS, async (job) => {
   const slot = await acquire();
   const started = Date.now();
+  metrics.slotsBusy.inc();
   try {
     const verdict = await judgeSubmission(job.data.submissionId, {
       executor: slots[slot]!,
@@ -41,7 +43,14 @@ const worker = judgeWorker(config.REDIS_URL, config.JUDGE_SLOTS, async (job) => 
       publish: (id, ev) => pub.publish(`sub:${id}`, JSON.stringify(ev)).then(() => undefined),
     });
     log.info({ submissionId: job.data.submissionId, verdict, slot, ms: Date.now() - started, attempt: job.attemptsMade + 1 }, verdict ? 'judged' : 'skipped, already owned');
+    if (verdict) {
+      metrics.verdicts.inc({ verdict, language: 'all' });
+      metrics.judgeDuration.observe({ language: 'all' }, (Date.now() - started) / 1000);
+      if (verdict === 'MLE') metrics.sandboxOom.inc();
+      if (verdict === 'TLE') metrics.sandboxTimeout.inc();
+    }
   } finally {
+    metrics.slotsBusy.dec();
     release(slot);
   }
 });
@@ -54,7 +63,8 @@ const sweeper = setInterval(() => {
     .catch((e: Error) => log.error({ err: e.message }, 'sweeper failed'));
 }, 60_000);
 
-log.info({ slots: config.JUDGE_SLOTS, imageTag: config.SANDBOX_IMAGE_TAG, workerId: config.workerId }, 'judge worker ready');
+serveMetrics(config.METRICS_PORT);
+log.info({ slots: config.JUDGE_SLOTS, imageTag: config.SANDBOX_IMAGE_TAG, workerId: config.workerId, metricsPort: config.METRICS_PORT }, 'judge worker ready');
 
 const shutdown = async (sig: string) => {
   log.info({ sig }, 'draining');

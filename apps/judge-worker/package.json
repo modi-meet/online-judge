@@ -16,10 +16,13 @@
     "@oj/queue": "workspace:*",
     "@oj/sandbox": "workspace:*",
     "@oj/storage": "workspace:*",
+    "@oj/telemetry": "workspace:*",
     "dotenv": "^16.4.5",
     "ioredis": "^5.4.1",
     "pino": "^9.5.0",
     "zod": "^3.23.8"
   },
-  "devDependencies": { "pino-pretty": "^11.3.0" }
+  "devDependencies": {
+    "pino-pretty": "^11.3.0"
+  }
 }

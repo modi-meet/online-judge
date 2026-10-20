@@ -1,0 +1,59 @@
+# the execution plane on kubernetes: a tainted node pool, no credentials, no
+# egress, autoscaled on queue depth. hld §11.3 and §13. untested against a real
+# cluster — review every line before applying.
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: judge-worker, namespace: oj }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: judge-worker } }
+  template:
+    metadata: { labels: { app: judge-worker } }
+    spec:
+      nodeSelector: { oj.io/pool: judge }
+      tolerations: [{ key: oj.io/judge, operator: Exists, effect: NoSchedule }]
+      automountServiceAccountToken: false        # no cluster secrets on an untrusted node
+      containers:
+        - name: worker
+          image: oj/judge-worker:pinned
+          envFrom: [{ secretRef: { name: judge-worker-env } }]
+          resources: { requests: { cpu: "14", memory: 4Gi }, limits: { cpu: "14", memory: 6Gi } }
+          volumeMounts: [{ name: docker-sock, mountPath: /var/run/docker.sock }, { name: scratch, mountPath: /data/scratch }]
+          ports: [{ name: metrics, containerPort: 9101 }]
+      volumes:
+        - { name: docker-sock, hostPath: { path: /var/run/docker.sock } }
+        - { name: scratch, emptyDir: { sizeLimit: 8Gi } }   # nothing durable on the node
+---
+# egress denied by default: the judge pool reaches redis, mongo and the object
+# store on their ports and nothing else. an escaped process cannot phone home.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: judge-worker-egress, namespace: oj }
+spec:
+  podSelector: { matchLabels: { app: judge-worker } }
+  policyTypes: [Egress, Ingress]
+  ingress: [{ from: [{ podSelector: { matchLabels: { app: prometheus } } }], ports: [{ port: 9101 }] }]
+  egress:
+    - to: [{ podSelector: { matchLabels: { app: redis } } }]
+      ports: [{ port: 6379 }]
+    - to: [{ podSelector: { matchLabels: { app: mongo } } }]
+      ports: [{ port: 27017 }]
+    - to: [{ ipBlock: { cidr: 10.0.0.0/8 } }]        # the s3 vpc endpoint; never 0.0.0.0/0
+      ports: [{ port: 443 }]
+---
+# scale on queue depth, not cpu. hld §7: size for the steady rate, let the queue
+# absorb the spike, hold the p95 by draining.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata: { name: judge-worker, namespace: oj }
+spec:
+  scaleTargetRef: { name: judge-worker }
+  minReplicaCount: 2
+  maxReplicaCount: 8
+  cooldownPeriod: 300
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus.monitoring:9090
+        query: sum(submission_queue_depth)
+        threshold: "50"          # one more worker per 50 waiting submissions
