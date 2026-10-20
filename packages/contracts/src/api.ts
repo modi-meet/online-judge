@@ -90,6 +90,18 @@ export type ListQuery = z.infer<typeof ListQuery>;
 
 export const SubmissionStatus = z.enum(STATUSES);
 
+export const ContestBody = z
+  .object({
+    title: z.string().min(1).max(120),
+    startAt: z.coerce.date(),
+    endAt: z.coerce.date(),
+    problems: z.array(z.object({ problemId: objectId, points: z.number().int().min(1).default(100) })).min(1).max(26),
+    scoring: z.enum(['icpc', 'ioi']).default('icpc'),
+    aiMentorEnabled: z.boolean().default(false),
+  })
+  .refine((c) => c.endAt > c.startAt, { message: 'endAt must be after startAt', path: ['endAt'] });
+export type ContestBody = z.infer<typeof ContestBody>;
+
 /** the error envelope every endpoint returns on failure. see lld §15 */
 export const ErrorCode = z.enum([
   'VALIDATION_FAILED',

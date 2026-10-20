@@ -29,6 +29,9 @@ importers:
       '@oj/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@oj/judge':
+        specifier: workspace:*
+        version: link:../../packages/judge
       '@oj/queue':
         specifier: workspace:*
         version: link:../../packages/queue
@@ -191,6 +194,9 @@ importers:
       '@oj/sandbox':
         specifier: workspace:*
         version: link:../sandbox
+      ioredis:
+        specifier: ^5.4.1
+        version: 5.11.1
 
   packages/queue:
     dependencies:

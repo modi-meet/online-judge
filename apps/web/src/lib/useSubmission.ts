@@ -48,10 +48,10 @@ export function useSubmission() {
     src.onerror = () => { src.close(); fallback(); };
   }, [stop]);
 
-  const submit = useCallback(async (problemId: string, language: string, code: string) => {
+  const submit = useCallback(async (problemId: string, language: string, code: string, contestId?: string | null) => {
     setError(null);
     const key = crypto.randomUUID();
-    const r = await api<{ submissionId: string; status: Status }>('POST', '/api/submissions', { problemId, language, code }, { 'idempotency-key': key });
+    const r = await api<{ submissionId: string; status: Status }>('POST', '/api/submissions', { problemId, language, code, ...(contestId ? { contestId } : {}) }, { 'idempotency-key': key });
     setCurrent({ id: r.submissionId, problemId, language, status: r.status, failedTestcaseIdx: null, passedCount: 0, totalCount: 0, timeMs: null, memoryKb: null, compilerLog: '', stderrTail: '', submittedAt: new Date().toISOString(), judgedAt: null });
     watch(r.submissionId);
     return r.submissionId;

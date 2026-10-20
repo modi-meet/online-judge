@@ -1,6 +1,8 @@
 import { PENDING, PENALISED, type Terminal } from '@oj/contracts';
-import { JudgeRunModel, OutboxModel, ProblemModel, SubmissionModel, TestcaseModel, UserModel, mongoose } from '@oj/db';
+import { ContestModel, JudgeRunModel, OutboxModel, ProblemModel, SubmissionModel, TestcaseModel, UserModel, mongoose } from '@oj/db';
 import type { DockerExecutor } from '@oj/sandbox';
+import type { Redis } from 'ioredis';
+import { projectVerdict } from './standings.js';
 import { compare } from './compare.js';
 import { mapOutcome } from './verdict.js';
 
@@ -9,6 +11,8 @@ export interface JudgeDeps {
   /** fan-out for sse: called on every status transition */
   publish: (submissionId: string, event: StatusEvent) => void | Promise<void>;
   workerId: string;
+  /** standings projection. v1 updates redis directly from the worker; kafka is gated (hld §12) */
+  redis?: Redis;
 }
 
 export interface StatusEvent {
@@ -126,7 +130,18 @@ async function finish(id: mongoose.Types.ObjectId, status: Terminal, stats: Fini
     await session.endSession();
   }
   await deps.publish(String(id), { submissionId: String(id), status, ...stats });
+  if (deps.redis) await projectIfContest(id, status, deps.redis);
   return status;
+}
+
+async function projectIfContest(id: mongoose.Types.ObjectId, status: Terminal, redis: Redis) {
+  const sub = await SubmissionModel.findById(id).select('contestId userId problemId submittedAt').lean();
+  if (!sub?.contestId) return;
+  const contest = await ContestModel.findById(sub.contestId).select('startAt endAt').lean();
+  if (!contest || sub.submittedAt > contest.endAt) return;
+  const outbox = await OutboxModel.findOne({ aggregateId: String(id), topic: 'submission.judged' }).select('envelope').lean();
+  const eventId = (outbox?.envelope as { eventId?: string } | undefined)?.eventId ?? String(id);
+  await projectVerdict(redis, String(sub.contestId), String(sub.userId), eventId, { problemId: String(sub.problemId), status, submittedAt: sub.submittedAt }, contest.startAt);
 }
 
 /** verdicts that cost penalty, re-exported for the projector */

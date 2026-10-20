@@ -47,6 +47,8 @@ export function submissionsRouter(queue: Queue<JudgeJob>) {
         const c = await ContestModel.findById(body.contestId).lean();
         const now = Date.now();
         if (!c || now < c.startAt.getTime() || now > c.endAt.getTime()) throw new AppError('CONTEST_NOT_RUNNING', 'contest is not running');
+        if (!c.participants.some((u) => String(u) === userId)) throw new AppError('FORBIDDEN', 'register for the contest first');
+        if (!c.problems.some((p) => String(p.problemId) === body.problemId)) throw new AppError('VALIDATION_FAILED', 'problem is not in this contest');
       }
       const sub = await SubmissionModel.create({
         userId, problemId: problem._id, contestId: body.contestId ?? null, language: body.language,

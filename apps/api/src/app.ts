@@ -11,6 +11,7 @@ import { logger } from './logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestId } from './middleware/requestId.js';
 import { authRouter } from './routes/auth.js';
+import { contestsRouter } from './routes/contests.js';
 import { problemsRouter } from './routes/problems.js';
 import { runRouter } from './routes/run.js';
 import { submissionsRouter } from './routes/submissions.js';
@@ -42,6 +43,7 @@ export function createApp(deps: { executor: Executor; queue: Queue<JudgeJob> }) 
   app.use('/api/run', runRouter(deps.executor));
   app.use('/api/submissions', submissionsRouter(deps.queue));
   app.use('/api/users', usersRouter);
+  app.use('/api/contests', contestsRouter);
 
   app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'no such route', requestId: res.getHeader('x-request-id') } }));
   app.use(errorHandler);

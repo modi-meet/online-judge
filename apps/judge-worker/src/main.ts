@@ -34,6 +34,7 @@ const worker = judgeWorker(config.REDIS_URL, config.JUDGE_SLOTS, async (job) => 
     const verdict = await judgeSubmission(job.data.submissionId, {
       executor: slots[slot]!,
       workerId: config.workerId,
+      redis: pub,
       publish: (id, ev) => pub.publish(`sub:${id}`, JSON.stringify(ev)).then(() => undefined),
     });
     log.info({ submissionId: job.data.submissionId, verdict, slot, ms: Date.now() - started, attempt: job.attemptsMade + 1 }, verdict ? 'judged' : 'skipped, already owned');
