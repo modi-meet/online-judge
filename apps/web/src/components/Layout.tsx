@@ -9,6 +9,7 @@ export function Layout() {
         <Link to="/problems" className="brand">online judge</Link>
         <nav>
           <NavLink to="/problems">problems</NavLink>
+          <NavLink to="/contests">contests</NavLink>
           {user ? (
             <>
               <NavLink to={`/u/${user.username}`}>{user.username}</NavLink>

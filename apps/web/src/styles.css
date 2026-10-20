@@ -57,3 +57,5 @@ table.list { width: 100%; border-collapse: collapse; background: var(--surface);
 .tabs { gap: 18px; margin-top: 12px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
 .tabs .link { color: var(--ink-2); } .tabs .link.on { color: var(--ink); font-weight: 600; }
 .subs tr { cursor: pointer; }
+.board th, .board td { text-align: center; } .board td:nth-child(2), .board th:nth-child(2) { text-align: left; }
+.cell.good { color: var(--ac); font-weight: 600; } .cell.bad { color: var(--wa); }

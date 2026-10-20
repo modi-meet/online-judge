@@ -1,6 +1,6 @@
 import Editor from '@monaco-editor/react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { LANGUAGES, LANGUAGE_SPEC, type Language, type RunResult } from '@oj/contracts';
 import { ApiError, api } from '../lib/api';
 import { useAuth } from '../lib/auth';
@@ -28,6 +28,8 @@ const langKey = (slug: string) => `oj:lang:${slug}`;
 
 export function ProblemPage() {
   const { slug = '' } = useParams();
+  const [params] = useSearchParams();
+  const contestId = params.get('contest');
   const { user } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
@@ -56,7 +58,7 @@ export function ProblemPage() {
   const doSubmit = async () => {
     if (!user || !view) return nav('/login', { state: { from: loc.pathname } });
     setTab('submit'); setError(null);
-    try { await sub.submit(view.problem.id, language, code); } catch (e) {
+    try { await sub.submit(view.problem.id, language, code, contestId); } catch (e) {
       const msg = e instanceof ApiError && e.code === 'RATE_LIMITED' ? `slow down — try again in ${(e.details as { retryAfterSec: number }).retryAfterSec}s` : (e as Error).message;
       setError(msg);
     }
@@ -100,7 +102,7 @@ export function ProblemPage() {
   return (
     <div className="arena">
       <section className="statement">
-        <Link to="/problems" className="muted">← problems</Link>
+        {contestId ? <Link to={`/contests/${contestId}`} className="muted">← contest</Link> : <Link to="/problems" className="muted">← problems</Link>}
         <h1>{problem.title}</h1>
         <p className="meta">
           <span className={`diff ${problem.difficulty}`}>{problem.difficulty}</span>
