@@ -1,0 +1,50 @@
+# a one-box deployment: every process containerised, judge worker on the host
+# docker socket. staging shape from hld §13. the judge pool hardening in hld §11.3
+# (no credentials, no egress, ephemeral nodes) is a kubernetes concern — see infra/k8s.
+services:
+  mongo:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes: [mongo-data:/data/db]
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'try { rs.status().ok } catch (e) { rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongo:27017\"}]}).ok }'"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis-data:/data]
+
+  api:
+    build: { context: .., dockerfile: infra/Dockerfile.service, args: { APP: api } }
+    env_file: ../.env
+    environment: { MONGO_URI: "mongodb://mongo:27017/oj?directConnection=true", REDIS_URL: "redis://redis:6379", FILE_STORE_ROOT: /data/store, PORT: "4000" }
+    volumes: [store:/data/store]
+    depends_on: { mongo: { condition: service_healthy }, redis: { condition: service_started } }
+  judge-worker:
+    build: { context: .., dockerfile: infra/Dockerfile.service, args: { APP: judge-worker } }
+    env_file: ../.env
+    environment: { MONGO_URI: "mongodb://mongo:27017/oj?directConnection=true", REDIS_URL: "redis://redis:6379", FILE_STORE_ROOT: /data/store, JUDGE_SCRATCH_ROOT: /data/scratch }
+    volumes: [store:/data/store, scratch:/data/scratch, /var/run/docker.sock:/var/run/docker.sock]
+    depends_on: [api]
+  outbox-relay:
+    build: { context: .., dockerfile: infra/Dockerfile.service, args: { APP: outbox-relay } }
+    env_file: ../.env
+    environment: { MONGO_URI: "mongodb://mongo:27017/oj?directConnection=true", REDIS_URL: "redis://redis:6379" }
+    depends_on: [api]
+  leaderboard-projector:
+    build: { context: .., dockerfile: infra/Dockerfile.service, args: { APP: leaderboard-projector } }
+    env_file: ../.env
+    environment: { MONGO_URI: "mongodb://mongo:27017/oj?directConnection=true", REDIS_URL: "redis://redis:6379" }
+    depends_on: [api]
+  web:
+    build: { context: .., dockerfile: infra/Dockerfile.web }
+    ports: ["80:80"]
+    depends_on: [api]
+
+volumes:
+  mongo-data:
+  redis-data:
+  store:
+  scratch:
