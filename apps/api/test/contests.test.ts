@@ -3,16 +3,29 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { Redis } from 'ioredis';
 import { connect, disconnect, mongoose, UserModel } from '@oj/db';
-import { judgeSubmission } from '@oj/judge';
+import { judgeSubmission, projectVerdict } from '@oj/judge';
 import { DockerExecutor } from '@oj/sandbox';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { FileStore } from '@oj/storage';
 import { createApp } from '../src/app.js';
+
+const store = new FileStore(mkdtempSync(join(tmpdir(), 'oj-test-store-')));
 import { redis } from '../src/redis.js';
 import { closeStatusBus } from '../src/services/statusBus.js';
 
 const executor = new DockerExecutor({ imageTag: 'dev' });
 const pub = new Redis(process.env['REDIS_URL']!);
-const app = createApp({ executor, queue: { add: async () => undefined } as never });
-const judge = (id: string) => judgeSubmission(id, { executor, workerId: 'test', redis: pub, publish: () => undefined });
+const app = createApp({ executor, queue: { add: async () => undefined } as never, store });
+// the projector is a separate consumer in v2; the test drives it directly after each judgement
+const judge = async (id: string) => {
+  const v = await judgeSubmission(id, { executor, workerId: 'test', store, publish: () => undefined });
+  const row = (await (await import('@oj/db')).SubmissionModel.findById(id).lean())!;
+  const c = (await (await import('@oj/db')).ContestModel.findById(row.contestId).lean())!;
+  await projectVerdict(pub, String(row.contestId), String(row.userId), `t:${id}`, { problemId: String(row.problemId), status: row.status as never, submittedAt: row.submittedAt }, c.startAt);
+  return v;
+};
 
 let setter = ''; let alice = ''; let bob = '';
 let pA = ''; let pB = ''; let contestId = '';

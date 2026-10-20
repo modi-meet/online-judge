@@ -19,6 +19,7 @@
   "dependencies": {
     "@oj/contracts": "workspace:*",
     "@oj/sandbox": "workspace:*",
+    "@oj/storage": "workspace:*",
     "@oj/db": "workspace:*",
     "ioredis": "^5.4.1"
   }

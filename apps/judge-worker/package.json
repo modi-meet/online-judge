@@ -15,6 +15,7 @@
     "@oj/judge": "workspace:*",
     "@oj/queue": "workspace:*",
     "@oj/sandbox": "workspace:*",
+    "@oj/storage": "workspace:*",
     "dotenv": "^16.4.5",
     "ioredis": "^5.4.1",
     "pino": "^9.5.0",

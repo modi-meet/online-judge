@@ -4,6 +4,7 @@ import { connect, disconnect } from '@oj/db';
 import { judgeSubmission, sweepStuck } from '@oj/judge';
 import { judgeQueue, judgeWorker, PRIORITY } from '@oj/queue';
 import { DockerExecutor } from '@oj/sandbox';
+import { storeFromEnv } from '@oj/storage';
 import { config } from './config.js';
 
 const log = pino({ level: config.LOG_LEVEL, ...(config.NODE_ENV === 'development' ? { transport: { target: 'pino-pretty' } } : {}) });
@@ -11,6 +12,8 @@ const log = pino({ level: config.LOG_LEVEL, ...(config.NODE_ENV === 'development
 await connect(config.MONGO_URI);
 const pub = new Redis(config.REDIS_URL);
 const queue = judgeQueue(config.REDIS_URL);
+const store = storeFromEnv(process.env);
+log.info({ store: store.scheme }, 'object store');
 
 // one executor per slot, each pinned to its own core when the host allows it
 const slots: DockerExecutor[] = [];
@@ -34,7 +37,7 @@ const worker = judgeWorker(config.REDIS_URL, config.JUDGE_SLOTS, async (job) => 
     const verdict = await judgeSubmission(job.data.submissionId, {
       executor: slots[slot]!,
       workerId: config.workerId,
-      redis: pub,
+      store,
       publish: (id, ev) => pub.publish(`sub:${id}`, JSON.stringify(ev)).then(() => undefined),
     });
     log.info({ submissionId: job.data.submissionId, verdict, slot, ms: Date.now() - started, attempt: job.attemptsMade + 1 }, verdict ? 'judged' : 'skipped, already owned');

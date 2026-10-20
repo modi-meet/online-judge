@@ -16,6 +16,7 @@
     "@oj/judge": "workspace:*",
     "@oj/queue": "workspace:*",
     "@oj/sandbox": "workspace:*",
+    "@oj/storage": "workspace:*",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.28.2",
     "cookie-parser": "^1.4.7",
@@ -27,6 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "pino": "^9.5.0",
     "pino-http": "^10.3.0",
+    "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@types/express-serve-static-core": "^4.19.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/supertest": "^6.0.2",
+    "@types/ws": "^8.5.13",
     "pino-pretty": "^11.3.0",
     "supertest": "^7.0.0"
   }

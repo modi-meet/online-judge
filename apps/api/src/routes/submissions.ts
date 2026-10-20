@@ -3,8 +3,10 @@ import { Router } from 'express';
 import type { Queue } from 'bullmq';
 import { z } from 'zod';
 import { SubmitBody, isTerminal, objectId, type Status } from '@oj/contracts';
-import { ContestModel, OutboxModel, ProblemModel, SubmissionModel, type Submission } from '@oj/db';
+import { ContestModel, OutboxModel, ProblemModel, SubmissionModel, Types, type Submission } from '@oj/db';
 import { PRIORITY, type JudgeJob } from '@oj/queue';
+import { putOrInline, type ObjectStore } from '@oj/storage';
+import { LANGUAGE_SPEC } from '@oj/contracts';
 import { AppError, forbidden, notFound } from '../errors.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
@@ -23,7 +25,7 @@ const view = (s: Row) => ({
   submittedAt: s.submittedAt, judgedAt: s.judgedAt ?? null,
 });
 
-export function submissionsRouter(queue: Queue<JudgeJob>) {
+export function submissionsRouter(queue: Queue<JudgeJob>, store: ObjectStore) {
   const r = Router();
 
   // the submit path. lld §4.5. writes the row, the outbox event and the job;
@@ -50,9 +52,14 @@ export function submissionsRouter(queue: Queue<JudgeJob>) {
         if (!c.participants.some((u) => String(u) === userId)) throw new AppError('FORBIDDEN', 'register for the contest first');
         if (!c.problems.some((p) => String(p.problemId) === body.problemId)) throw new AppError('VALIDATION_FAILED', 'problem is not in this contest');
       }
+      // the object goes in before the row: an orphaned object is garbage, a row
+      // pointing at a missing object is a permanent IE. lld §4.5
+      const subId = new Types.ObjectId();
+      const ext = LANGUAGE_SPEC[body.language].file.split('.').pop();
+      const codeRef = await putOrInline(store, `code/${String(subId)}.${ext}`, body.code);
       const sub = await SubmissionModel.create({
-        userId, problemId: problem._id, contestId: body.contestId ?? null, language: body.language,
-        codeRef: `inline:${body.code}`, status: 'QUEUED',
+        _id: subId, userId, problemId: problem._id, contestId: body.contestId ?? null, language: body.language,
+        codeRef, status: 'QUEUED',
       });
       const id = String(sub._id);
       await OutboxModel.create({
@@ -85,7 +92,7 @@ export function submissionsRouter(queue: Queue<JudgeJob>) {
   r.get('/:id', authenticate, authorize(), validate('params', IdParam), async (req, res, next) => {
     try {
       const s = await load((req.params as { id: string }).id, req.user!);
-      res.json({ submission: view(s), code: s.codeRef.startsWith('inline:') ? s.codeRef.slice(7) : null });
+      res.json({ submission: view(s), code: await store.get(s.codeRef) });
     } catch (e) { next(e); }
   });
 
