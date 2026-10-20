@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import type { Queue } from 'bullmq';
 import { z } from 'zod';
-import { SubmitBody, isTerminal, objectId, type Status } from '@oj/contracts';
+import { PENDING, SubmitBody, isTerminal, objectId, type Status } from '@oj/contracts';
 import { ContestModel, OutboxModel, ProblemModel, SubmissionModel, Types, type Submission } from '@oj/db';
 import { PRIORITY, type JudgeJob } from '@oj/queue';
 import { putOrInline, type ObjectStore } from '@oj/storage';
@@ -93,6 +93,27 @@ export function submissionsRouter(queue: Queue<JudgeJob>, store: ObjectStore) {
     try {
       const s = await load((req.params as { id: string }).id, req.user!);
       res.json({ submission: view(s), code: await store.get(s.codeRef) });
+    } catch (e) { next(e); }
+  });
+
+  // a setter re-queues a judged submission: after a test case fix, a runner
+  // image rollback, or an IE. the row goes back to QUEUED with its verdict
+  // fields cleared and attempts reset so the sweeper's budget starts over.
+  // the job id is unique per rejudge because bullmq remembers completed ids.
+  r.post('/:id/rejudge', authenticate, authorize('setter'), validate('params', IdParam), async (req, res, next) => {
+    try {
+      const id = (req.params as { id: string }).id;
+      const s = await SubmissionModel.findOneAndUpdate(
+        { _id: id, status: { $nin: [...PENDING] } },
+        { $set: { status: 'QUEUED', failedTestcaseIdx: null, passedCount: 0, totalCount: 0, timeMs: null, memoryKb: null, compilerLog: '', stderrTail: '', attempts: 0, judgedBy: null, judgedAt: null } },
+        { new: true },
+      ).lean();
+      if (!s) {
+        const exists = await SubmissionModel.exists({ _id: id });
+        throw exists ? new AppError('CONFLICT', 'submission is already being judged') : notFound('submission');
+      }
+      await queue.add('judge', { submissionId: id }, { jobId: `${id}:rejudge:${Date.now()}`, priority: PRIORITY.rejudge });
+      res.status(202).json({ submissionId: id, status: 'QUEUED' });
     } catch (e) { next(e); }
   });
 
