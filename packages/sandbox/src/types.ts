@@ -1,7 +1,7 @@
 import type { Language } from '@oj/contracts';
 
 export interface Limits {
-  /** decides tle. on the host executor this is wall time; the docker runner reads cgroup cpu time. */
+  /** decides tle. cpu time of the program, from gnu time inside the container. */
   cpuMs: number;
   /** the kill timer. always >= cpuMs. */
   wallMs: number;
@@ -43,8 +43,8 @@ export interface ExecResult {
   compileError: string | null;
 }
 
-/** the one thing allowed to spawn a process. implementations: host (v0, dev only), docker (v1). */
+/** the one thing allowed to spawn a process. the docker runner is the only implementation. */
 export interface Executor {
-  readonly kind: 'host' | 'docker';
+  readonly kind: 'docker';
   exec(req: ExecRequest): Promise<ExecResult>;
 }
