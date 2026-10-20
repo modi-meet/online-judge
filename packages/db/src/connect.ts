@@ -17,3 +17,4 @@ export async function disconnect() {
 }
 
 export { mongoose };
+export { Types } from 'mongoose';
