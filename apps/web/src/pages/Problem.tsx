@@ -27,6 +27,17 @@ const STARTER: Record<Language, string> = {
 const bufKey = (slug: string, lang: Language) => `oj:buf:${slug}:${lang}`;
 const langKey = (slug: string) => `oj:lang:${slug}`;
 
+// what the user did wrong, in their words: the field for a validation
+// failure, the wait for a rate limit, the server's message otherwise.
+function describeError(e: unknown) {
+  if (e instanceof ApiError && e.code === 'RATE_LIMITED') return `slow down — try again in ${(e.details as { retryAfterSec: number }).retryAfterSec}s`;
+  if (e instanceof ApiError && e.code === 'VALIDATION_FAILED') {
+    const first = (e.details as { fields?: { path: string; message: string }[] } | undefined)?.fields?.[0];
+    if (first) return `${first.path || 'request'}: ${first.message}`.toLowerCase();
+  }
+  return (e as Error).message;
+}
+
 export function ProblemPage() {
   const { slug = '' } = useParams();
   const [params] = useSearchParams();
@@ -54,13 +65,13 @@ export function ProblemPage() {
   useEffect(() => {
     // a finished verdict refreshes the history
     if (sub.current && sub.current.judgedAt && view) void loadMine(view.problem.id);
-  }, [sub.current?.status]);
+  }, [sub.current?.status, sub.current?.judgedAt]);
 
   const doSubmit = async () => {
     if (!user || !view) return nav('/login', { state: { from: loc.pathname } });
     setTab('submit'); setError(null);
     try { await sub.submit(view.problem.id, language, code, contestId); } catch (e) {
-      const msg = e instanceof ApiError && e.code === 'RATE_LIMITED' ? `slow down — try again in ${(e.details as { retryAfterSec: number }).retryAfterSec}s` : (e as Error).message;
+      const msg = describeError(e);
       setError(msg);
     }
   };
@@ -88,7 +99,7 @@ export function ProblemPage() {
     try {
       setResult(await api<RunResult>('POST', '/api/run', { language, code, stdin }));
     } catch (e) {
-      const msg = e instanceof ApiError && e.code === 'RATE_LIMITED' ? `slow down — try again in ${(e.details as { retryAfterSec: number }).retryAfterSec}s` : (e as Error).message;
+      const msg = describeError(e);
       setError(msg);
     } finally { setRunning(false); }
   };
