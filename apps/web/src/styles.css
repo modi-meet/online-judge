@@ -42,3 +42,18 @@ table.list { width: 100%; border-collapse: collapse; background: var(--surface);
 .toolbar { margin-bottom: 10px; }
 .tag { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; padding: 1px 6px; border: 1px solid var(--ink-3); color: var(--ink-2); text-transform: none; }
 .tag.good { color: var(--ac); border-color: var(--ac); } .tag.bad { color: var(--wa); border-color: var(--wa); }
+.chip { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .06em; padding: 2px 8px; border: 1px solid var(--ink-3); color: var(--ink-2); border-radius: 2px; }
+.chip.good { color: var(--ac); border-color: var(--ac); } .chip.bad { color: var(--wa); border-color: var(--wa); }
+.chip.pending { color: var(--accent); border-color: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .chip.pending { animation: none; } }
+.verdict { border: 1px solid var(--rule); border-left: 3px solid var(--ink-3); background: var(--surface); padding: 12px 14px; margin-top: 12px; }
+.verdict.good { border-left-color: var(--ac); } .verdict.bad { border-left-color: var(--wa); } .verdict.pending { border-left-color: var(--accent); }
+.verdict p { margin: 8px 0 0; } .verdict .out { margin-top: 8px; min-height: 0; }
+.mono { font-family: var(--mono); font-size: 12px; }
+.subs { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+.subs td { padding: 6px 8px; border-top: 1px solid var(--rule); } .subs td:first-child { padding-left: 0; }
+.subs tr.sel td { background: var(--accent-soft); }
+.tabs { gap: 18px; margin-top: 12px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+.tabs .link { color: var(--ink-2); } .tabs .link.on { color: var(--ink); font-weight: 600; }
+.subs tr { cursor: pointer; }
