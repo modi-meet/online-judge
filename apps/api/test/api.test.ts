@@ -6,7 +6,7 @@ import { HostExecutor } from '@oj/sandbox';
 import { createApp } from '../src/app.js';
 import { redis } from '../src/redis.js';
 
-const app = createApp({ executor: new HostExecutor() });
+const app = createApp({ executor: new HostExecutor(), queue: { add: async () => undefined } as never });
 const agent = () => request(app);
 
 beforeAll(async () => {
