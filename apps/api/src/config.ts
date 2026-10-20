@@ -17,7 +17,10 @@ const Env = z
     ACCESS_TTL_SEC: z.coerce.number().int().default(15 * 60),
     REFRESH_TTL_SEC: z.coerce.number().int().default(30 * 24 * 3600),
     CORS_ORIGIN: z.string().default('http://localhost:5173'),
+    EXECUTOR: z.enum(['docker', 'host']).default('docker'),
     ALLOW_HOST_EXECUTOR: z.enum(['true', 'false']).default('false'),
+    SANDBOX_IMAGE_TAG: z.string().min(1).default('dev'),
+    JUDGE_SCRATCH_ROOT: z.string().optional(),
     LOG_LEVEL: z.string().default('info'),
   })
   .refine((e) => !(e.NODE_ENV === 'production' && e.ALLOW_HOST_EXECUTOR === 'true'), {

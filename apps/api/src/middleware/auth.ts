@@ -11,8 +11,13 @@ declare module 'express-serve-static-core' {
 /** never rejects. only populates req.user. rejection is authorize's job. */
 export const authenticate: RequestHandler = (req, _res, next) => {
   const h = req.header('authorization');
-  if (h?.startsWith('Bearer ')) {
-    const claims = verifyAccess(h.slice(7));
+  // eventsource cannot set headers, so the sse stream may carry the access
+  // token as a query param. it is short-lived and never logged (pino-http
+  // redacts the query string for /stream routes).
+  const q = typeof req.query['access_token'] === 'string' ? req.query['access_token'] : null;
+  const token = h?.startsWith('Bearer ') ? h.slice(7) : q;
+  if (token) {
+    const claims = verifyAccess(token);
     if (claims) req.user = claims;
   }
   next();
