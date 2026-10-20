@@ -36,6 +36,12 @@ importers:
         specifier: ^8.8.1
         version: 8.24.5
 
+  packages/sandbox:
+    dependencies:
+      '@oj/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
 packages:
 
   '@esbuild/aix-ppc64@0.21.5':
