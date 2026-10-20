@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { COMPILE_TIMEOUT_MS, LANGUAGE_SPEC } from '@oj/contracts';
@@ -65,6 +65,11 @@ export class DockerExecutor implements Executor {
     await mkdir(root, { recursive: true });
     const dir = await mkdtemp(join(root, 'oj-'));
     await writeFile(join(dir, spec.file), code, 'utf8');
+    // mkdtemp makes the dir 0700 for us; the container runs as uid 65534 and
+    // must read the source and, during compile, write the binary beside it.
+    // on macos the vm mount hides this; on linux it is every verdict as ce.
+    await chmod(dir, 0o777);
+    await chmod(join(dir, spec.file), 0o644);
 
     let compileError: string | null = null;
     let compileMs = 0;
@@ -132,11 +137,16 @@ export class DockerExecutor implements Executor {
 
       const inspect = await run(['docker', 'inspect', '--format', '{{.State.ExitCode}} {{.State.OOMKilled}}', id], { cwd: p.dir, stdin: '', wallMs: 10_000, stdoutBytes: 1024, stderrBytes: 1024, env: process.env as Record<string, string> });
       const [exitStr, oomStr] = inspect.stdout.toString('utf8').trim().split(' ');
-      const oomKilled = oomStr === 'true';
 
       let stderr = started.stderr.toString('utf8');
       // gnu time reports a signalled child on its own line and %x reads 0 for it
       const sig = /Command terminated by signal (\d+)\n?/.exec(stderr);
+      // the oom killer takes the biggest process in the cgroup, which is the
+      // program, not `time` wrapping it; the container then exits normally and
+      // inspect says OOMKilled=false. a sigkill the host did not send (our own
+      // kill leaves no stat line at all) can only be the oom killer: nothing
+      // else inside the sandbox can deliver it.
+      const oomKilled = oomStr === 'true' || (sig?.[1] === '9' && STAT_RE.test(stderr));
       let cpuMs: number | null = null;
       let peakMemKb: number | null = null;
       let childExit: number | null = null;
