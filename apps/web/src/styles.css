@@ -59,3 +59,16 @@ table.list { width: 100%; border-collapse: collapse; background: var(--surface);
 .subs tr { cursor: pointer; }
 .board th, .board td { text-align: center; } .board td:nth-child(2), .board th:nth-child(2) { text-align: left; }
 .cell.good { color: var(--ac); font-weight: 600; } .cell.bad { color: var(--wa); }
+.mentor { margin-top: 12px; }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.mode { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 10px; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); }
+.mode .mono { color: var(--ink-3); font-size: 10px; } .mode strong { font-size: 13px; } .mode .muted { font-size: 12px; }
+.mode.on { border-color: var(--accent); background: var(--accent-soft); }
+.small { font-size: 12px; }
+.reply { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 12px 14px; margin-top: 12px; }
+.reply.blocked { border-left-color: var(--wa); }
+.reply .prose { margin: 0 0 8px; } .reply .out { min-height: 0; margin: 0 0 8px; }
+.reply .tag { float: right; }
+.status::before { content: '⟳ '; display: inline-block; animation: spin 1.2s linear infinite; }
+.cursor { animation: pulse 1s ease-in-out infinite; color: var(--accent); }
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -6,6 +6,7 @@ import { ApiError, api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useSubmission, type SubmissionView } from '../lib/useSubmission';
 import { VerdictChip, VerdictPanel } from '../components/Verdict';
+import { MentorPanel } from '../components/Mentor';
 
 interface ProblemView {
   problem: { id: string; slug: string; title: string; statement: string; inputFormat: string; outputFormat: string;
@@ -40,7 +41,7 @@ export function ProblemPage() {
   const [stdin, setStdin] = useState('');
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
-  const [tab, setTab] = useState<'run' | 'submit'>('run');
+  const [tab, setTab] = useState<'run' | 'submit' | 'mentor'>('run');
   const [mine, setMine] = useState<SubmissionView[]>([]);
   const sub = useSubmission();
 
@@ -145,7 +146,9 @@ export function ProblemPage() {
         <div className="row tabs">
           <button className={`link ${tab === 'run' ? 'on' : ''}`} onClick={() => setTab('run')}>run with custom input</button>
           <button className={`link ${tab === 'submit' ? 'on' : ''}`} onClick={() => setTab('submit')}>submissions{mine.length ? ` (${mine.length})` : ''}</button>
+          <button className={`link ${tab === 'mentor' ? 'on' : ''}`} onClick={() => setTab('mentor')}>mentor</button>
         </div>
+        {tab === 'mentor' && <MentorPanel problemId={problem.id} language={language} code={code} contestId={contestId} signedIn={!!user} />}
         {tab === 'run' && (
         <div className="io">
           <div>
