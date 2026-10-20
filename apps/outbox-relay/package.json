@@ -1,0 +1,9 @@
+{
+  "name": "@oj/outbox-relay",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "tsx watch src/main.ts", "start": "node dist/main.js", "build": "tsc -p tsconfig.json", "typecheck": "tsc -p tsconfig.json --noEmit" },
+  "dependencies": { "@oj/db": "workspace:*", "@oj/events": "workspace:*", "dotenv": "^16.4.5", "pino": "^9.5.0", "zod": "^3.23.8" },
+  "devDependencies": { "pino-pretty": "^11.3.0" }
+}
