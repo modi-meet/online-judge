@@ -27,6 +27,24 @@
         "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/judge-worker && pnpm dev"
       ],
       "port": 4001
+    },
+    {
+      "name": "outbox-relay",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/outbox-relay && pnpm dev"
+      ],
+      "port": 4003
+    },
+    {
+      "name": "leaderboard-projector",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=$HOME/.nvm/versions/node/v22.22.1/bin:$PATH && cd apps/leaderboard-projector && pnpm dev"
+      ],
+      "port": 4004
     }
   ]
 }

@@ -1,8 +1,7 @@
 import { PENDING, PENALISED, type Terminal } from '@oj/contracts';
-import { ContestModel, JudgeRunModel, OutboxModel, ProblemModel, SubmissionModel, TestcaseModel, UserModel, mongoose } from '@oj/db';
+import { JudgeRunModel, OutboxModel, ProblemModel, SubmissionModel, TestcaseModel, UserModel, mongoose } from '@oj/db';
 import type { DockerExecutor } from '@oj/sandbox';
-import type { Redis } from 'ioredis';
-import { projectVerdict } from './standings.js';
+import type { ObjectStore } from '@oj/storage';
 import { compare } from './compare.js';
 import { mapOutcome } from './verdict.js';
 
@@ -11,8 +10,8 @@ export interface JudgeDeps {
   /** fan-out for sse: called on every status transition */
   publish: (submissionId: string, event: StatusEvent) => void | Promise<void>;
   workerId: string;
-  /** standings projection. v1 updates redis directly from the worker; kafka is gated (hld §12) */
-  redis?: Redis;
+  /** resolves code and testcase refs: inline, s3 or file. optional for inline-only callers. */
+  store?: ObjectStore;
 }
 
 export interface StatusEvent {
@@ -29,7 +28,8 @@ export interface StatusEvent {
 
 export class AlreadyFinished extends Error {}
 
-const inline = (ref: string) => (ref.startsWith('inline:') ? ref.slice(7) : ref);
+const inlineOnly = (ref: string) => (ref.startsWith('inline:') ? ref.slice(7) : ref);
+const resolve = (deps: JudgeDeps, ref: string) => (deps.store ? deps.store.get(ref) : Promise.resolve(inlineOnly(ref)));
 const tail = (s: string, n: number) => (s.length > n ? s.slice(s.length - n) : s);
 
 /**
@@ -53,7 +53,7 @@ export async function judgeSubmission(submissionId: string, deps: JudgeDeps): Pr
   if (testcases.length === 0) return finish(sub._id, 'IE', { stderrTail: 'problem has no test cases' }, deps);
 
   const limits = { cpuMs: problem.timeLimitMs, wallMs: problem.timeLimitMs * 2 + 1000, memoryMb: problem.memoryLimitMb };
-  const session = await deps.executor.prepare(sub.language, inline(sub.codeRef), limits);
+  const session = await deps.executor.prepare(sub.language, await resolve(deps, sub.codeRef), limits);
   try {
     if (session.compileError !== null) {
       return finish(sub._id, 'CE', { compilerLog: tail(session.compileError, 8192), totalCount: testcases.length }, deps);
@@ -69,10 +69,10 @@ export async function judgeSubmission(submissionId: string, deps: JudgeDeps): Pr
     // sequential on purpose: parallel cases contend for the pinned core and
     // make timings non-reproducible. hld §9.5
     for (const tc of testcases) {
-      const r = await session.run(inline(tc.inputRef), limits);
+      const r = await session.run(await resolve(deps, tc.inputRef), limits);
       maxTime = Math.max(maxTime, r.cpuMs);
       maxMem = Math.max(maxMem, r.peakMemKb ?? 0);
-      const v = mapOutcome(r, limits) ?? (compare(problem.checkerType as 'exact' | 'trim' | 'float', r.stdout, inline(tc.outputRef), problem.floatEps ?? undefined) ? 'AC' : 'WA');
+      const v = mapOutcome(r, limits) ?? (compare(problem.checkerType as 'exact' | 'trim' | 'float', r.stdout, await resolve(deps, tc.outputRef), problem.floatEps ?? undefined) ? 'AC' : 'WA');
       await JudgeRunModel.create({ submissionId: sub._id, testcaseIdx: tc.idx, cpuMs: r.cpuMs, wallMs: r.wallMs, peakMemKb: r.peakMemKb, exitCode: r.exitCode, signal: r.signal, verdict: v });
       if (v !== 'AC') {
         return finish(sub._id, v, {
@@ -130,18 +130,7 @@ async function finish(id: mongoose.Types.ObjectId, status: Terminal, stats: Fini
     await session.endSession();
   }
   await deps.publish(String(id), { submissionId: String(id), status, ...stats });
-  if (deps.redis) await projectIfContest(id, status, deps.redis);
   return status;
-}
-
-async function projectIfContest(id: mongoose.Types.ObjectId, status: Terminal, redis: Redis) {
-  const sub = await SubmissionModel.findById(id).select('contestId userId problemId submittedAt').lean();
-  if (!sub?.contestId) return;
-  const contest = await ContestModel.findById(sub.contestId).select('startAt endAt').lean();
-  if (!contest || sub.submittedAt > contest.endAt) return;
-  const outbox = await OutboxModel.findOne({ aggregateId: String(id), topic: 'submission.judged' }).select('envelope').lean();
-  const eventId = (outbox?.envelope as { eventId?: string } | undefined)?.eventId ?? String(id);
-  await projectVerdict(redis, String(sub.contestId), String(sub.userId), eventId, { problemId: String(sub.problemId), status, submittedAt: sub.submittedAt }, contest.startAt);
 }
 
 /** verdicts that cost penalty, re-exported for the projector */
