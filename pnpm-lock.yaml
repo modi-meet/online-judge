@@ -284,6 +284,12 @@ importers:
         specifier: ^5.4.1
         version: 5.11.1
 
+  packages/mentor:
+    dependencies:
+      '@oj/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
   packages/queue:
     dependencies:
       bullmq:
