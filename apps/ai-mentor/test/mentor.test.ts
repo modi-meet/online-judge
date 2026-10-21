@@ -7,14 +7,14 @@ import { connect, disconnect, mongoose, ContestModel, ProblemModel, TestcaseMode
 import { DockerExecutor } from '@oj/sandbox';
 import type { Mode } from '@oj/mentor';
 import { createApp } from '../src/app.js';
-import { Budget, ReplyCache } from '../src/budget.js';
+import { Budget, ConversationStore, ReplyCache } from '../src/budget.js';
 import { loadProblem } from '../src/context.js';
 import { FakeProvider } from '../src/provider.js';
 
 const redis = new Redis(process.env['REDIS_URL']!);
 let reply: ((mode: Mode, user: string) => string) | undefined;
 const provider = new FakeProvider((m, u) => (reply ? reply(m, u) : `canned ${m.key}: ${/problem: (.*)/.exec(u)?.[1]}`));
-const app = createApp({ provider, executor: new DockerExecutor({ imageTag: 'dev' }), budget: new Budget(redis), cache: new ReplyCache(redis) });
+const app = createApp({ provider, executor: new DockerExecutor({ imageTag: 'dev' }), budget: new Budget(redis), cache: new ReplyCache(redis), conversations: new ConversationStore(redis) });
 
 const tok = (sub: string) => jwt.sign({ sub, role: 'user', jti: sub }, process.env['JWT_SECRET']!, { algorithm: 'HS256', expiresIn: 600 });
 let alice = ''; let bob = ''; let problemId = ''; let noSample = '';
@@ -48,6 +48,33 @@ describe('context', () => {
     expect(c.samples).toHaveLength(1);
     expect(c.samples[0]!.input).toBe('3\n1 2 3\n');
     expect(c.constraints).toContain('1 <= n <= 10^5');
+  });
+});
+
+describe('conversation', () => {
+  it('a follow-up continues in the same persona with the transcript, and switching mode is refused', async () => {
+    reply = (_m, u) => u; // echo everything the model would see
+    const first = await ask(alice, { problemId, mode: 2, language: 'python3', code: 'print(1)', message: 'is a running sum the right idea?' });
+    expect(first.status).toBe(200);
+    const meta = parse(first.text)[0]!;
+    expect(meta).toMatchObject({ type: 'meta', turn: 1 });
+    const cid = meta['conversationId'] as string;
+    expect(cid).toMatch(/^[0-9a-f-]{36}$/);
+    const second = await ask(alice, { problemId, mode: 2, language: 'python3', code: 'print(1)', conversationId: cid, message: 'what about negatives?' });
+    expect(second.status).toBe(200);
+    const ev = parse(second.text);
+    expect(ev[0]).toMatchObject({ type: 'meta', turn: 2, conversationId: cid });
+    const seen = ev.filter((e) => e.type === 'token').map((e) => e['text']).join('');
+    expect(seen).toContain('is a running sum the right idea?'); // turn 1 is still in the transcript
+    expect(seen).toContain('what about negatives?');
+    expect(seen).toContain('--- statement ---'); // and so is the context
+    reply = undefined;
+    const sw = await ask(alice, { problemId, mode: 5, language: 'python3', code: '', conversationId: cid, message: 'explain' });
+    expect(sw.status).toBe(422);
+    const empty = await ask(alice, { problemId, mode: 2, language: 'python3', code: '', conversationId: cid, message: '   ' });
+    expect(empty.status).toBe(422);
+    const stranger = await ask(bob, { problemId, mode: 2, language: 'python3', code: '', conversationId: cid, message: 'hi' });
+    expect(stranger.status).toBe(404);
   });
 });
 

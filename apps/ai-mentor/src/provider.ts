@@ -10,9 +10,11 @@ export interface Completion {
   usage: () => Promise<{ inputTokens: number; outputTokens: number; model: string }>;
 }
 
+export interface Turn { role: 'user' | 'assistant'; content: string }
+
 export interface Provider {
   readonly name: string;
-  complete(mode: Mode, system: string, user: string, signal?: AbortSignal): Completion;
+  complete(mode: Mode, system: string, turns: Turn[], signal?: AbortSignal): Completion;
 }
 
 /** streams from the messages api. thinking stays on at low effort for the
@@ -23,7 +25,7 @@ export class AnthropicProvider implements Provider {
   private readonly client: Anthropic;
   constructor(apiKey: string) { this.client = new Anthropic({ apiKey }); }
 
-  complete(mode: Mode, system: string, user: string, signal?: AbortSignal): Completion {
+  complete(mode: Mode, system: string, turns: Turn[], signal?: AbortSignal): Completion {
     const model = mode.model === 'strong' ? config.AI_MODEL_STRONG : config.AI_MODEL_FAST;
     const stream = this.client.beta.messages.stream({
       model,
@@ -32,7 +34,7 @@ export class AnthropicProvider implements Provider {
       fallbacks: 'default',
       output_config: { effort: mode.model === 'strong' ? 'medium' : 'low' },
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: user }],
+      messages: turns.map((t) => ({ role: t.role, content: t.content })),
     }, { signal });
     const chunks = (async function* () {
       for await (const ev of stream) {
@@ -54,14 +56,30 @@ export class AnthropicProvider implements Provider {
  * guard, the budget and the cache, so the whole pipeline is exercised. */
 export class FakeProvider implements Provider {
   readonly name = 'fake';
-  constructor(private readonly reply?: (mode: Mode, user: string) => string) {}
-  complete(mode: Mode, _system: string, user: string): Completion {
-    const text = this.reply ? this.reply(mode, user) : canned(mode, user);
+  /** `transcript` is every user turn joined, so a test can see the whole prompt; `turns` is the raw list */
+  constructor(private readonly reply?: (mode: Mode, transcript: string, turns: Turn[]) => string) {}
+  complete(mode: Mode, _system: string, turns: Turn[]): Completion {
+    const user = turns.filter((t) => t.role === 'user').map((t) => t.content).join('\n\n');
+    const text = this.reply ? this.reply(mode, user, turns) : turns.length > 1 ? cannedFollowUp(mode, turns) : canned(mode, user);
     const words = text.split(/(?<=\s)/);
     const chunks = (async function* () {
       for (const w of words) { await new Promise((r) => setTimeout(r, 8)); yield w; }
     })();
     return { chunks, usage: async () => ({ inputTokens: Math.ceil(user.length / 4), outputTokens: Math.ceil(text.length / 4), model: 'fake' }) };
+  }
+}
+
+/** a follow-up in persona: short, refers to what the learner just said */
+function cannedFollowUp(mode: Mode, turns: Turn[]) {
+  const last = (turns[turns.length - 1]?.content ?? '').replace(/^--- the learner says ---\n/, '').trim();
+  const quoted = last.length > 80 ? `${last.slice(0, 80)}…` : last;
+  switch (mode.id) {
+    case 1: return `(fake provider)\n\non "${quoted}": close — ask yourself what one number you need to carry from the previous position to decide the current one. if you can name it, you have the pattern.`;
+    case 2: return `(fake provider)\n\nabout "${quoted}": that is the right instinct. before changing the code, write down what the variable should hold after each step on the sample. where does your version disagree first?`;
+    case 3: return `(fake provider)\n\nlooking at the trace again with "${quoted}" in mind: find the first line where the variable differs from what the correct answer needs, and read only up to there. everything after it is a consequence.`;
+    case 4: return `(fake provider)\n\nre "${quoted}": the measurement says what grows, not why. name the loop that repeats work per element, then ask what structure answers that query in constant or log time.`;
+    case 5: return `(fake provider)\n\n"${quoted}" — keep the metaphor: the invariant is the rule the structure never breaks. restate it in your own words and the operation's cost follows from it.`;
+    default: return `(fake provider)\n\non "${quoted}": good. do the first of the three catalogue problems now, with the operations we listed, and come back with the line you got stuck on.`;
   }
 }
 
