@@ -19,6 +19,8 @@ const AskBody = z.object({
   language: z.enum(LANGUAGES),
   code: z.string().max(64 * 1024).default(''),
   contestId: objectId.nullable().optional(),
+  conversationId: z.string().uuid().nullable().optional(),
+  message: z.string().max(4000).nullable().optional(),
 });
 
 export function createApp(deps: MentorDeps) {
@@ -43,7 +45,7 @@ export function createApp(deps: MentorDeps) {
     if (!parsed.success) return next(new AppError('VALIDATION_FAILED', 'invalid request', parsed.error.flatten()));
     const ac = new AbortController();
     req.on('close', () => ac.abort());
-    const ask = { ...parsed.data, contestId: parsed.data.contestId ?? null, mode: parsed.data.mode as 1 | 2 | 3 | 4 | 5 | 6, userId: req.user!.sub };
+    const ask = { ...parsed.data, contestId: parsed.data.contestId ?? null, conversationId: parsed.data.conversationId ?? null, message: parsed.data.message ?? null, mode: parsed.data.mode as 1 | 2 | 3 | 4 | 5 | 6, userId: req.user!.sub };
     let started = false;
     try {
       for await (const ev of answer(deps, ask, ac.signal)) {

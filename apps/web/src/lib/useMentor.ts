@@ -1,43 +1,52 @@
 import { useCallback, useRef, useState } from 'react';
 import { getAccessToken, refresh } from './api';
 
-// the mentor streams server-sent events over a post body (the code travels
-// with the question), so this is a fetch + reader rather than EventSource.
+// a conversation with one persona on one problem. the transcript the user
+// sees lives here; the server keeps its own copy (with the trace and the
+// context) under the conversation id, so only the typed message travels.
 
 export interface ModeInfo { id: number; key: string; name: string; stage: string; needsExecution: boolean; streaming: boolean }
+export interface ChatTurn { role: 'user' | 'assistant'; text: string; blocked?: boolean; cached?: boolean }
 
 export interface MentorState {
-  text: string;
+  conversationId: string | null;
+  turns: ChatTurn[];
   status: string | null;
   busy: boolean;
-  cached: boolean;
-  blocked: boolean;
   error: string | null;
   remaining: number | null;
 }
 
-const initial: MentorState = { text: '', status: null, busy: false, cached: false, blocked: false, error: null, remaining: null };
+const initial: MentorState = { conversationId: null, turns: [], status: null, busy: false, error: null, remaining: null };
 
 export function useMentor() {
   const [state, setState] = useState<MentorState>(initial);
   const abort = useRef<AbortController | null>(null);
 
-  const ask = useCallback(async (body: { problemId: string; mode: number; language: string; code: string; contestId?: string | null }) => {
+  const reset = useCallback(() => { abort.current?.abort(); setState(initial); }, []);
+
+  /** sends one turn. with no conversation yet, the server builds the context and opens one. */
+  const send = useCallback(async (body: { problemId: string; mode: number; language: string; code: string; contestId?: string | null }, message: string) => {
     abort.current?.abort();
     const ac = new AbortController();
     abort.current = ac;
-    setState({ ...initial, busy: true });
-    const send = () => fetch('/api/ai/mentor', {
+    setState((s) => ({
+      ...s, busy: true, error: null, status: null,
+      turns: [...s.turns, ...(message.trim() ? [{ role: 'user' as const, text: message.trim() }] : []), { role: 'assistant' as const, text: '' }],
+    }));
+    const patchLast = (f: (t: ChatTurn) => ChatTurn) => setState((s) => ({ ...s, turns: s.turns.map((t, i) => (i === s.turns.length - 1 ? f(t) : t)) }));
+    const payload = { ...body, message: message.trim() || null };
+    const call = (conversationId: string | null) => fetch('/api/ai/mentor', {
       method: 'POST', signal: ac.signal, credentials: 'include',
       headers: { 'content-type': 'application/json', ...(getAccessToken() ? { authorization: `Bearer ${getAccessToken()}` } : {}) },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...payload, conversationId }),
     });
     try {
-      let res = await send();
-      if (res.status === 401 && (await refresh())) res = await send();
+      let res = await call(stateRef.current.conversationId);
+      if (res.status === 401 && (await refresh())) res = await call(stateRef.current.conversationId);
       if (!res.ok) {
         const j = (await res.json().catch(() => null)) as { error?: { message: string } } | null;
-        setState((s) => ({ ...s, busy: false, error: j?.error?.message ?? res.statusText }));
+        setState((s) => ({ ...s, busy: false, error: j?.error?.message ?? res.statusText, turns: s.turns.slice(0, -1) }));
         return;
       }
       const reader = res.body!.getReader();
@@ -54,10 +63,10 @@ export function useMentor() {
           const data = /^data: (.*)$/m.exec(frame)?.[1];
           if (!ev || !data) continue;
           const d = JSON.parse(data) as Record<string, unknown>;
-          if (ev === 'meta') setState((s) => ({ ...s, cached: !!d['cached'] }));
+          if (ev === 'meta') { setState((s) => ({ ...s, conversationId: String(d['conversationId']) })); if (d['cached']) patchLast((t) => ({ ...t, cached: true })); }
           else if (ev === 'status') setState((s) => ({ ...s, status: String(d['text']) }));
-          else if (ev === 'token') setState((s) => ({ ...s, status: null, text: s.text + String(d['text']) }));
-          else if (ev === 'blocked') setState((s) => ({ ...s, status: null, blocked: true, text: String(d['text']) }));
+          else if (ev === 'token') { setState((s) => ({ ...s, status: null })); patchLast((t) => ({ ...t, text: t.text + String(d['text']) })); }
+          else if (ev === 'blocked') { setState((s) => ({ ...s, status: null })); patchLast((t) => ({ ...t, blocked: true, text: String(d['text']) })); }
           else if (ev === 'done') setState((s) => ({ ...s, busy: false, status: null, remaining: Number(d['remaining']) }));
           else if (ev === 'error') setState((s) => ({ ...s, busy: false, status: null, error: String(d['message']) }));
         }
@@ -68,6 +77,9 @@ export function useMentor() {
     }
   }, []);
 
+  // the latest conversation id without re-creating `send` on every render
+  const stateRef = useRef(state); stateRef.current = state;
+
   const stop = useCallback(() => { abort.current?.abort(); setState((s) => ({ ...s, busy: false, status: null })); }, []);
-  return { ...state, ask, stop };
+  return { ...state, send, stop, reset };
 }

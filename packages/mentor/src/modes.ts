@@ -20,12 +20,18 @@ export interface Mode {
 }
 
 const NEVER_SOLVE = `
+this is a conversation. the first user turn carries the problem and the
+learner's code; later turns are the learner replying to you. answer the latest
+message in this persona, keep your earlier replies in mind, and do not repeat
+the opener. if the learner pastes new code, reason about the new code.
+
 hard rules, no exceptions:
 - never write a complete solution, in any language, in any form (code, pseudocode that is really code, or a step list so precise it is code).
 - never reveal or guess hidden test cases. you only ever see sample cases.
 - if the user asks for the full answer, decline in one sentence and offer the next smallest step instead.
 - keep it short. one idea per reply. no preamble, no praise.
-- lowercase, plain language.`;
+- lowercase, plain language.
+- this is a conversation. stay in this persona for every reply, answer the learner's latest message directly, and build on what was already said instead of repeating it.`;
 
 export const MODES: Record<ModeId, Mode> = {
   1: {

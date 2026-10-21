@@ -42,3 +42,22 @@ export class ReplyCache {
   get(k: string) { return this.redis.get(k); }
   async set(k: string, text: string) { await this.redis.set(k, text, 'EX', this.ttlSec); }
 }
+
+export interface Turn { role: 'user' | 'assistant'; content: string }
+export interface Conversation { id: string; userId: string; problemId: string; mode: number; language: string; turns: Turn[] }
+
+export const MAX_TURNS = 16;
+
+/** the transcript lives server-side so a follow-up in mode 3 or 4 still has
+ * the trace or timings from the first turn, and the client only ever sends
+ * the message it typed. two hours, then it is gone. */
+export class ConversationStore {
+  constructor(private readonly redis: Redis, private readonly ttlSec = 2 * 3600) {}
+  async get(id: string): Promise<Conversation | null> {
+    const raw = await this.redis.get(`ai:conv:${id}`);
+    return raw ? (JSON.parse(raw) as Conversation) : null;
+  }
+  async put(c: Conversation) {
+    await this.redis.set(`ai:conv:${c.id}`, JSON.stringify(c), 'EX', this.ttlSec);
+  }
+}
