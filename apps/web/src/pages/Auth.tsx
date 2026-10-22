@@ -26,12 +26,25 @@ function useSubmit(fn: () => Promise<void>) {
   return { error, busy, onSubmit };
 }
 
+function AuthArt({ line }: { line: string }) {
+  return (
+    <aside className="auth-art" aria-hidden="true">
+      <div className="auth-art-in">
+        <p className="auth-line">{line}</p>
+        <ul><li>Judged in a real sandbox</li><li>Live contest standings</li><li>A mentor that reads the real run</li></ul>
+      </div>
+    </aside>
+  );
+}
+
 export function LoginPage() {
   const { login } = useAuth();
   const [u, setU] = useState(''); const [p, setP] = useState('');
   const { error, busy, onSubmit } = useSubmit(() => login(u, p));
   return (
-    <form className="card narrow" onSubmit={onSubmit}>
+    <div className="auth-split">
+    <AuthArt line="Welcome back." />
+    <form className="auth-form" onSubmit={onSubmit}>
       <PageHead title="Sign in" lead="Welcome back. Sign in to submit solutions, join contests and talk to the mentor." />
       <label>Username<input value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username" /></label>
       <label>Password<input type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></label>
@@ -39,6 +52,7 @@ export function LoginPage() {
       <button disabled={busy}>Sign in</button>
       <p className="muted">New here? <Link to="/register">Register</Link></p>
     </form>
+    </div>
   );
 }
 
@@ -47,7 +61,9 @@ export function RegisterPage() {
   const [u, setU] = useState(''); const [e, setE] = useState(''); const [p, setP] = useState('');
   const { error, busy, onSubmit } = useSubmit(() => register(u, e, p));
   return (
-    <form className="card narrow" onSubmit={onSubmit}>
+    <div className="auth-split">
+    <AuthArt line="Your first verdict is a minute away." />
+    <form className="auth-form" onSubmit={onSubmit}>
       <PageHead title="Register" lead="Create an account to keep your submissions, enter contests and get help from the mentor. It takes a few seconds." />
       <label>Username<input value={u} onChange={(ev) => setU(ev.target.value)} autoFocus autoComplete="username" placeholder="Lowercase letters, digits, _" /></label>
       <label>Email<input type="email" value={e} onChange={(ev) => setE(ev.target.value)} autoComplete="email" /></label>
@@ -56,5 +72,6 @@ export function RegisterPage() {
       <button disabled={busy}>Create account</button>
       <p className="muted">Have an account? <Link to="/login">Sign in</Link></p>
     </form>
+    </div>
   );
 }

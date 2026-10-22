@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { VerdictChip } from '../components/Verdict';
-import { PageHead } from '../components/PageHead';
+import { usePageTitle } from '../components/PageHead';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { UserAvatar, resizeToAvatar } from '../components/UserAvatar';
@@ -18,17 +18,17 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   useEffect(() => { api<Profile>('GET', `/api/users/${username}`).then(setP).catch((e: Error) => setError(e.message)); }, [username]);
   const { user: me } = useAuth();
+  usePageTitle(p ? p.user.displayName || p.user.username : undefined);
   const [editing, setEditing] = useState(false);
   if (error) return <p className="error">{error}</p>;
   if (!p) return <p className="muted">Loading…</p>;
   return (
-    <div className="card" style={{ maxWidth: 760, margin: "24px auto" }}>
-      <PageHead title={p.user.displayName || p.user.username} lead="Solving record and recent submissions." />
+    <div className="profile-page">
       <div className="profile-head">
-        <UserAvatar username={p.user.username} name={p.user.displayName} src={p.user.avatar} size={84} />
+        <UserAvatar username={p.user.username} name={p.user.displayName} src={p.user.avatar} size={112} />
         <div className="profile-meta">
-          <div className="profile-name">@{p.user.username}{p.user.role !== 'user' && <span className="pill">{p.user.role}</span>}</div>
-          <div className="muted">{p.user.displayName && <>{p.user.displayName}</>}{p.user.location && <>{p.user.displayName ? ' · ' : ''}{p.user.location}</>}</div>
+          <h1 className="profile-name">{p.user.displayName || p.user.username}{p.user.role !== 'user' && <span className="pill">{p.user.role}</span>}</h1>
+          <div className="muted">@{p.user.username}{p.user.location && <> · {p.user.location}</>}</div>
           {p.user.email && <div className="muted">{p.user.email} <span className="pill">only you can see this</span></div>}
           {p.user.bio && <p className="profile-bio">{p.user.bio}</p>}
         </div>
