@@ -18,8 +18,8 @@ export class Budget {
     const [g, u] = await this.redis.mget(`ai:tokens:${day()}`, `ai:tokens:${day()}:${userId}`);
     const globalUsed = Number(g ?? 0); const userUsed = Number(u ?? 0);
     const userCap = Math.floor(config.AI_DAILY_TOKEN_CAP * PER_USER_SHARE);
-    if (globalUsed >= config.AI_DAILY_TOKEN_CAP) return { ok: false as const, reason: 'the mentor is out of tokens for today', remaining: 0 };
-    if (userUsed >= userCap) return { ok: false as const, reason: 'you have used your share of the mentor for today', remaining: 0 };
+    if (globalUsed >= config.AI_DAILY_TOKEN_CAP) return { ok: false as const, reason: 'The mentor is out of tokens for today', remaining: 0 };
+    if (userUsed >= userCap) return { ok: false as const, reason: 'You have used your share of the mentor for today', remaining: 0 };
     return { ok: true as const, remaining: Math.min(config.AI_DAILY_TOKEN_CAP - globalUsed, userCap - userUsed) };
   }
 

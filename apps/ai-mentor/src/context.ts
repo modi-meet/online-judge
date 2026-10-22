@@ -20,7 +20,7 @@ export interface ProblemContext {
 
 export async function loadProblem(problemId: string): Promise<ProblemContext> {
   const p = await ProblemModel.findById(problemId).lean();
-  if (!p || !p.isPublic) throw new AppError('NOT_FOUND', 'problem not found');
+  if (!p || !p.isPublic) throw new AppError('NOT_FOUND', 'Problem not found');
   // the query asks for samples only, and the guard below refuses anything
   // else that somehow came back. two independent checks, on purpose.
   const rows = await TestcaseModel.find({ problemId: p._id, isSample: true }).sort({ idx: 1 }).lean();
@@ -54,10 +54,10 @@ export async function catalogueByTag(tags: string[], excludeId: string) {
 export async function assertMentorAllowed(contestId: string | null | undefined) {
   if (!contestId) return;
   const c = await ContestModel.findById(contestId).lean();
-  if (!c) throw new AppError('NOT_FOUND', 'contest not found');
+  if (!c) throw new AppError('NOT_FOUND', 'Contest not found');
   const now = new Date();
   const running = c.startAt <= now && now < c.endAt;
-  if (running && !c.aiMentorEnabled) throw new AppError('AI_DISABLED_IN_CONTEST', 'the mentor is switched off for this contest while it runs');
+  if (running && !c.aiMentorEnabled) throw new AppError('AI_DISABLED_IN_CONTEST', 'The mentor is switched off for this contest while it runs');
 }
 
 export interface Extras { trace?: string; failedSampleIO?: string; timingCurve?: string }

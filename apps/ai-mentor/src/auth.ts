@@ -21,4 +21,4 @@ export const authenticate: RequestHandler = (req, _res, next) => {
   next();
 };
 
-export const requireUser: RequestHandler = (req, _res, next) => (req.user ? next() : next(new AppError('UNAUTHENTICATED', 'sign in required')));
+export const requireUser: RequestHandler = (req, _res, next) => (req.user ? next() : next(new AppError('UNAUTHENTICATED', 'Sign in required')));

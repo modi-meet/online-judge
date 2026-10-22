@@ -44,7 +44,7 @@ export async function* answer(deps: MentorDeps, ask: Ask, signal?: AbortSignal):
   let conv: Conversation | null = null;
   if (ask.conversationId) {
     conv = await deps.conversations.get(ask.conversationId);
-    if (!conv || conv.userId !== ask.userId) throw new AppError('NOT_FOUND', 'that conversation has expired; start a new one');
+    if (!conv || conv.userId !== ask.userId) throw new AppError('NOT_FOUND', 'That conversation has expired; start a new one');
     if (conv.mode !== mode.id || conv.problemId !== problem.id) throw new AppError('VALIDATION_FAILED', 'a conversation stays on one problem in one mode; start a new one to switch');
     if (!message) throw new AppError('VALIDATION_FAILED', 'say something to continue the conversation');
     if (conv.turns.length >= MAX_TURNS) throw new AppError('VALIDATION_FAILED', 'this conversation is long enough; start a new one with what you learned');

@@ -44,7 +44,7 @@ export function rateLimit(name: keyof typeof BUCKETS): RequestHandler {
       const [ok, retry] = (await redis.eval(SCRIPT, 1, `rl:${name}:${who}`, b.capacity, b.refillPerSec, Date.now(), 1)) as [number, number];
       if (ok === 1) return next();
       res.setHeader('retry-after', String(retry));
-      return next(new AppError('RATE_LIMITED', 'too many requests', { retryAfterSec: retry }));
+      return next(new AppError('RATE_LIMITED', 'Too many requests', { retryAfterSec: retry }));
     } catch (e) {
       // redis down must not take down login. fail open, log it. the queue is the real backpressure.
       logger.warn({ err: (e as Error).message }, 'rate limiter unavailable, failing open');

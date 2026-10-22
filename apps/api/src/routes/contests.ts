@@ -31,7 +31,7 @@ contestsRouter.post('/', authenticate, authorize('setter'), validate('body', Con
   try {
     const body = req.body as ContestBody;
     const found = await ProblemModel.countDocuments({ _id: { $in: body.problems.map((p) => p.problemId) } });
-    if (found !== body.problems.length) throw new AppError('VALIDATION_FAILED', 'unknown problem id in contest');
+    if (found !== body.problems.length) throw new AppError('VALIDATION_FAILED', 'Unknown problem id in contest');
     const c = await ContestModel.create({ ...body, participants: [] });
     res.status(201).json({ id: String(c._id) });
   } catch (e) { next(e); }
@@ -61,7 +61,7 @@ contestsRouter.post('/:id/register', authenticate, authorize(), validate('params
   try {
     const c = await ContestModel.findById((req.params as { id: string }).id);
     if (!c) throw notFound('contest');
-    if (phase(c) === 'ended') throw new AppError('CONTEST_NOT_RUNNING', 'contest has ended');
+    if (phase(c) === 'ended') throw new AppError('CONTEST_NOT_RUNNING', 'Contest has ended');
     await ContestModel.updateOne({ _id: c._id }, { $addToSet: { participants: req.user!.sub } });
     res.status(204).end();
   } catch (e) { next(e); }

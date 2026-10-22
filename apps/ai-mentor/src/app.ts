@@ -40,9 +40,9 @@ export function createApp(deps: MentorDeps) {
   // one question → server-sent events. post because the code goes in the
   // body; the client reads the stream with fetch, not EventSource.
   app.post('/api/ai/mentor', requireUser, async (req, res, next) => {
-    if (config.AI_ENABLED !== 'true') return next(new AppError('FORBIDDEN', 'the ai mentor is switched off'));
+    if (config.AI_ENABLED !== 'true') return next(new AppError('FORBIDDEN', 'The AI mentor is switched off'));
     const parsed = AskBody.safeParse(req.body);
-    if (!parsed.success) return next(new AppError('VALIDATION_FAILED', 'invalid request', parsed.error.flatten()));
+    if (!parsed.success) return next(new AppError('VALIDATION_FAILED', 'Invalid request', parsed.error.flatten()));
     const ac = new AbortController();
     req.on('close', () => ac.abort());
     const ask = { ...parsed.data, contestId: parsed.data.contestId ?? null, conversationId: parsed.data.conversationId ?? null, message: parsed.data.message ?? null, mode: parsed.data.mode as 1 | 2 | 3 | 4 | 5 | 6, userId: req.user!.sub };
@@ -58,18 +58,18 @@ export function createApp(deps: MentorDeps) {
       res.end();
     } catch (e) {
       if (!started) return next(e);
-      const err = e instanceof AppError ? { code: e.code, message: e.message } : { code: 'INTERNAL', message: 'mentor failed' };
+      const err = e instanceof AppError ? { code: e.code, message: e.message } : { code: 'INTERNAL', message: 'Mentor failed' };
       logger.error({ err: (e as Error).message }, 'mentor stream failed');
       res.write(`event: error\ndata: ${JSON.stringify(err)}\n\n`);
       res.end();
     }
   });
 
-  app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'no such route', requestId: res.locals['requestId'] } }));
+  app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No such route', requestId: res.locals['requestId'] } }));
   const onError: ErrorRequestHandler = (err, _req, res, _next) => {
     if (err instanceof AppError) return res.status(err.status).json({ error: { code: err.code, message: err.message, details: err.details, requestId: res.locals['requestId'] } });
     logger.error({ err }, 'unhandled');
-    res.status(500).json({ error: { code: 'INTERNAL', message: 'something broke', requestId: res.locals['requestId'] } });
+    res.status(500).json({ error: { code: 'INTERNAL', message: 'Something broke', requestId: res.locals['requestId'] } });
   };
   app.use(onError);
   return app;
