@@ -45,7 +45,7 @@ export function MentorPanel(p: { problemId: string; language: string; code: stri
   const persona = modes.find((x) => x.id === mode)!;
   const started = m.conversationId !== null || m.turns.length > 0;
 
-  const pick = (id: number) => { if (id === mode) return; m.reset(); setMode(id); setDraft(''); };
+  const pick = (id: number) => { if (id === mode) return; m.switchTo(mode, id); setMode(id); setDraft(''); };
   const submit = () => {
     if (m.busy) return;
     const text = draft;
@@ -72,7 +72,7 @@ export function MentorPanel(p: { problemId: string; language: string; code: stri
             <strong>{persona.name}</strong>
             <span className="muted"> · {persona.needsExecution ? 'runs your code in the sandbox first — nothing is simulated' : 'reads the statement' + (mode === 2 ? ' and your code' : '')}</span>
           </span>
-          {started && <button className="link small" onClick={() => { m.reset(); setDraft(''); }}>new conversation</button>}
+          {started && <button className="link small" onClick={() => { m.clear(mode); setDraft(''); }}>new conversation</button>}
         </div>
 
         <div className="chat-log" ref={log}>

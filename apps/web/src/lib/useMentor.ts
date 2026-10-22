@@ -24,6 +24,17 @@ export function useMentor() {
   const abort = useRef<AbortController | null>(null);
 
   const reset = useCallback(() => { abort.current?.abort(); setState(initial); }, []);
+  // each persona keeps its own thread while you look at another one; the
+  // server still holds the transcript for two hours, this is just the view
+  const stash = useRef(new Map<number, MentorState>());
+  const switchTo = useCallback((from: number, to: number) => {
+    abort.current?.abort();
+    setState((s) => {
+      stash.current.set(from, { ...s, busy: false, status: null, error: null });
+      return stash.current.get(to) ?? initial;
+    });
+  }, []);
+  const clear = useCallback((mode: number) => { stash.current.delete(mode); reset(); }, [reset]);
 
   /** sends one turn. with no conversation yet, the server builds the context and opens one. */
   const send = useCallback(async (body: { problemId: string; mode: number; language: string; code: string; contestId?: string | null }, message: string) => {
@@ -81,5 +92,5 @@ export function useMentor() {
   const stateRef = useRef(state); stateRef.current = state;
 
   const stop = useCallback(() => { abort.current?.abort(); setState((s) => ({ ...s, busy: false, status: null })); }, []);
-  return { ...state, send, stop, reset };
+  return { ...state, send, stop, reset, switchTo, clear };
 }

@@ -49,7 +49,8 @@ export function ContestPage() {
 
   return (
     <div>
-      <div className="row between">
+      <Link to="/contests" className="muted">← contests</Link>
+      <div className="row between wrap">
         <div>
           <h1>{contest.title}</h1>
           <p className="muted">
@@ -59,6 +60,7 @@ export function ContestPage() {
             {' · '}{contest.participantCount} registered · {contest.scoring}
           </p>
         </div>
+        {!user && contest.phase !== 'ended' && <Link to="/login" state={{ from: `/contests/${id}` }}><button className="secondary">sign in to register</button></Link>}
         {user && !contest.registered && contest.phase !== 'ended' && <button onClick={() => void register()}>register</button>}
         {contest.registered && <span className="chip good">registered</span>}
       </div>
@@ -69,7 +71,7 @@ export function ContestPage() {
           {problems.map((p) => (
             <tr key={p.problemId}>
               <td className="mono">{p.letter}</td>
-              <td>{p.slug ? <Link to={`/problems/${p.slug}?contest=${id}`}>{p.title}</Link> : p.title}</td>
+              <td>{p.slug ? <Link to={contest.phase === 'running' ? `/problems/${p.slug}?contest=${id}` : `/problems/${p.slug}`}>{p.title}</Link> : p.title}</td>
               <td><span className={`diff ${p.difficulty}`}>{p.difficulty}</span></td>
               <td className="muted">{p.points} pts</td>
             </tr>

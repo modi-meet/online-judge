@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { ListQuery, ProblemBody, TestcaseBody, objectId } from '@oj/contracts';
-import { ProblemModel, TestcaseModel, Types } from '@oj/db';
+import { ProblemModel, SubmissionModel, TestcaseModel, Types } from '@oj/db';
 import { putOrInline, type ObjectStore } from '@oj/storage';
 import { AppError, notFound } from '../errors.js';
 import { authenticate, authorize } from '../middleware/auth.js';
@@ -35,8 +35,14 @@ problemsRouter.get('/', authenticate, validate('query', ListQuery), async (req, 
       .select('slug title difficulty tags isPublic')
       .lean();
     const page = rows.slice(0, q.limit);
+    // the solved badge, for a signed-in user: one query over the (problemId, userId, status) index
+    const solved = new Set<string>();
+    if (req.user && page.length) {
+      const ids = await SubmissionModel.distinct('problemId', { userId: req.user.sub, status: 'AC', problemId: { $in: page.map((p) => p._id) } });
+      for (const id of ids) solved.add(String(id));
+    }
     res.json({
-      items: page.map((p) => ({ id: String(p._id), slug: p.slug, title: p.title, difficulty: p.difficulty, tags: p.tags, isPublic: p.isPublic })),
+      items: page.map((p) => ({ id: String(p._id), slug: p.slug, title: p.title, difficulty: p.difficulty, tags: p.tags, isPublic: p.isPublic, solved: solved.has(String(p._id)) })),
       nextCursor: rows.length > q.limit ? enc(page[page.length - 1]!._id) : null,
     });
   } catch (e) { next(e); }

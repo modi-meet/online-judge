@@ -58,6 +58,18 @@ export function ProblemPage() {
   const [mine, setMine] = useState<SubmissionView[]>([]);
   const sub = useSubmission();
   const [dark, setDark] = useState(prefersDark);
+  const [contest, setContest] = useState<{ title: string; endAt: string; phase: string } | null>(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!contestId) { setContest(null); return; }
+    api<{ contest: { title: string; endAt: string; phase: string } }>('GET', `/api/contests/${contestId}`).then((r) => setContest(r.contest)).catch(() => setContest(null));
+    const t = setInterval(() => setTick((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, [contestId]);
+  void tick;
+  const contestOver = !!contest && (contest.phase === 'ended' || new Date(contest.endAt).getTime() <= Date.now());
+  const remaining = contest ? Math.max(0, new Date(contest.endAt).getTime() - Date.now()) : 0;
+  const clock = `${Math.floor(remaining / 3600_000)}:${String(Math.floor((remaining % 3600_000) / 60_000)).padStart(2, '0')}:${String(Math.floor((remaining % 60_000) / 1000)).padStart(2, '0')}`;
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const on = () => setDark(mq.matches);
@@ -96,6 +108,13 @@ export function ProblemPage() {
     localStorage.setItem(langKey(slug), language);
   }, [slug, language]);
 
+  // wiping the buffer is the one irreversible thing on this page; ask only
+  // when there is something to lose
+  const resetCode = () => {
+    const starter = STARTER[language];
+    if (code.trim() && code !== starter && code.split('\n').length > 3 && !window.confirm('replace your code with the starter template?')) return;
+    onChange(starter);
+  };
   const onChange = (v: string | undefined) => {
     const next = v ?? '';
     setCode(next);
@@ -123,7 +142,14 @@ export function ProblemPage() {
   return (
     <div className="arena">
       <section className="statement">
-        {contestId ? <Link to={`/contests/${contestId}`} className="muted">← contest</Link> : <Link to="/problems" className="muted">← problems</Link>}
+        {contestId ? (
+          <div className="row between wrap contest-bar">
+            <Link to={`/contests/${contestId}`} className="muted">← {contest?.title ?? 'contest'}</Link>
+            {contest && (contestOver
+              ? <span className="chip bad">contest over · practice only</span>
+              : <span className="chip pending" title="time left in the contest"><span className="mono">{clock}</span></span>)}
+          </div>
+        ) : <Link to="/problems" className="muted">← problems</Link>}
         <h1>{problem.title}</h1>
         <p className="meta">
           <span className={`diff ${problem.difficulty}`}>{problem.difficulty}</span>
@@ -139,20 +165,22 @@ export function ProblemPage() {
               <div><div className="lbl">input</div><pre>{s.input}</pre></div>
               <div><div className="lbl">output</div><pre>{s.output}</pre></div>
             </div>
-            <button className="link" onClick={() => setStdin(s.input)}>use as stdin</button>
+            <button className="link" onClick={() => { setStdin(s.input); setTab('run'); }}>use as stdin</button>
           </div>
         ))}
       </section>
 
       <section className="editor">
         <div className="toolbar">
-          <select value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
-            {LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_SPEC[l].name}</option>)}
-          </select>
           <div className="row">
-            <button className="quiet" onClick={() => onChange(STARTER[language])}>reset</button>
+            <select value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
+              {LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_SPEC[l].name}</option>)}
+            </select>
+            <button className="link small" onClick={resetCode} disabled={code === STARTER[language]}>reset to starter</button>
+          </div>
+          <div className="row">
             <button className="secondary" onClick={() => { setTab('run'); void run(); }} disabled={running}>{running ? 'running…' : 'run'}</button>
-            <button onClick={() => void doSubmit()} disabled={!!sub.current && !sub.current.judgedAt}>submit</button>
+            <button onClick={() => void doSubmit()} disabled={!!sub.current && !sub.current.judgedAt || contestOver}>{contestId ? 'submit to contest' : 'submit'}</button>
           </div>
         </div>
         <div className="editor-frame">
@@ -167,7 +195,7 @@ export function ProblemPage() {
         </div>
         <div className="row tabs">
           <Segmented name="arena" value={tab} onChange={setTab}
-            options={[{ value: 'run', label: 'run' }, { value: 'submit', label: `submissions${mine.length ? ` · ${mine.length}` : ''}` }, { value: 'mentor', label: 'mentor' }]} />
+            options={[{ value: 'run', label: 'run' }, { value: 'submit', label: 'submissions' }, { value: 'mentor', label: 'mentor' }]} />
         </div>
         {tab === 'mentor' && <MentorPanel problemId={problem.id} language={language} code={code} contestId={contestId} signedIn={!!user} />}
         {tab === 'run' && (
