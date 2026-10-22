@@ -55,12 +55,13 @@ export function ContestPage() {
       <div className="row between wrap">
         <div>
           <PageHead title={contest.title} tab={contest.title} lead={contest.scoring === 'icpc' ? 'ICPC scoring: the most problems solved wins, ties go to the lowest penalty (minutes to each solve, plus 20 for every wrong attempt).' : 'Points scoring: each problem is worth its points; the highest total wins.'} />
-          <p className="muted">
-            {contest.phase === 'upcoming' && <>Starts in <span className="mono">{countdown(contest.startAt)}</span></>}
-            {contest.phase === 'running' && <>Ends in <span className="mono">{countdown(contest.endAt)}</span></>}
-            {contest.phase === 'ended' && <>Ended {new Date(contest.endAt).toLocaleString()}</>}
-            {' · '}{contest.participantCount} registered · {contest.scoring}
-          </p>
+          <div className="status-row">
+            {contest.phase === 'upcoming' && <button className="sm secondary" disabled>Starts in <span className="mono">{countdown(contest.startAt)}</span></button>}
+            {contest.phase === 'running' && <button className="sm" disabled>Ends in <span className="mono">{countdown(contest.endAt)}</span></button>}
+            {contest.phase === 'ended' && <button className="sm quiet" disabled>Ended {new Date(contest.endAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</button>}
+            <button className="sm quiet" disabled>{contest.participantCount} registered</button>
+            <button className="sm quiet" disabled>{contest.scoring === 'icpc' ? 'ICPC' : 'Points'}</button>
+          </div>
         </div>
         {!user && contest.phase !== 'ended' && <Link to="/login" state={{ from: `/contests/${id}` }}><button className="secondary">Sign in to register</button></Link>}
         {user && !contest.registered && contest.phase !== 'ended' && <button onClick={() => void register()}>Register</button>}
