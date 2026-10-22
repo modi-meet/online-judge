@@ -7,6 +7,8 @@ import { useAuth } from '../lib/auth';
 import { useSubmission, type SubmissionView } from '../lib/useSubmission';
 import { VerdictChip, VerdictPanel } from '../components/Verdict';
 import { MentorPanel } from '../components/Mentor';
+import { Segmented } from '../components/Segmented';
+import { prefersDark } from '../lib/motion';
 
 interface ProblemView {
   problem: { id: string; slug: string; title: string; statement: string; inputFormat: string; outputFormat: string;
@@ -55,6 +57,13 @@ export function ProblemPage() {
   const [tab, setTab] = useState<'run' | 'submit' | 'mentor'>('run');
   const [mine, setMine] = useState<SubmissionView[]>([]);
   const sub = useSubmission();
+  const [dark, setDark] = useState(prefersDark);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const on = () => setDark(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
 
   const loadMine = async (pid: string) => {
     if (!user) return;
@@ -136,28 +145,29 @@ export function ProblemPage() {
       </section>
 
       <section className="editor">
-        <div className="row between toolbar">
+        <div className="toolbar">
           <select value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
             {LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_SPEC[l].name}</option>)}
           </select>
           <div className="row">
-            <button className="secondary" onClick={() => onChange(STARTER[language])}>reset</button>
+            <button className="quiet" onClick={() => onChange(STARTER[language])}>reset</button>
             <button className="secondary" onClick={() => { setTab('run'); void run(); }} disabled={running}>{running ? 'running…' : 'run'}</button>
             <button onClick={() => void doSubmit()} disabled={!!sub.current && !sub.current.judgedAt}>submit</button>
           </div>
         </div>
-        <Editor
-          height="52vh"
-          language={LANGUAGE_SPEC[language].editor}
-          value={code}
-          onChange={onChange}
-          theme="vs-dark"
-          options={{ fontSize: 14, minimap: { enabled: false }, scrollBeyondLastLine: false, tabSize: 4 }}
-        />
+        <div className="editor-frame">
+          <Editor
+            height="52vh"
+            language={LANGUAGE_SPEC[language].editor}
+            value={code}
+            onChange={onChange}
+            theme={dark ? 'vs-dark' : 'light'}
+            options={{ fontSize: 14, minimap: { enabled: false }, scrollBeyondLastLine: false, tabSize: 4, padding: { top: 12 }, fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace', smoothScrolling: true, cursorSmoothCaretAnimation: 'on' }}
+          />
+        </div>
         <div className="row tabs">
-          <button className={`link ${tab === 'run' ? 'on' : ''}`} onClick={() => setTab('run')}>run with custom input</button>
-          <button className={`link ${tab === 'submit' ? 'on' : ''}`} onClick={() => setTab('submit')}>submissions{mine.length ? ` (${mine.length})` : ''}</button>
-          <button className={`link ${tab === 'mentor' ? 'on' : ''}`} onClick={() => setTab('mentor')}>mentor</button>
+          <Segmented name="arena" value={tab} onChange={setTab}
+            options={[{ value: 'run', label: 'run' }, { value: 'submit', label: `submissions${mine.length ? ` · ${mine.length}` : ''}` }, { value: 'mentor', label: 'mentor' }]} />
         </div>
         {tab === 'mentor' && <MentorPanel problemId={problem.id} language={language} code={code} contestId={contestId} signedIn={!!user} />}
         {tab === 'run' && (

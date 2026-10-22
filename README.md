@@ -117,7 +117,7 @@ the mentor is optional by construction: no inbound import from the judge path, a
 ```
 oj/
 ├── apps/
-│   ├── web/                    react + vite + monaco, mentor panel
+│   ├── web/                    react + vite + monaco; system type, translucent chrome, springs (motion)
 │   ├── api/                    express: auth, problems, submissions, contests, sse, ws
 │   ├── judge-worker/           queue consumer → sandbox → verdict (+ outbox row)
 │   ├── outbox-relay/           outbox rows → redis streams

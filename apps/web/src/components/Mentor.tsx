@@ -1,5 +1,7 @@
+import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { useMentor, type ModeInfo } from '../lib/useMentor';
+import { springSnappy, useEnter } from '../lib/motion';
 
 // a chat with one persona per mode. picking a mode starts a conversation
 // about this problem; the first turn carries the problem, the editor
@@ -31,11 +33,12 @@ export function MentorPanel(p: { problemId: string; language: string; code: stri
   const [draft, setDraft] = useState('');
   const m = useMentor();
   const log = useRef<HTMLDivElement>(null);
+  const arrive = useEnter(10);
 
   useEffect(() => {
     fetch('/api/ai/modes').then((r) => r.json()).then((j: { enabled: boolean; modes: ModeInfo[] }) => { setEnabled(j.enabled); setModes(j.modes); }).catch(() => setEnabled(false));
   }, []);
-  useEffect(() => { log.current?.scrollTo({ top: log.current.scrollHeight }); }, [m.turns]);
+  useEffect(() => { log.current?.scrollTo({ top: log.current.scrollHeight, behavior: 'smooth' }); }, [m.turns]);
 
   if (!enabled) return <p className="muted">the ai mentor is switched off on this server.</p>;
   if (!modes) return <p className="muted">loading…</p>;
@@ -54,7 +57,8 @@ export function MentorPanel(p: { problemId: string; language: string; code: stri
     <div className="mentor">
       <div className="modes">
         {modes.map((x) => (
-          <button key={x.id} className={`mode ${mode === x.id ? 'on' : ''}`} onClick={() => pick(x.id)} disabled={m.busy}>
+          <button key={x.id} className={`mode ${mode === x.id ? 'on' : ''}`} onPointerDown={() => !m.busy && pick(x.id)} onClick={() => pick(x.id)} disabled={m.busy}>
+            {mode === x.id && <motion.span layoutId="mode-ring" className="ring" transition={springSnappy} />}
             <span className="mono">{x.id}</span>
             <strong>{x.name}</strong>
             <span className="muted">{BLURB[x.id]}</span>
@@ -74,12 +78,12 @@ export function MentorPanel(p: { problemId: string; language: string; code: stri
         <div className="chat-log" ref={log}>
           {!started && <p className="muted small opener">{persona.name} is ready. send a message, or just press ask and it opens with: “{OPENER[mode]}”</p>}
           {m.turns.map((t, i) => (
-            <div key={i} className={`bubble ${t.role} ${t.blocked ? 'blocked' : ''}`}>
+            <motion.div key={i} className={`bubble ${t.role} ${t.blocked ? 'blocked' : ''}`} initial={arrive.initial} animate={arrive.animate} transition={arrive.transition} layout="position">
               {t.cached && <span className="tag">cached</span>}
               {t.blocked && <span className="tag bad">leak guard</span>}
               {t.role === 'assistant' && !t.text && m.busy ? <span className="muted">{m.status ?? 'thinking…'}</span> : <Reply text={t.text} />}
               {t.role === 'assistant' && t.text && m.busy && i === m.turns.length - 1 && <span className="cursor">▍</span>}
-            </div>
+            </motion.div>
           ))}
         </div>
 

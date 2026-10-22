@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import { Segmented } from '../components/Segmented';
 
 interface Item { id: string; slug: string; title: string; difficulty: 'easy' | 'medium' | 'hard'; tags: string[]; isPublic: boolean }
 interface Page { items: Item[]; nextCursor: string | null }
@@ -24,12 +25,8 @@ export function ProblemsPage() {
     <div>
       <div className="row between">
         <h1>problems</h1>
-        <select value={difficulty} onChange={(e) => setParams(e.target.value ? { difficulty: e.target.value } : {})}>
-          <option value="">all difficulties</option>
-          <option value="easy">easy</option>
-          <option value="medium">medium</option>
-          <option value="hard">hard</option>
-        </select>
+        <Segmented name="difficulty" value={difficulty} onChange={(v) => setParams(v ? { difficulty: v } : {})}
+          options={[{ value: '', label: 'all' }, { value: 'easy', label: 'easy' }, { value: 'medium', label: 'medium' }, { value: 'hard', label: 'hard' }]} />
       </div>
       {error && <p className="error">{error}</p>}
       {!page && !error && <p className="muted">loading…</p>}
@@ -49,7 +46,7 @@ export function ProblemsPage() {
         </table>
       )}
       {page?.nextCursor && (
-        <button className="secondary" onClick={() => setParams({ ...(difficulty ? { difficulty } : {}), cursor: page.nextCursor! })}>next page</button>
+        <p><button className="secondary" onClick={() => setParams({ ...(difficulty ? { difficulty } : {}), cursor: page.nextCursor! })}>next page</button></p>
       )}
     </div>
   );

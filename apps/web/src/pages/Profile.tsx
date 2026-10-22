@@ -17,7 +17,7 @@ export function ProfilePage() {
   if (error) return <p className="error">{error}</p>;
   if (!p) return <p className="muted">loading…</p>;
   return (
-    <div className="card" style={{ maxWidth: 720, margin: "40px auto" }}>
+    <div className="card" style={{ maxWidth: 760, margin: "24px auto" }}>
       <h1>{p.user.username}</h1>
       <dl className="stats">
         <div><dt>rating</dt><dd>{p.user.rating}</dd></div>

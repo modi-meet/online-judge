@@ -1,31 +1,50 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { springSnappy, useEnter } from '../lib/motion';
 
+// chrome is a translucent material the content scrolls under; the active
+// item is a pill that slides between links. pages enter with a short settle
+// from just below, never a slide from the side — nothing here has a side.
 export function Layout() {
   const { user, logout } = useAuth();
+  const loc = useLocation();
+  const enter = useEnter(6);
+  const item = (to: string, label: string) => (
+    <NavLink to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
+      {({ isActive }) => (
+        <>
+          {isActive && <motion.span layoutId="nav-pill" className="pill-bg" transition={springSnappy} />}
+          <span>{label}</span>
+        </>
+      )}
+    </NavLink>
+  );
   return (
     <>
       <header className="nav">
-        <Link to="/problems" className="brand">online judge</Link>
-        <nav>
-          <NavLink to="/problems">problems</NavLink>
-          <NavLink to="/contests">contests</NavLink>
-          {user ? (
-            <>
-              <NavLink to={`/u/${user.username}`}>{user.username}</NavLink>
-              <button className="link" onClick={() => void logout()}>sign out</button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login">sign in</NavLink>
-              <NavLink to="/register">register</NavLink>
-            </>
-          )}
-        </nav>
+        <div className="nav-inner">
+          <Link to="/problems" className="brand"><span className="brand-mark" aria-hidden="true" />online judge</Link>
+          <nav>
+            {item('/problems', 'problems')}
+            {item('/contests', 'contests')}
+            {user ? (
+              <>
+                {item(`/u/${user.username}`, user.username)}
+                <button className="link" onClick={() => void logout()}>sign out</button>
+              </>
+            ) : (
+              <>
+                {item('/login', 'sign in')}
+                {item('/register', 'register')}
+              </>
+            )}
+          </nav>
+        </div>
       </header>
-      <main className="page">
+      <motion.main key={loc.pathname} className="page" initial={enter.initial} animate={enter.animate} transition={enter.transition}>
         <Outlet />
-      </main>
+      </motion.main>
     </>
   );
 }
