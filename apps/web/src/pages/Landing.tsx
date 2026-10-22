@@ -27,9 +27,8 @@ export function LandingPage() {
     <div className="landing">
       <section className="l-hero">
         <div className="l-glow" aria-hidden="true" />
-        <p className="l-eyebrow">Sandboxed. Honest. Fast.</p>
-        <h1 className="l-title">Write it.<br /><span className="l-grad">Prove it.</span></h1>
-        <p className="l-sub">An online judge that runs your code in a real sandbox, tells you exactly what went wrong, and pairs you with a mentor that learns from the actual run.</p>
+        <h1 className="l-title">Run your code.<br /><span className="l-grad">See the real verdict.</span></h1>
+        <p className="l-sub">Programs run in an isolated sandbox with fixed time and memory limits. You see the exact test that failed, and a mentor reads the same run you did.</p>
         <div className="l-cta">
           <Link to={user ? '/problems' : '/register'} className="l-btn primary">{user ? 'Open problems' : 'Start solving'}</Link>
           <Link to="/problems" className="l-btn ghost">Browse problems <span aria-hidden="true">›</span></Link>
@@ -48,7 +47,7 @@ export function LandingPage() {
       </section>
 
       <section ref={a} className="l-section reveal">
-        <h2 className="l-h2">Everything a judge should be.<br /><span className="muted">Nothing it shouldn’t.</span></h2>
+        <h2 className="l-h2">What happens when you submit.</h2>
         <div className="bento">
           <article className="tile dark t-wide">
             <p className="t-kicker">Execution</p>
@@ -88,9 +87,9 @@ export function LandingPage() {
       </section>
 
       <section ref={d} className="l-final reveal">
-        <h2>Ready when you are.</h2>
-        <p>Pick a problem and see your first verdict in seconds.</p>
-        <Link to={user ? '/problems' : '/register'} className="l-btn primary big">{user ? 'Open problems' : 'Create your account'}</Link>
+        <h2>Submit your first solution.</h2>
+        <p>Create an account, pick a problem, and the verdict usually arrives within seconds.</p>
+        <Link to={user ? '/problems' : '/register'} className="l-btn primary big">{user ? 'Open problems' : 'Create an account'}</Link>
         {!user && <p className="small"><Link to="/login">Already have one? Sign in</Link></p>}
       </section>
     </div>
