@@ -43,30 +43,30 @@ export function ContestPage() {
   const standings = useStandings(id, !!d && d.contest.phase !== 'upcoming' && !!user, pollBoard);
   const rows = standings.rows ?? board?.items.map((r) => ({ userId: r.username, username: r.username, rank: r.rank, solved: r.solved, penalty: r.penalty, problems: Object.fromEntries(Object.entries(r.problems).map(([L, st]) => [Object.keys(letters).find((k) => letters[k] === L) ?? L, st])) })) ?? null;
 
-  if (!d) return <p className="muted">loading…</p>;
+  if (!d) return <p className="muted">Loading…</p>;
   const { contest, problems } = d;
   const register = async () => { await api('POST', `/api/contests/${id}/register`); await load(); };
 
   return (
     <div>
-      <Link to="/contests" className="muted">← contests</Link>
+      <Link to="/contests" className="muted">← Contests</Link>
       <div className="row between wrap">
         <div>
           <h1>{contest.title}</h1>
           <p className="muted">
-            {contest.phase === 'upcoming' && <>starts in <span className="mono">{countdown(contest.startAt)}</span></>}
-            {contest.phase === 'running' && <>ends in <span className="mono">{countdown(contest.endAt)}</span></>}
-            {contest.phase === 'ended' && <>ended {new Date(contest.endAt).toLocaleString()}</>}
+            {contest.phase === 'upcoming' && <>Starts in <span className="mono">{countdown(contest.startAt)}</span></>}
+            {contest.phase === 'running' && <>Ends in <span className="mono">{countdown(contest.endAt)}</span></>}
+            {contest.phase === 'ended' && <>Ended {new Date(contest.endAt).toLocaleString()}</>}
             {' · '}{contest.participantCount} registered · {contest.scoring}
           </p>
         </div>
-        {!user && contest.phase !== 'ended' && <Link to="/login" state={{ from: `/contests/${id}` }}><button className="secondary">sign in to register</button></Link>}
-        {user && !contest.registered && contest.phase !== 'ended' && <button onClick={() => void register()}>register</button>}
-        {contest.registered && <span className="chip good">registered</span>}
+        {!user && contest.phase !== 'ended' && <Link to="/login" state={{ from: `/contests/${id}` }}><button className="secondary">Sign in to register</button></Link>}
+        {user && !contest.registered && contest.phase !== 'ended' && <button onClick={() => void register()}>Register</button>}
+        {contest.registered && <span className="chip good">Registered</span>}
       </div>
 
-      <h3>problems</h3>
-      {contest.phase === 'upcoming' ? <p className="muted">{contest.problemCount} problems, revealed at the start.</p> : (
+      <h3>Problems</h3>
+      {contest.phase === 'upcoming' ? <p className="muted">{contest.problemCount} problems, Revealed at the start.</p> : (
         <table className="list"><tbody>
           {problems.map((p) => (
             <tr key={p.problemId}>
@@ -81,10 +81,10 @@ export function ContestPage() {
 
       {rows && (
         <>
-          <h3>standings{board?.me ? <span className="muted"> · you are #{board.me}</span> : null}{standings.live && <span className="chip good" style={{ marginLeft: 8 }}>live</span>}</h3>
-          {rows.length === 0 ? <p className="muted">no accepted solutions yet.</p> : (
+          <h3>Standings{board?.me ? <span className="muted"> · You are #{board.me}</span> : null}{standings.live && <span className="chip good" style={{ marginLeft: 8 }}>Live</span>}</h3>
+          {rows.length === 0 ? <p className="muted">No accepted solutions yet.</p> : (
             <table className="list board">
-              <thead><tr><th>#</th><th>who</th><th>solved</th><th>penalty</th>{problems.map((p) => <th key={p.letter}>{p.letter}</th>)}</tr></thead>
+              <thead><tr><th>#</th><th>Who</th><th>Solved</th><th>Penalty</th>{problems.map((p) => <th key={p.letter}>{p.letter}</th>)}</tr></thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.userId} className={r.username === user?.username ? 'sel' : ''}>

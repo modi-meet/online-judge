@@ -39,20 +39,20 @@ export function ProblemsPage() {
   return (
     <div>
       <div className="row between wrap">
-        <h1>problems</h1>
+        <h1>Problems</h1>
         <div className="row wrap">
-          <input className="search" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="search titles" aria-label="search problems" />
+          <input className="search" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search titles" aria-label="Search problems" />
           <Segmented name="difficulty" value={difficulty} onChange={(v) => set({ difficulty: v, cursor: '' })}
-            options={[{ value: '', label: 'all' }, { value: 'easy', label: 'easy' }, { value: 'medium', label: 'medium' }, { value: 'hard', label: 'hard' }]} />
+            options={[{ value: '', label: 'All' }, { value: 'easy', label: 'Easy' }, { value: 'medium', label: 'Medium' }, { value: 'hard', label: 'Hard' }]} />
         </div>
       </div>
-      {tag && <p className="muted small filter-note">tag: <span className="tagchip on">{tag}</span> <button className="link small" onClick={() => set({ tag: '', cursor: '' })}>clear</button></p>}
+      {tag && <p className="muted small filter-note">Tag: <span className="tagchip on">{tag}</span> <button className="link small" onClick={() => set({ tag: '', cursor: '' })}>Clear</button></p>}
       {error && <p className="error">{error}</p>}
-      {!page && !error && <p className="muted">loading…</p>}
-      {page && page.items.length === 0 && <p className="muted">nothing matches{q ? ` “${q}”` : ''}.</p>}
+      {!page && !error && <p className="muted">Loading…</p>}
+      {page && page.items.length === 0 && <p className="muted">Nothing matches{q ? ` “${q}”` : ''}.</p>}
       {page && page.items.length > 0 && (
-        <table className="list">
-          <thead><tr><th>title</th><th>difficulty</th><th>tags</th></tr></thead>
+        <table className="list stagger">
+          <thead><tr><th>Title</th><th>Difficulty</th><th>Tags</th></tr></thead>
           <tbody>
             {page.items.map((p) => (
               <tr key={p.id} className="clickable" onClick={() => nav(`/problems/${p.slug}`)}>
@@ -60,7 +60,7 @@ export function ProblemsPage() {
                   <span className="row">
                     {p.solved && <span className="solved" title="accepted">✓</span>}
                     <Link to={`/problems/${p.slug}`} onClick={(e) => e.stopPropagation()}>{p.title}</Link>
-                    {!p.isPublic && <span className="pill">draft</span>}
+                    {!p.isPublic && <span className="pill">Draft</span>}
                   </span>
                 </td>
                 <td><span className={`diff ${p.difficulty}`}>{p.difficulty}</span></td>
@@ -75,7 +75,7 @@ export function ProblemsPage() {
         </table>
       )}
       {page?.nextCursor && (
-        <p><button className="secondary" onClick={() => set({ cursor: page.nextCursor! })}>next page</button></p>
+        <p><button className="secondary" onClick={() => set({ cursor: page.nextCursor! })}>Next page</button></p>
       )}
     </div>
   );

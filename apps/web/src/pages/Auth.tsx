@@ -30,12 +30,12 @@ export function LoginPage() {
   const { error, busy, onSubmit } = useSubmit(() => login(u, p));
   return (
     <form className="card narrow" onSubmit={onSubmit}>
-      <h1>sign in</h1>
-      <label>username<input value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username" /></label>
-      <label>password<input type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></label>
+      <h1>Sign in</h1>
+      <label>Username<input value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username" /></label>
+      <label>Password<input type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></label>
       {error && <p className="error">{error}</p>}
-      <button disabled={busy}>sign in</button>
-      <p className="muted">new here? <Link to="/register">register</Link></p>
+      <button disabled={busy}>Sign in</button>
+      <p className="muted">New here? <Link to="/register">Register</Link></p>
     </form>
   );
 }
@@ -46,13 +46,13 @@ export function RegisterPage() {
   const { error, busy, onSubmit } = useSubmit(() => register(u, e, p));
   return (
     <form className="card narrow" onSubmit={onSubmit}>
-      <h1>register</h1>
-      <label>username<input value={u} onChange={(ev) => setU(ev.target.value)} autoFocus autoComplete="username" placeholder="lowercase, digits, _" /></label>
-      <label>email<input type="email" value={e} onChange={(ev) => setE(ev.target.value)} autoComplete="email" /></label>
-      <label>password<input type="password" value={p} onChange={(ev) => setP(ev.target.value)} autoComplete="new-password" placeholder="8+ characters" /></label>
+      <h1>Register</h1>
+      <label>Username<input value={u} onChange={(ev) => setU(ev.target.value)} autoFocus autoComplete="username" placeholder="Lowercase letters, digits, _" /></label>
+      <label>Email<input type="email" value={e} onChange={(ev) => setE(ev.target.value)} autoComplete="email" /></label>
+      <label>Password<input type="password" value={p} onChange={(ev) => setP(ev.target.value)} autoComplete="new-password" placeholder="8+ characters" /></label>
       {error && <p className="error">{error}</p>}
-      <button disabled={busy}>create account</button>
-      <p className="muted">have an account? <Link to="/login">sign in</Link></p>
+      <button disabled={busy}>Create account</button>
+      <p className="muted">Have an account? <Link to="/login">Sign in</Link></p>
     </form>
   );
 }
