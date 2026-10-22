@@ -3,6 +3,7 @@ import { useStandings, type Row } from '../lib/useStandings';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { Empty } from '../components/Icon';
 import type { ContestSummary } from './Contests';
 
 interface Detail {
@@ -82,7 +83,7 @@ export function ContestPage() {
       {rows && (
         <>
           <h3>Standings{board?.me ? <span className="muted"> · You are #{board.me}</span> : null}{standings.live && <span className="chip good" style={{ marginLeft: 8 }}>Live</span>}</h3>
-          {rows.length === 0 ? <p className="muted">No accepted solutions yet.</p> : (
+          {rows.length === 0 ? <Empty icon="flag" title="No accepted solutions yet" hint="The first accepted submission takes the top spot." /> : (
             <table className="list board">
               <thead><tr><th>#</th><th>Who</th><th>Solved</th><th>Penalty</th>{problems.map((p) => <th key={p.letter}>{p.letter}</th>)}</tr></thead>
               <tbody>

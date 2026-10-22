@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { Segmented } from '../components/Segmented';
+import { Empty, Icon } from '../components/Icon';
 
 interface Item { id: string; slug: string; title: string; difficulty: 'easy' | 'medium' | 'hard'; tags: string[]; isPublic: boolean; solved: boolean }
 interface Page { items: Item[]; nextCursor: string | null }
@@ -41,7 +42,7 @@ export function ProblemsPage() {
       <div className="row between wrap">
         <h1>Problems</h1>
         <div className="row wrap">
-          <input className="search" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search titles" aria-label="Search problems" />
+          <label className="searchbox"><Icon name="search" size={15} /><input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search titles" aria-label="Search problems" /></label>
           <Segmented name="difficulty" value={difficulty} onChange={(v) => set({ difficulty: v, cursor: '' })}
             options={[{ value: '', label: 'All' }, { value: 'easy', label: 'Easy' }, { value: 'medium', label: 'Medium' }, { value: 'hard', label: 'Hard' }]} />
         </div>
@@ -49,7 +50,7 @@ export function ProblemsPage() {
       {tag && <p className="muted small filter-note">Tag: <span className="tagchip on">{tag}</span> <button className="link small" onClick={() => set({ tag: '', cursor: '' })}>Clear</button></p>}
       {error && <p className="error">{error}</p>}
       {!page && !error && <p className="muted">Loading…</p>}
-      {page && page.items.length === 0 && <p className="muted">Nothing matches{q ? ` “${q}”` : ''}.</p>}
+      {page && page.items.length === 0 && <Empty icon="search" title={`Nothing matches${q ? ` “${q}”` : ''}`} hint="Try a shorter title, or clear the filters." />}
       {page && page.items.length > 0 && (
         <table className="list stagger">
           <thead><tr><th>Title</th><th>Difficulty</th><th>Tags</th></tr></thead>
@@ -58,7 +59,7 @@ export function ProblemsPage() {
               <tr key={p.id} className="clickable" onClick={() => nav(`/problems/${p.slug}`)}>
                 <td>
                   <span className="row">
-                    {p.solved && <span className="solved" title="accepted">✓</span>}
+                    {p.solved && <span className="solved" title="Accepted"><Icon name="check-circle" size={16} /></span>}
                     <Link to={`/problems/${p.slug}`} onClick={(e) => e.stopPropagation()}>{p.title}</Link>
                     {!p.isPublic && <span className="pill">Draft</span>}
                   </span>

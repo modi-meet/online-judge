@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { springSnappy, useEnter } from '../lib/motion';
+import { Icon } from './Icon';
 
 // chrome is a translucent material the content scrolls under; the active
 // item is a pill that slides between links. pages enter with a short settle
@@ -24,7 +25,7 @@ export function Layout() {
     <>
       <header className="nav">
         <div className="nav-inner">
-          <Link to="/problems" className="brand"><span className="brand-mark" aria-hidden="true" />online judge</Link>
+          <Link to="/problems" className="brand"><span className="brand-mark" aria-hidden="true"><Icon name="code" size={13} /></span>online judge</Link>
           <nav>
             {item('/problems', 'Problems')}
             {item('/contests', 'Contests')}

@@ -8,6 +8,7 @@ import { useSubmission, type SubmissionView } from '../lib/useSubmission';
 import { VerdictChip, VerdictPanel } from '../components/Verdict';
 import { MentorDock, WIDE } from '../components/Mentor';
 import { Segmented } from '../components/Segmented';
+import { Empty } from '../components/Icon';
 import { prefersDark } from '../lib/motion';
 
 interface ProblemView {
@@ -246,7 +247,7 @@ export function ProblemPage() {
                 </tbody>
               </table>
             )}
-            {!sub.current && mine.length === 0 && <p className="muted">No submissions yet. Write a solution and hit Submit.</p>}
+            {!sub.current && mine.length === 0 && <Empty icon="tray" title="No submissions yet" hint="Write a solution and press Submit." />}
           </div>
         )}
       </section>
