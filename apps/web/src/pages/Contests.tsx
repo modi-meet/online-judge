@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+
+const when = (a: string, b: string) => {
+  const s = new Date(a); const e = new Date(b);
+  const day = s.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  const t = (d: Date) => d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return `${day} · ${t(s)} – ${t(e)}`;
+};
 
 export interface ContestSummary { id: string; title: string; startAt: string; endAt: string; phase: 'upcoming' | 'running' | 'ended'; problemCount: number; participantCount: number }
 
 export function ContestsPage() {
+  const nav = useNavigate();
   const [items, setItems] = useState<ContestSummary[] | null>(null);
   useEffect(() => { api<{ items: ContestSummary[] }>('GET', '/api/contests').then((r) => setItems(r.items)); }, []);
   if (!items) return <p className="muted">loading…</p>;
@@ -14,9 +22,9 @@ export function ContestsPage() {
       <h3>{title}</h3>
       <table className="list"><tbody>
         {rows.map((c) => (
-          <tr key={c.id}>
-            <td><Link to={`/contests/${c.id}`}>{c.title}</Link></td>
-            <td className="muted">{new Date(c.startAt).toLocaleString()} → {new Date(c.endAt).toLocaleTimeString()}</td>
+          <tr key={c.id} className="clickable" onClick={() => nav(`/contests/${c.id}`)}>
+            <td><Link to={`/contests/${c.id}`} onClick={(e) => e.stopPropagation()}>{c.title}</Link></td>
+            <td className="muted">{when(c.startAt, c.endAt)}</td>
             <td className="muted">{c.problemCount} problems · {c.participantCount} registered</td>
           </tr>
         ))}
