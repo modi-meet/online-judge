@@ -6,7 +6,7 @@ import { ApiError, api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useSubmission, type SubmissionView } from '../lib/useSubmission';
 import { VerdictChip, VerdictPanel } from '../components/Verdict';
-import { MentorPanel } from '../components/Mentor';
+import { MentorDock } from '../components/Mentor';
 import { Segmented } from '../components/Segmented';
 import { prefersDark } from '../lib/motion';
 
@@ -32,10 +32,10 @@ const langKey = (slug: string) => `oj:lang:${slug}`;
 // what the user did wrong, in their words: the field for a validation
 // failure, the wait for a rate limit, the server's message otherwise.
 function describeError(e: unknown) {
-  if (e instanceof ApiError && e.code === 'RATE_LIMITED') return `slow down — try again in ${(e.details as { retryAfterSec: number }).retryAfterSec}s`;
+  if (e instanceof ApiError && e.code === 'RATE_LIMITED') return `Slow down — try again in ${(e.details as { retryAfterSec: number }).retryAfterSec}s`;
   if (e instanceof ApiError && e.code === 'VALIDATION_FAILED') {
     const first = (e.details as { fields?: { path: string; message: string }[] } | undefined)?.fields?.[0];
-    if (first) return `${first.path || 'request'}: ${first.message}`.toLowerCase();
+    if (first) { const m = `${first.path || 'Request'}: ${first.message}`; return m.charAt(0).toUpperCase() + m.slice(1); }
   }
   return (e as Error).message;
 }
@@ -54,7 +54,7 @@ export function ProblemPage() {
   const [stdin, setStdin] = useState('');
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
-  const [tab, setTab] = useState<'run' | 'submit' | 'mentor'>('run');
+  const [tab, setTab] = useState<'run' | 'submit'>('run');
   const [mine, setMine] = useState<SubmissionView[]>([]);
   const sub = useSubmission();
   const [dark, setDark] = useState(prefersDark);
@@ -112,7 +112,7 @@ export function ProblemPage() {
   // when there is something to lose
   const resetCode = () => {
     const starter = STARTER[language];
-    if (code.trim() && code !== starter && code.split('\n').length > 3 && !window.confirm('replace your code with the starter template?')) return;
+    if (code.trim() && code !== starter && code.split('\n').length > 3 && !window.confirm('Replace your code with the starter template?')) return;
     onChange(starter);
   };
   const onChange = (v: string | undefined) => {
@@ -136,7 +136,7 @@ export function ProblemPage() {
   const matches = result && expected !== null && !result.compileError && result.stdout.trimEnd() === expected.trimEnd();
 
   if (error && !view) return <p className="error">{error}</p>;
-  if (!view) return <p className="muted">loading…</p>;
+  if (!view) return <p className="muted">Loading…</p>;
   const { problem, samples } = view;
 
   return (
@@ -146,10 +146,10 @@ export function ProblemPage() {
           <div className="row between wrap contest-bar">
             <Link to={`/contests/${contestId}`} className="muted">← {contest?.title ?? 'contest'}</Link>
             {contest && (contestOver
-              ? <span className="chip bad">contest over · practice only</span>
+              ? <span className="chip bad">Contest over · practice only</span>
               : <span className="chip pending" title="time left in the contest"><span className="mono">{clock}</span></span>)}
           </div>
-        ) : <Link to="/problems" className="muted">← problems</Link>}
+        ) : <Link to="/problems" className="muted">← Problems</Link>}
         <h1>{problem.title}</h1>
         <p className="meta">
           <span className={`diff ${problem.difficulty}`}>{problem.difficulty}</span>
@@ -165,7 +165,7 @@ export function ProblemPage() {
               <div><div className="lbl">input</div><pre>{s.input}</pre></div>
               <div><div className="lbl">output</div><pre>{s.output}</pre></div>
             </div>
-            <button className="link" onClick={() => { setStdin(s.input); setTab('run'); }}>use as stdin</button>
+            <button className="link" onClick={() => { setStdin(s.input); setTab('run'); }}>Use as stdin</button>
           </div>
         ))}
       </section>
@@ -176,11 +176,11 @@ export function ProblemPage() {
             <select value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
               {LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_SPEC[l].name}</option>)}
             </select>
-            <button className="link small" onClick={resetCode} disabled={code === STARTER[language]}>reset to starter</button>
+            <button className="link small" onClick={resetCode} disabled={code === STARTER[language]}>Reset to starter</button>
           </div>
           <div className="row">
-            <button className="secondary" onClick={() => { setTab('run'); void run(); }} disabled={running}>{running ? 'running…' : 'run'}</button>
-            <button onClick={() => void doSubmit()} disabled={!!sub.current && !sub.current.judgedAt || contestOver}>{contestId ? 'submit to contest' : 'submit'}</button>
+            <button className="secondary" onClick={() => { setTab('run'); void run(); }} disabled={running}>{running ? 'Running…' : 'Run'}</button>
+            <button onClick={() => void doSubmit()} disabled={!!sub.current && !sub.current.judgedAt || contestOver}>{contestId ? 'Submit to contest' : 'Submit'}</button>
           </div>
         </div>
         <div className="editor-frame">
@@ -195,9 +195,8 @@ export function ProblemPage() {
         </div>
         <div className="row tabs">
           <Segmented name="arena" value={tab} onChange={setTab}
-            options={[{ value: 'run', label: 'run' }, { value: 'submit', label: 'submissions' }, { value: 'mentor', label: 'mentor' }]} />
+            options={[{ value: 'run', label: 'Run' }, { value: 'submit', label: 'Submissions' }]} />
         </div>
-        {tab === 'mentor' && <MentorPanel problemId={problem.id} language={language} code={code} contestId={contestId} signedIn={!!user} />}
         {tab === 'run' && (
         <div className="io">
           <div>
@@ -207,12 +206,12 @@ export function ProblemPage() {
           <div>
             <div className="lbl">
               output
-              {result && (result.compileError ? <span className="tag bad">compile error</span>
-                : result.timedOut ? <span className="tag bad">timed out</span>
-                : result.exitCode !== 0 ? <span className="tag bad">exit {result.exitCode ?? result.signal}</span>
-                : matches ? <span className="tag good">matches sample</span>
-                : expected !== null ? <span className="tag bad">differs from sample</span>
-                : <span className="tag">exit 0</span>)}
+              {result && (result.compileError ? <span className="tag bad">Compile error</span>
+                : result.timedOut ? <span className="tag bad">Timed out</span>
+                : result.exitCode !== 0 ? <span className="tag bad">Exit {result.exitCode ?? result.signal}</span>
+                : matches ? <span className="tag good">Matches sample</span>
+                : expected !== null ? <span className="tag bad">Differs from sample</span>
+                : <span className="tag">Exit 0</span>)}
               {result && <span className="muted"> · {result.timeMs} ms</span>}
             </div>
             <pre className={`out ${result?.compileError || (result && result.exitCode !== 0) ? 'bad' : ''}`}>
@@ -240,10 +239,11 @@ export function ProblemPage() {
                 </tbody>
               </table>
             )}
-            {!sub.current && mine.length === 0 && <p className="muted">no submissions yet. write a solution and hit submit.</p>}
+            {!sub.current && mine.length === 0 && <p className="muted">No submissions yet. Write a solution and hit Submit.</p>}
           </div>
         )}
       </section>
+      <MentorDock problemId={problem.id} language={language} code={code} contestId={contestId} signedIn={!!user} />
     </div>
   );
 }
