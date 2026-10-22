@@ -25,7 +25,7 @@ export function LandingPage() {
   const a = useReveal<HTMLElement>(); const b = useReveal<HTMLElement>(); const c = useReveal<HTMLElement>(); const d = useReveal<HTMLElement>();
   return (
     <div className="landing">
-      <section className="l-hero">
+      <section className="l-hero grain">
         <div className="l-glow" aria-hidden="true" />
         <h1 className="l-title">Run your code.<br /><span className="l-grad">See the real verdict.</span></h1>
         <p className="l-sub">Programs run in an isolated sandbox with fixed time and memory limits. You see the exact test that failed, and a mentor reads the same run you did.</p>
@@ -75,18 +75,20 @@ export function LandingPage() {
         </div>
       </section>
 
+      <div className="l-band grain">
       <section ref={b} className="l-statement reveal">
         <Icon name="check-circle" size={34} />
         <h2>The mentor never sees a hidden test.</h2>
         <p>It reads your code, the samples and what actually happened when your program ran. That is enough to be useful, and it is why it cannot hand you an answer.</p>
       </section>
+      </div>
 
       <section ref={c} className="l-section l-langs reveal">
         <p className="t-kicker center">Languages</p>
         <div className="l-langrow"><span>C++17</span><span>C</span><span>Python 3</span><span>Java 17</span><span>JavaScript</span></div>
       </section>
 
-      <section ref={d} className="l-final reveal">
+      <section ref={d} className="l-final grain reveal">
         <h2>Submit your first solution.</h2>
         <p>Create an account, pick a problem, and the verdict usually arrives within seconds.</p>
         <Link to={user ? '/problems' : '/register'} className="l-btn primary big">{user ? 'Open problems' : 'Create an account'}</Link>
