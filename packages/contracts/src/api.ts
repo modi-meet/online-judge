@@ -19,6 +19,16 @@ export const RegisterBody = z.object({
 });
 export type RegisterBody = z.infer<typeof RegisterBody>;
 
+/** a small data url, resized by the client. 96k chars keeps the request under the 128 kb json cap. */
+export const AVATAR_RE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
+export const UpdateProfileBody = z.object({
+  displayName: z.string().max(60),
+  bio: z.string().max(280),
+  location: z.string().max(60),
+  avatar: z.string().max(96_000).refine((v) => v === '' || AVATAR_RE.test(v), 'avatar must be a png, jpeg or webp image'),
+}).partial();
+export type UpdateProfileBody = z.infer<typeof UpdateProfileBody>;
+
 export const LoginBody = z.object({
   username: z.string().min(1),
   password: z.string().min(1),

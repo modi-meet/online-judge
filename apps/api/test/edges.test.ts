@@ -225,3 +225,32 @@ describe('/run with awkward programs', () => {
     expect(r.body.stdout.trim().split('\n')).toEqual(['0', 'eof']);
   });
 });
+
+describe('profile', () => {
+  const PX = 'data:image/png;base64,iVBORw0KGgo=';
+  it('the owner can update their details and sees their email', async () => {
+    const r = await api().patch('/api/users/me').set(auth(alice)).send({ displayName: 'Alice A', bio: 'hello', location: 'Pune', avatar: PX });
+    expect(r.status).toBe(200);
+    const g = await api().get('/api/users/edgealice').set(auth(alice));
+    expect(g.body.user.displayName).toBe('Alice A');
+    expect(g.body.user.avatar).toBe(PX);
+    expect(g.body.user.email).toBe('edgealice@example.com');
+  });
+  it('email stays private from other users and from anonymous callers', async () => {
+    expect((await api().get('/api/users/edgealice').set(auth(bob))).body.user.email).toBeUndefined();
+    expect((await api().get('/api/users/edgealice')).body.user.email).toBeUndefined();
+  });
+  it('rejects an avatar that is not an image data url', async () => {
+    envelope(await api().patch('/api/users/me').set(auth(alice)).send({ avatar: 'https://evil.example/x.png' }), 422, 'VALIDATION_FAILED');
+    envelope(await api().patch('/api/users/me').set(auth(alice)).send({ avatar: 'data:text/html;base64,PHNjcmlwdD4=' }), 422, 'VALIDATION_FAILED');
+  });
+  it('rejects an over-long bio and an anonymous update', async () => {
+    envelope(await api().patch('/api/users/me').set(auth(alice)).send({ bio: 'x'.repeat(281) }), 422, 'VALIDATION_FAILED');
+    envelope(await api().patch('/api/users/me').send({ bio: 'hi' }), 401, 'UNAUTHENTICATED');
+  });
+  it('cannot change role, email or rating through the profile endpoint', async () => {
+    await api().patch('/api/users/me').set(auth(bob)).send({ role: 'admin', rating: 9999, email: 'x@y.z' });
+    const u = await UserModel.findOne({ username: 'edgebob' }).lean();
+    expect(u!.role).toBe('user'); expect(u!.rating).toBe(0); expect(u!.email).toBe('edgebob@example.com');
+  });
+});
