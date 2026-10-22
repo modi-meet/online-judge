@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { LANGUAGES } from './language.js';
 import { STATUSES } from './verdict.js';
 
-export const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'expected a 24-hex object id');
+export const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'Expected a 24-character hex id');
 
 /** source cap. 64 kb is generous for a contest solution and small enough to inline in a request. */
 export const MAX_SOURCE_BYTES = 64 * 1024;
@@ -13,7 +13,7 @@ export const RegisterBody = z.object({
     .string()
     .min(3)
     .max(32)
-    .regex(/^[a-z0-9_]+$/, 'lowercase letters, digits and underscore only'),
+    .regex(/^[a-z0-9_]+$/, 'Use lowercase letters, digits and underscores only'),
   email: z.string().email().max(254),
   password: z.string().min(8).max(128),
 });
@@ -25,7 +25,7 @@ export const UpdateProfileBody = z.object({
   displayName: z.string().max(60),
   bio: z.string().max(280),
   location: z.string().max(60),
-  avatar: z.string().max(96_000).refine((v) => v === '' || AVATAR_RE.test(v), 'avatar must be a png, jpeg or webp image'),
+  avatar: z.string().max(96_000).refine((v) => v === '' || AVATAR_RE.test(v), 'Avatar must be a PNG, JPEG or WebP image'),
 }).partial();
 export type UpdateProfileBody = z.infer<typeof UpdateProfileBody>;
 
