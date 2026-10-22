@@ -52,7 +52,8 @@ export function ContestPage() {
   return (
     <div>
       <Link to="/contests" className="muted">← Contests</Link>
-      <div className="row between wrap">
+      <section className={`hero-banner ${contest.phase}`}>
+        <div className="row between wrap">
         <div>
           <PageHead title={contest.title} tab={contest.title} lead={contest.scoring === 'icpc' ? 'ICPC scoring: the most problems solved wins, ties go to the lowest penalty (minutes to each solve, plus 20 for every wrong attempt).' : 'Points scoring: each problem is worth its points; the highest total wins.'} />
           <div className="status-row">
@@ -66,7 +67,8 @@ export function ContestPage() {
         {!user && contest.phase !== 'ended' && <Link to="/login" state={{ from: `/contests/${id}` }}><button className="secondary">Sign in to register</button></Link>}
         {user && !contest.registered && contest.phase !== 'ended' && <button onClick={() => void register()}>Register</button>}
         {contest.registered && <span className="chip good">Registered</span>}
-      </div>
+        </div>
+      </section>
 
       <h3>Problems</h3>
       {contest.phase === 'upcoming' ? <p className="muted">{contest.problemCount} problems, Revealed at the start.</p> : (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { PageHead } from '../components/PageHead';
 import { Empty } from '../components/Icon';
@@ -14,24 +14,27 @@ const when = (a: string, b: string) => {
 export interface ContestSummary { id: string; title: string; startAt: string; endAt: string; phase: 'upcoming' | 'running' | 'ended'; problemCount: number; participantCount: number }
 
 export function ContestsPage() {
-  const nav = useNavigate();
   const [items, setItems] = useState<ContestSummary[] | null>(null);
   useEffect(() => { api<{ items: ContestSummary[] }>('GET', '/api/contests').then((r) => setItems(r.items)); }, []);
   if (!items) return <p className="muted">Loading…</p>;
   const group = (ph: ContestSummary['phase']) => items.filter((c) => c.phase === ph);
+  const label = { running: 'Live now', upcoming: 'Upcoming', ended: 'Ended' } as const;
   const Section = ({ title, rows }: { title: string; rows: ContestSummary[] }) => rows.length === 0 ? null : (
     <>
       <h3>{title}</h3>
-      <table className="list stagger"><tbody>
+      <div className="tiles">
         {rows.map((c) => (
-          <tr key={c.id} className="clickable" onClick={() => nav(`/contests/${c.id}`)}>
-            <td><Link to={`/contests/${c.id}`} onClick={(e) => e.stopPropagation()}>{c.title}</Link></td>
-            <td className="muted">{when(c.startAt, c.endAt)}</td>
-            <td className="muted">{c.problemCount} problems · {c.participantCount} registered</td>
-            <td className="act"><Link to={`/contests/${c.id}`} onClick={(e) => e.stopPropagation()}><button className={c.phase === 'running' ? 'sm' : c.phase === 'upcoming' ? 'sm secondary' : 'sm quiet'} tabIndex={-1}>{c.phase === 'running' ? 'Join' : c.phase === 'upcoming' ? 'Register' : 'Results'}</button></Link></td>
-          </tr>
+          <Link key={c.id} to={`/contests/${c.id}`} className={`ctile ${c.phase}`}>
+            <span className="ctile-phase">{c.phase === 'running' && <i className="live-dot" />}{label[c.phase]}</span>
+            <span className="ctile-title">{c.title}</span>
+            <span className="ctile-when">{when(c.startAt, c.endAt)}</span>
+            <span className="ctile-foot">
+              <span>{c.problemCount} problems · {c.participantCount} registered</span>
+              <span className={`ctile-go ${c.phase}`}>{c.phase === 'running' ? 'Join' : c.phase === 'upcoming' ? 'Register' : 'Results'}</span>
+            </span>
+          </Link>
         ))}
-      </tbody></table>
+      </div>
     </>
   );
   return (
