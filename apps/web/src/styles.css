@@ -82,7 +82,7 @@ h3 { font-size: 13px; line-height: 1.3; font-weight: 600; letter-spacing: .02em;
 .nav nav .link { margin-left: 6px; color: var(--ink-2); font-size: 14px; }
 .brand { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; color: var(--ink); font-weight: 700; letter-spacing: -.01em; font-size: 15px; }
 .brand:hover { text-decoration: none; }
-.brand-mark { width: 18px; height: 18px; border-radius: 6px; background: linear-gradient(135deg, var(--accent), #5ac8fa); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.4); }
+.brand-mark { width: 20px; height: 20px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, var(--accent), #5ac8fa); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.4); }
 .page { max-width: 1240px; margin: 0 auto; padding: 28px 24px 56px; }
 
 /* ---- surfaces ---- */
@@ -118,12 +118,14 @@ textarea { font-family: var(--mono); font-size: 13px; min-height: 140px; resize:
 
 /* ---- lists ---- */
 .list tr.clickable { cursor: pointer; }
-.search { width: 200px; margin: 0; border-radius: 999px; padding: 7px 14px; font-size: 14px; }
+.searchbox { position: relative; display: block; margin: 0; }
+.searchbox svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink-3); pointer-events: none; }
+.searchbox input { width: 200px; margin: 0; border-radius: 999px; padding: 7px 14px 7px 32px; font-size: 14px; }
 .tagchip { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 9px; margin: 0 6px 4px 0; border-radius: 999px; background: var(--fill); color: var(--ink-2); }
 .tagchip:hover { color: var(--ink); filter: none; background: var(--fill-2); }
 .tagchip.on { background: var(--accent-soft); color: var(--accent); }
 .filter-note { margin: -4px 0 12px; }
-.solved { color: var(--ac); font-weight: 700; font-size: 13px; width: 16px; display: inline-block; }
+.solved { color: var(--ac); display: inline-flex; }
 .contest-bar { margin-bottom: 4px; }
 .chip.pending .mono { font-size: 11.5px; }
 table.list { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow-sm); overflow: hidden; }
@@ -287,3 +289,11 @@ table.list { width: 100%; border-collapse: separate; border-spacing: 0; backgrou
   .wide-only { display: inline; }
   .page { padding-bottom: 56px; }
 }
+
+/* ---- icons, only where they earn it ---- */
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 44px 20px; color: var(--ink-3); text-align: center; }
+.empty-state .empty-title { margin: 8px 0 0; color: var(--ink); font-weight: 600; letter-spacing: -.004em; }
+.empty-state p { margin: 0; }
+.verdict-icon { display: inline-flex; color: var(--ink-3); }
+.verdict-icon.good { color: var(--ac); } .verdict-icon.bad { color: var(--wa); } .verdict-icon.pending { color: var(--accent); }
+.spin { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--accent-soft); border-top-color: var(--accent); animation: spin .8s linear infinite; }

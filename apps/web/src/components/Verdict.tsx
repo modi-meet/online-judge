@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { VERDICT_LABEL, isTerminal, type Terminal } from '@oj/contracts';
 import type { SubmissionView } from '../lib/useSubmission';
 import { useEnter } from '../lib/motion';
+import { Icon } from './Icon';
 
 const tone = (s: string) => (s === 'AC' ? 'good' : s === 'CE' || s === 'OLE' ? '' : isTerminal(s as never) ? 'bad' : 'pending');
 
@@ -19,6 +20,12 @@ export function VerdictPanel({ s }: { s: SubmissionView }) {
     <motion.div className={`verdict ${tone(s.status)}`} initial={enter.initial} animate={enter.animate} transition={enter.transition}>
       <div className="row between wrap">
         <div className="row">
+          <span className={`verdict-icon ${tone(s.status)}`}>
+            {s.status === 'AC' ? <Icon name="check-circle" size={22} />
+              : !terminal ? <span className="spin" />
+              : tone(s.status) === 'bad' ? <Icon name="x-circle" size={22} />
+              : <Icon name="alert" size={22} />}
+          </span>
           <motion.span key={s.status} initial={pop.initial} animate={pop.animate} transition={pop.transition} style={{ display: 'inline-flex' }}>
             <VerdictChip status={s.status} />
           </motion.span>
