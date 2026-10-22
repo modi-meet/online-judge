@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { VerdictChip } from '../components/Verdict';
+import { PageHead } from '../components/PageHead';
 import { api } from '../lib/api';
 
 interface Profile {
@@ -18,7 +19,7 @@ export function ProfilePage() {
   if (!p) return <p className="muted">Loading…</p>;
   return (
     <div className="card" style={{ maxWidth: 760, margin: "24px auto" }}>
-      <h1>{p.user.username}</h1>
+      <PageHead title={p.user.username} lead="Solving record and recent submissions." />
       <dl className="stats">
         <div><dt>rating</dt><dd>{p.user.rating}</dd></div>
         <div><dt>solved</dt><dd>{p.user.solvedCount}</dd></div>

@@ -9,6 +9,7 @@ import { VerdictChip, VerdictPanel } from '../components/Verdict';
 import { MentorDock, WIDE } from '../components/Mentor';
 import { Segmented } from '../components/Segmented';
 import { Empty } from '../components/Icon';
+import { usePageTitle } from '../components/PageHead';
 import { prefersDark } from '../lib/motion';
 
 interface ProblemView {
@@ -60,6 +61,7 @@ export function ProblemPage() {
   const sub = useSubmission();
   // the mentor is a third column on wide screens and a floating dock below;
   // it opens by default only where there is room, and remembers your choice
+  usePageTitle(view?.problem.title);
   const [mentorOpen, setMentorOpen] = useState(() => {
     try { const v = localStorage.getItem('oj:mentor-open'); if (v !== null) return v === '1' && window.matchMedia(WIDE).matches; } catch { /* storage blocked */ }
     return window.matchMedia(WIDE).matches;
@@ -205,6 +207,7 @@ export function ProblemPage() {
           <Segmented name="arena" value={tab} onChange={setTab}
             options={[{ value: 'run', label: 'Run' }, { value: 'submit', label: 'Submissions' }]} />
         </div>
+        {tab === 'run' && <p className="muted small tab-note">Run tries your code on the input below and shows its output. Submit judges it against every hidden test.</p>}
         {tab === 'run' && (
         <div className="io">
           <div>
@@ -230,6 +233,7 @@ export function ProblemPage() {
         )}
         {tab === 'submit' && (
           <div>
+            <p className="muted small tab-note">Your submissions for this problem, newest first. Select one to see its verdict.</p>
             {error && <p className="error">{error}</p>}
             {sub.error && <p className="error">{sub.error}</p>}
             {sub.current && <VerdictPanel s={sub.current} />}

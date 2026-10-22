@@ -297,3 +297,10 @@ table.list { width: 100%; border-collapse: separate; border-spacing: 0; backgrou
 .verdict-icon { display: inline-flex; color: var(--ink-3); }
 .verdict-icon.good { color: var(--ac); } .verdict-icon.bad { color: var(--wa); } .verdict-icon.pending { color: var(--accent); }
 .spin { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--accent-soft); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+
+/* ---- page leads ---- */
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 18px; }
+.page-head h1 { margin-bottom: 4px; }
+.lead { margin: 0; max-width: 56ch; color: var(--ink-2); font-size: 15px; line-height: 1.45; letter-spacing: -.004em; }
+.narrow .page-head { display: block; margin-bottom: 14px; }
+.tab-note { margin: 2px 0 10px; }

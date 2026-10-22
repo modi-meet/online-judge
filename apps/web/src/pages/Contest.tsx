@@ -3,6 +3,7 @@ import { useStandings, type Row } from '../lib/useStandings';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { PageHead } from '../components/PageHead';
 import { Empty } from '../components/Icon';
 import type { ContestSummary } from './Contests';
 
@@ -53,7 +54,7 @@ export function ContestPage() {
       <Link to="/contests" className="muted">← Contests</Link>
       <div className="row between wrap">
         <div>
-          <h1>{contest.title}</h1>
+          <PageHead title={contest.title} tab={contest.title} lead={contest.scoring === 'icpc' ? 'ICPC scoring: the most problems solved wins, ties go to the lowest penalty (minutes to each solve, plus 20 for every wrong attempt).' : 'Points scoring: each problem is worth its points; the highest total wins.'} />
           <p className="muted">
             {contest.phase === 'upcoming' && <>Starts in <span className="mono">{countdown(contest.startAt)}</span></>}
             {contest.phase === 'running' && <>Ends in <span className="mono">{countdown(contest.endAt)}</span></>}
