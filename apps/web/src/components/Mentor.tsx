@@ -163,7 +163,7 @@ export function MentorDock(p: { problemId: string; language: string; code: strin
 const HUE: Record<number, string> = { 1: '#ff9f0a', 2: '#0a84ff', 3: '#30d158', 4: '#ff453a', 5: '#bf5af2', 6: '#64d2ff' };
 function Avatar({ mode, size = 32 }: { mode: number; size?: number }) {
   return (
-    <span className="avatar" style={{ width: size, height: size, background: `linear-gradient(135deg, ${HUE[mode]}, color-mix(in srgb, ${HUE[mode]} 55%, #fff))` }} aria-hidden="true">
+    <span className="avatar" style={{ width: size, height: size, background: HUE[mode] }} aria-hidden="true">
       <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 16 16"><path d="M8 1.5l1.5 4 4 1.5-4 1.5L8 12.5 6.5 8.5l-4-1.5 4-1.5z" fill="#fff" /></svg>
     </span>
   );
