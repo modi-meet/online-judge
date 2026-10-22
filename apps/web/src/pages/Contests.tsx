@@ -28,6 +28,7 @@ export function ContestsPage() {
             <td><Link to={`/contests/${c.id}`} onClick={(e) => e.stopPropagation()}>{c.title}</Link></td>
             <td className="muted">{when(c.startAt, c.endAt)}</td>
             <td className="muted">{c.problemCount} problems · {c.participantCount} registered</td>
+            <td className="act"><Link to={`/contests/${c.id}`} onClick={(e) => e.stopPropagation()}><button className={c.phase === 'running' ? 'sm' : c.phase === 'upcoming' ? 'sm secondary' : 'sm quiet'} tabIndex={-1}>{c.phase === 'running' ? 'Join' : c.phase === 'upcoming' ? 'Register' : 'Results'}</button></Link></td>
           </tr>
         ))}
       </tbody></table>
