@@ -14,6 +14,6 @@ export class AppError extends Error {
   }
 }
 
-export const notFound = (what = 'resource') => new AppError('NOT_FOUND', `${what} not found`);
-export const forbidden = () => new AppError('FORBIDDEN', 'not allowed');
-export const unauthenticated = () => new AppError('UNAUTHENTICATED', 'sign in required');
+export const notFound = (what = 'resource') => new AppError('NOT_FOUND', `${what[0]!.toUpperCase()}${what.slice(1)} not found`);
+export const forbidden = () => new AppError('FORBIDDEN', 'Not allowed');
+export const unauthenticated = () => new AppError('UNAUTHENTICATED', 'Sign in required');

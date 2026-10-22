@@ -5,8 +5,8 @@ import { useEffect, type ReactNode } from 'react';
 /** the browser tab title, for pages that draw their own heading */
 export function usePageTitle(name: string | undefined) {
   useEffect(() => {
-    document.title = name ? `${name} · online judge` : 'online judge';
-    return () => { document.title = 'online judge'; };
+    document.title = name ? `${name} · Online Judge` : 'Online Judge';
+    return () => { document.title = 'Online Judge'; };
   }, [name]);
 }
 

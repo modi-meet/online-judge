@@ -13,7 +13,7 @@ const problemsRouter = Router();
 const enc = (id: Types.ObjectId) => Buffer.from(String(id)).toString('base64url');
 const dec = (c: string) => {
   const s = Buffer.from(c, 'base64url').toString();
-  if (!Types.ObjectId.isValid(s)) throw new AppError('VALIDATION_FAILED', 'bad cursor');
+  if (!Types.ObjectId.isValid(s)) throw new AppError('VALIDATION_FAILED', 'Bad cursor');
   return new Types.ObjectId(s);
 };
 
@@ -70,7 +70,7 @@ problemsRouter.post('/', authenticate, authorize('setter'), validate('body', Pro
   try {
     const body = req.body as ProblemBody;
     const dup = await ProblemModel.exists({ slug: body.slug });
-    if (dup) throw new AppError('CONFLICT', 'slug already exists');
+    if (dup) throw new AppError('CONFLICT', 'Slug already exists');
     const p = await ProblemModel.create({ ...body, createdBy: req.user!.sub });
     res.status(201).json({ id: String(p._id), slug: p.slug });
   } catch (e) { next(e); }

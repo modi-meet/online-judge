@@ -48,9 +48,9 @@ export function submissionsRouter(queue: Queue<JudgeJob>, store: ObjectStore) {
       if (body.contestId) {
         const c = await ContestModel.findById(body.contestId).lean();
         const now = Date.now();
-        if (!c || now < c.startAt.getTime() || now > c.endAt.getTime()) throw new AppError('CONTEST_NOT_RUNNING', 'contest is not running');
-        if (!c.participants.some((u) => String(u) === userId)) throw new AppError('FORBIDDEN', 'register for the contest first');
-        if (!c.problems.some((p) => String(p.problemId) === body.problemId)) throw new AppError('VALIDATION_FAILED', 'problem is not in this contest');
+        if (!c || now < c.startAt.getTime() || now > c.endAt.getTime()) throw new AppError('CONTEST_NOT_RUNNING', 'Contest is not running');
+        if (!c.participants.some((u) => String(u) === userId)) throw new AppError('FORBIDDEN', 'Register for the contest first');
+        if (!c.problems.some((p) => String(p.problemId) === body.problemId)) throw new AppError('VALIDATION_FAILED', 'Problem is not in this contest');
       }
       // the object goes in before the row: an orphaned object is garbage, a row
       // pointing at a missing object is a permanent IE. lld §4.5
@@ -110,7 +110,7 @@ export function submissionsRouter(queue: Queue<JudgeJob>, store: ObjectStore) {
       ).lean();
       if (!s) {
         const exists = await SubmissionModel.exists({ _id: id });
-        throw exists ? new AppError('CONFLICT', 'submission is already being judged') : notFound('submission');
+        throw exists ? new AppError('CONFLICT', 'Submission is already being judged') : notFound('submission');
       }
       await queue.add('judge', { submissionId: id }, { jobId: `${id}:rejudge:${Date.now()}`, priority: PRIORITY.rejudge });
       res.status(202).json({ submissionId: id, status: 'QUEUED' });

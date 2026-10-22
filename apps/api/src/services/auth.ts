@@ -45,16 +45,16 @@ export async function issueRefresh(userId: string, familyId: string, meta: { use
  */
 export async function rotateRefresh(presented: string, meta: { userAgent: string; ip: string }) {
   const row = await RefreshTokenModel.findOne({ tokenHash: sha256(presented) });
-  if (!row || row.expiresAt < new Date() || row.revokedAt) throw new AppError('UNAUTHENTICATED', 'refresh token invalid');
+  if (!row || row.expiresAt < new Date() || row.revokedAt) throw new AppError('UNAUTHENTICATED', 'Refresh token invalid');
   if (row.replacedBy) {
     await RefreshTokenModel.updateMany({ familyId: row.familyId, revokedAt: null }, { $set: { revokedAt: new Date() } });
-    throw new AppError('TOKEN_REUSE_DETECTED', 'refresh token reuse detected; sign in again');
+    throw new AppError('TOKEN_REUSE_DETECTED', 'Refresh token reuse detected; sign in again');
   }
   const next = await issueRefresh(String(row.userId), row.familyId, meta);
   row.replacedBy = next.rowId;
   await row.save();
   const user = await UserModel.findById(row.userId).lean();
-  if (!user || user.deletedAt) throw new AppError('UNAUTHENTICATED', 'account unavailable');
+  if (!user || user.deletedAt) throw new AppError('UNAUTHENTICATED', 'Account unavailable');
   return { refresh: next.token, access: signAccess(String(user._id), user.role), user };
 }
 
@@ -66,7 +66,7 @@ export async function revokeFamily(presented: string) {
 
 export async function register(username: string, email: string, password: string) {
   const taken = await UserModel.findOne({ $or: [{ username }, { email }] }).lean();
-  if (taken) throw new AppError('CONFLICT', taken.username === username ? 'username taken' : 'email already registered');
+  if (taken) throw new AppError('CONFLICT', taken.username === username ? 'Username taken' : 'Email already registered');
   const passwordHash = await bcrypt.hash(password, 10);
   return UserModel.create({ username, email, passwordHash });
 }
@@ -74,7 +74,7 @@ export async function register(username: string, email: string, password: string
 export async function login(username: string, password: string) {
   const user = await UserModel.findOne({ username: username.toLowerCase(), deletedAt: null });
   const ok = user && (await bcrypt.compare(password, user.passwordHash));
-  if (!ok) throw new AppError('UNAUTHENTICATED', 'wrong username or password');
+  if (!ok) throw new AppError('UNAUTHENTICATED', 'Wrong username or password');
   return user;
 }
 

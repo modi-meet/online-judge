@@ -53,7 +53,7 @@ export function createApp(deps: { executor: Executor; queue: Queue<JudgeJob>; st
   app.use('/api/users', usersRouter);
   app.use('/api/contests', contestsRouter);
 
-  app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'no such route', requestId: res.getHeader('x-request-id') } }));
+  app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No such route', requestId: res.getHeader('x-request-id') } }));
   app.use(errorHandler);
   return app;
 }

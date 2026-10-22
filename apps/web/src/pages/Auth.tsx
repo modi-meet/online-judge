@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { PageHead } from '../components/PageHead';
 import { useAuth } from '../lib/auth';
+import { sentence } from '../lib/format';
 
 function useSubmit(fn: () => Promise<void>) {
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +18,7 @@ function useSubmit(fn: () => Promise<void>) {
       nav(loc.state?.from ?? '/problems', { replace: true });
     } catch (err) {
       const detail = err instanceof ApiError && err.code === 'VALIDATION_FAILED'
-        ? (err.details as { fields: { path: string; message: string }[] }).fields.map((f) => `${f.path}: ${f.message}`).join(' · ')
+        ? (err.details as { fields: { path: string; message: string }[] }).fields.map((f) => sentence(`${f.path}: ${f.message}`)).join(' · ')
         : (err as Error).message;
       setError(detail);
     } finally { setBusy(false); }

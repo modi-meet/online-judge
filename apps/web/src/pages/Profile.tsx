@@ -36,10 +36,10 @@ export function ProfilePage() {
       </div>
       {editing && <EditProfile p={p} onCancel={() => setEditing(false)} onSaved={(u) => { setP({ ...p, user: { ...p.user, ...u } }); setEditing(false); }} />}
       <dl className="stats">
-        <div><dt>rating</dt><dd>{p.user.rating}</dd></div>
-        <div><dt>solved</dt><dd>{p.user.solvedCount}</dd></div>
-        <div><dt>submissions</dt><dd>{p.stats.total}</dd></div>
-        <div><dt>accepted</dt><dd>{p.stats.accepted}</dd></div>
+        <div><dt>Rating</dt><dd>{p.user.rating}</dd></div>
+        <div><dt>Solved</dt><dd>{p.user.solvedCount}</dd></div>
+        <div><dt>Submissions</dt><dd>{p.stats.total}</dd></div>
+        <div><dt>Accepted</dt><dd>{p.stats.accepted}</dd></div>
       </dl>
       <p className="muted">Joined {new Date(p.user.joinedAt).toLocaleDateString()}</p>
       {p.recent.length > 0 && (

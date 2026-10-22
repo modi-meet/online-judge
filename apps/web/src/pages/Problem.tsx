@@ -163,7 +163,7 @@ export function ProblemPage() {
         <h1>{problem.title}</h1>
         <p className="meta">
           <span className={`diff ${problem.difficulty}`}>{problem.difficulty}</span>
-          <span className="muted">{problem.timeLimitMs} ms · {problem.memoryLimitMb} mb</span>
+          <span className="muted">{problem.timeLimitMs} ms · {problem.memoryLimitMb} MB</span>
         </p>
         <pre className="prose">{problem.statement}</pre>
         {problem.inputFormat && <><h3>input</h3><pre className="prose">{problem.inputFormat}</pre></>}

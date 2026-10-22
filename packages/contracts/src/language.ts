@@ -20,7 +20,7 @@ export interface LanguageSpec {
 
 export const LANGUAGE_SPEC: Record<Language, LanguageSpec> = {
   cpp17: {
-    name: 'c++17',
+    name: 'C++17',
     file: 'main.cpp',
     compile: ['g++', '-O2', '-std=c++17', 'main.cpp', '-o', 'main'],
     run: ['./main'],
@@ -28,7 +28,7 @@ export const LANGUAGE_SPEC: Record<Language, LanguageSpec> = {
     editor: 'cpp',
   },
   c: {
-    name: 'c',
+    name: 'C',
     file: 'main.c',
     compile: ['gcc', '-O2', 'main.c', '-o', 'main'],
     run: ['./main'],
@@ -36,7 +36,7 @@ export const LANGUAGE_SPEC: Record<Language, LanguageSpec> = {
     editor: 'c',
   },
   python3: {
-    name: 'python 3',
+    name: 'Python 3',
     file: 'main.py',
     compile: null,
     run: ['python3', 'main.py'],
@@ -44,7 +44,7 @@ export const LANGUAGE_SPEC: Record<Language, LanguageSpec> = {
     editor: 'python',
   },
   java17: {
-    name: 'java 17',
+    name: 'Java 17',
     file: 'Main.java',
     compile: ['javac', 'Main.java'],
     run: ['java', '-Xss64m', '-XX:+UseSerialGC', 'Main'],
@@ -52,7 +52,7 @@ export const LANGUAGE_SPEC: Record<Language, LanguageSpec> = {
     editor: 'java',
   },
   node20: {
-    name: 'javascript (node 20)',
+    name: 'JavaScript (Node 20)',
     file: 'main.js',
     compile: null,
     run: ['node', 'main.js'],

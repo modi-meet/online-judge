@@ -10,7 +10,7 @@ export function validate<T extends ZodTypeAny>(part: Part, schema: T): RequestHa
     const r = schema.safeParse(req[part]);
     if (!r.success) {
       return next(
-        new AppError('VALIDATION_FAILED', 'request failed validation', {
+        new AppError('VALIDATION_FAILED', 'Request failed validation', {
           fields: r.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
         }),
       );

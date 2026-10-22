@@ -4,9 +4,9 @@
     {
       "externalId": "vowels",
       "title": "Count the Vowels",
-      "statement": "read one line and print how many of its characters are vowels (a, e, i, o, u, in either case).\n\nconstraints: 1 <= length <= 10^5",
-      "inputFormat": "one line of printable ascii.",
-      "outputFormat": "a single integer.",
+      "statement": "Read one line and print how many of its characters are vowels (a, e, i, o, u, in either case).\n\nConstraints: 1 ≤ length ≤ 10^5.",
+      "inputFormat": "One line of printable ASCII.",
+      "outputFormat": "A single integer.",
       "difficulty": 800,
       "tags": ["strings", "Implementation"],
       "license": "cc-by-4.0",
@@ -20,7 +20,7 @@
     {
       "externalId": "fib-mod",
       "title": "Fibonacci Modulo",
-      "statement": "print the n-th fibonacci number modulo 10^9+7, with f(0)=0 and f(1)=1.\n\nconstraints: 0 <= n <= 10^18. an o(n) loop will not pass.",
+      "statement": "Print the n-th Fibonacci number modulo 10^9+7, with F(0) = 0 and F(1) = 1.\n\nConstraints: 0 ≤ n ≤ 10^18. An O(n) loop will not pass.",
       "difficulty": 1600,
       "tags": ["math", "matrix-exponentiation"],
       "timeLimitMs": 500,
@@ -34,7 +34,7 @@
     {
       "externalId": "brackets",
       "title": "Balanced Brackets",
-      "statement": "read a string of (), [] and {} and print yes if it is balanced, otherwise no.\n\nconstraints: 1 <= length <= 10^5",
+      "statement": "Read a string of (), [] and {} and print yes if it is balanced, otherwise no.\n\nConstraints: 1 ≤ length ≤ 10^5.",
       "difficulty": "easy",
       "tags": ["stack"],
       "testcases": [
