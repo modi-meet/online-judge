@@ -6,7 +6,7 @@ import { ApiError, api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useSubmission, type SubmissionView } from '../lib/useSubmission';
 import { VerdictChip, VerdictPanel } from '../components/Verdict';
-import { MentorDock } from '../components/Mentor';
+import { MentorDock, WIDE } from '../components/Mentor';
 import { Segmented } from '../components/Segmented';
 import { prefersDark } from '../lib/motion';
 
@@ -57,6 +57,13 @@ export function ProblemPage() {
   const [tab, setTab] = useState<'run' | 'submit'>('run');
   const [mine, setMine] = useState<SubmissionView[]>([]);
   const sub = useSubmission();
+  // the mentor is a third column on wide screens and a floating dock below;
+  // it opens by default only where there is room, and remembers your choice
+  const [mentorOpen, setMentorOpen] = useState(() => {
+    try { const v = localStorage.getItem('oj:mentor-open'); if (v !== null) return v === '1' && window.matchMedia(WIDE).matches; } catch { /* storage blocked */ }
+    return window.matchMedia(WIDE).matches;
+  });
+  useEffect(() => { try { if (window.matchMedia(WIDE).matches) localStorage.setItem('oj:mentor-open', mentorOpen ? '1' : '0'); } catch { /* storage blocked */ } }, [mentorOpen]);
   const [dark, setDark] = useState(prefersDark);
   const [contest, setContest] = useState<{ title: string; endAt: string; phase: string } | null>(null);
   const [tick, setTick] = useState(0);
@@ -140,7 +147,7 @@ export function ProblemPage() {
   const { problem, samples } = view;
 
   return (
-    <div className="arena">
+    <div className={`arena ${mentorOpen ? 'mentor-open' : ''}`}>
       <section className="statement">
         {contestId ? (
           <div className="row between wrap contest-bar">
@@ -243,7 +250,7 @@ export function ProblemPage() {
           </div>
         )}
       </section>
-      <MentorDock problemId={problem.id} language={language} code={code} contestId={contestId} signedIn={!!user} />
+      <MentorDock problemId={problem.id} language={language} code={code} contestId={contestId} signedIn={!!user} open={mentorOpen} setOpen={setMentorOpen} />
     </div>
   );
 }
