@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import { PageHead } from '../components/PageHead';
 import { Segmented } from '../components/Segmented';
 import { Empty, Icon } from '../components/Icon';
 
@@ -39,14 +40,13 @@ export function ProblemsPage() {
 
   return (
     <div>
-      <div className="row between wrap">
-        <h1>Problems</h1>
+      <PageHead title="Problems" lead="Practice problems from easy to hard. Open one, write a solution in the editor, and the judge runs it against hidden tests.">
         <div className="row wrap">
           <label className="searchbox"><Icon name="search" size={15} /><input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search titles" aria-label="Search problems" /></label>
           <Segmented name="difficulty" value={difficulty} onChange={(v) => set({ difficulty: v, cursor: '' })}
             options={[{ value: '', label: 'All' }, { value: 'easy', label: 'Easy' }, { value: 'medium', label: 'Medium' }, { value: 'hard', label: 'Hard' }]} />
         </div>
-      </div>
+      </PageHead>
       {tag && <p className="muted small filter-note">Tag: <span className="tagchip on">{tag}</span> <button className="link small" onClick={() => set({ tag: '', cursor: '' })}>Clear</button></p>}
       {error && <p className="error">{error}</p>}
       {!page && !error && <p className="muted">Loading…</p>}

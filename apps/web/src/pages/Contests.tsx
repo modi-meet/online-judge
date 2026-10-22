@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { PageHead } from '../components/PageHead';
 import { Empty } from '../components/Icon';
 
 const when = (a: string, b: string) => {
@@ -34,7 +35,7 @@ export function ContestsPage() {
   );
   return (
     <div>
-      <h1>Contests</h1>
+      <PageHead title="Contests" lead="Timed rounds with a live scoreboard. Register before a round starts, then solve as many problems as you can; wrong attempts add a time penalty." />
       {items.length === 0 && <Empty icon="flag" title="No contests yet" hint="When one is scheduled, it shows up here." />}
       <Section title="Running" rows={group('running')} />
       <Section title="Upcoming" rows={group('upcoming')} />
