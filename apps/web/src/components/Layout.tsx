@@ -1,16 +1,16 @@
 import { motion } from 'motion/react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
-import { springSnappy, useEnter } from '../lib/motion';
+import { springSnappy } from '../lib/motion';
 import { Icon } from './Icon';
 
 // chrome is a translucent material the content scrolls under; the active
 // item is a pill that slides between links. pages enter with a short settle
-// from just below, never a slide from the side — nothing here has a side.
+// with a 140ms fade and no travel: moving between pages is the most repeated
+// thing a user does here, so it stays near-imperceptible.
 export function Layout() {
   const { user, logout } = useAuth();
   const loc = useLocation();
-  const enter = useEnter(6);
   // each kind of page gets its own feel; css keys off this
   const kind = loc.pathname === '/' ? 'landing' : loc.pathname === '/problems' ? 'catalogue' : loc.pathname === '/contests' ? 'contests'
     : loc.pathname.startsWith('/contests/') ? 'contest' : loc.pathname.startsWith('/u/') ? 'profile'
@@ -47,7 +47,7 @@ export function Layout() {
           </nav>
         </div>
       </header>
-      <motion.main key={loc.pathname} className="page" data-page={kind} initial={enter.initial} animate={enter.animate} transition={enter.transition}>
+      <motion.main key={loc.pathname} className="page" data-page={kind} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}>
         <Outlet />
       </motion.main>
     </>
