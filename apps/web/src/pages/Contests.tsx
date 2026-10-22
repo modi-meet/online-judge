@@ -15,12 +15,12 @@ export function ContestsPage() {
   const nav = useNavigate();
   const [items, setItems] = useState<ContestSummary[] | null>(null);
   useEffect(() => { api<{ items: ContestSummary[] }>('GET', '/api/contests').then((r) => setItems(r.items)); }, []);
-  if (!items) return <p className="muted">loading…</p>;
+  if (!items) return <p className="muted">Loading…</p>;
   const group = (ph: ContestSummary['phase']) => items.filter((c) => c.phase === ph);
   const Section = ({ title, rows }: { title: string; rows: ContestSummary[] }) => rows.length === 0 ? null : (
     <>
       <h3>{title}</h3>
-      <table className="list"><tbody>
+      <table className="list stagger"><tbody>
         {rows.map((c) => (
           <tr key={c.id} className="clickable" onClick={() => nav(`/contests/${c.id}`)}>
             <td><Link to={`/contests/${c.id}`} onClick={(e) => e.stopPropagation()}>{c.title}</Link></td>
@@ -33,11 +33,11 @@ export function ContestsPage() {
   );
   return (
     <div>
-      <h1>contests</h1>
-      {items.length === 0 && <p className="muted">no contests yet.</p>}
-      <Section title="running" rows={group('running')} />
-      <Section title="upcoming" rows={group('upcoming')} />
-      <Section title="past" rows={group('ended')} />
+      <h1>Contests</h1>
+      {items.length === 0 && <p className="muted">No contests yet.</p>}
+      <Section title="Running" rows={group('running')} />
+      <Section title="Upcoming" rows={group('upcoming')} />
+      <Section title="Past" rows={group('ended')} />
     </div>
   );
 }

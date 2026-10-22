@@ -15,7 +15,7 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   useEffect(() => { api<Profile>('GET', `/api/users/${username}`).then(setP).catch((e: Error) => setError(e.message)); }, [username]);
   if (error) return <p className="error">{error}</p>;
-  if (!p) return <p className="muted">loading…</p>;
+  if (!p) return <p className="muted">Loading…</p>;
   return (
     <div className="card" style={{ maxWidth: 760, margin: "24px auto" }}>
       <h1>{p.user.username}</h1>
@@ -25,10 +25,10 @@ export function ProfilePage() {
         <div><dt>submissions</dt><dd>{p.stats.total}</dd></div>
         <div><dt>accepted</dt><dd>{p.stats.accepted}</dd></div>
       </dl>
-      <p className="muted">joined {new Date(p.user.joinedAt).toLocaleDateString()}</p>
+      <p className="muted">Joined {new Date(p.user.joinedAt).toLocaleDateString()}</p>
       {p.recent.length > 0 && (
         <>
-          <h3>recent submissions</h3>
+          <h3>Recent submissions</h3>
           <table className="subs"><tbody>
             {p.recent.map((s) => (
               <tr key={s.id}>

@@ -26,17 +26,17 @@ export function Layout() {
         <div className="nav-inner">
           <Link to="/problems" className="brand"><span className="brand-mark" aria-hidden="true" />online judge</Link>
           <nav>
-            {item('/problems', 'problems')}
-            {item('/contests', 'contests')}
+            {item('/problems', 'Problems')}
+            {item('/contests', 'Contests')}
             {user ? (
               <>
                 {item(`/u/${user.username}`, user.username)}
-                <button className="link" onClick={() => void logout()}>sign out</button>
+                <button className="link" onClick={() => void logout()}>Sign out</button>
               </>
             ) : (
               <>
-                {item('/login', 'sign in')}
-                {item('/register', 'register')}
+                {item('/login', 'Sign in')}
+                {item('/register', 'Register')}
               </>
             )}
           </nav>

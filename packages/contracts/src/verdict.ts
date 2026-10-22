@@ -19,12 +19,12 @@ export const isPending = (s: Status): s is Pending =>
 export const PENALISED: readonly Terminal[] = ['WA', 'TLE', 'MLE', 'RE', 'OLE'];
 
 export const VERDICT_LABEL: Record<Terminal, string> = {
-  AC: 'accepted',
-  WA: 'wrong answer',
-  TLE: 'time limit exceeded',
-  MLE: 'memory limit exceeded',
-  RE: 'runtime error',
-  CE: 'compilation error',
-  OLE: 'output limit exceeded',
-  IE: 'internal error',
+  AC: 'Accepted',
+  WA: 'Wrong answer',
+  TLE: 'Time limit exceeded',
+  MLE: 'Memory limit exceeded',
+  RE: 'Runtime error',
+  CE: 'Compilation error',
+  OLE: 'Output limit exceeded',
+  IE: 'Internal error',
 };
