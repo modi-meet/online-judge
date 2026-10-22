@@ -9,7 +9,7 @@ export function UserAvatar({ username, name, src, size = 72 }: { username: strin
   return <span className="uavatar mono-av" aria-hidden style={{ ...style, background: `linear-gradient(145deg, hsl(${h} 70% 62%), hsl(${(h + 40) % 360} 65% 48%))` }}>{initials}</span>;
 }
 
-/** downscale to a square jpeg data url so it fits the api's request cap */
+/** downscale to a square jpeg data URL so it fits the API's request cap */
 export function resizeToAvatar(file: File, px = 256): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -22,7 +22,7 @@ export function resizeToAvatar(file: File, px = 256): Promise<string> {
       URL.revokeObjectURL(url);
       resolve(c.toDataURL('image/jpeg', 0.85));
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('that file is not an image the browser can read')); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file is not an image the browser can read')); };
     img.src = url;
   });
 }

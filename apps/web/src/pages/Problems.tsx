@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { tagLabel } from '../lib/format';
 import { api } from '../lib/api';
 import { PageHead } from '../components/PageHead';
 import { Segmented } from '../components/Segmented';
@@ -67,7 +68,7 @@ export function ProblemsPage() {
                 <td><span className={`diff ${p.difficulty}`}>{p.difficulty}</span></td>
                 <td>
                   {p.tags.map((t) => (
-                    <button key={t} className={`tagchip ${t === tag ? 'on' : ''}`} onClick={(e) => { e.stopPropagation(); set({ tag: t === tag ? '' : t, cursor: '' }); }}>{t}</button>
+                    <button key={t} className={`tagchip ${t === tag ? 'on' : ''}`} onClick={(e) => { e.stopPropagation(); set({ tag: t === tag ? '' : t, cursor: '' }); }}>{tagLabel(t)}</button>
                   ))}
                 </td>
               </tr>

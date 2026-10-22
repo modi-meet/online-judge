@@ -33,7 +33,7 @@ export function VerdictPanel({ s }: { s: SubmissionView }) {
         </div>
         {terminal && s.status !== 'CE' && (
           <span className="muted mono">
-            {s.passedCount}/{s.totalCount} cases{s.timeMs !== null ? ` · ${s.timeMs} ms` : ''}{s.memoryKb ? ` · ${Math.round(s.memoryKb / 1024)} mb` : ''}
+            {s.passedCount}/{s.totalCount} cases{s.timeMs !== null ? ` · ${s.timeMs} ms` : ''}{s.memoryKb ? ` · ${Math.round(s.memoryKb / 1024)} MB` : ''}
           </span>
         )}
       </div>

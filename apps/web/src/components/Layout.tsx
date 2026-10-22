@@ -25,7 +25,7 @@ export function Layout() {
     <>
       <header className="nav">
         <div className="nav-inner">
-          <Link to="/problems" className="brand"><span className="brand-mark" aria-hidden="true"><Icon name="code" size={13} /></span>online judge</Link>
+          <Link to="/problems" className="brand"><span className="brand-mark" aria-hidden="true"><Icon name="code" size={13} /></span>Online Judge</Link>
           <nav>
             {item('/problems', 'Problems')}
             {item('/contests', 'Contests')}
