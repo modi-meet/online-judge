@@ -26,15 +26,26 @@ const OPENER: Record<number, string> = {
   6: 'Teach me the data structure this needs, from zero, and tell me what to practise.',
 };
 
-export function MentorDock(p: { problemId: string; language: string; code: string; contestId: string | null; signedIn: boolean }) {
-  const [open, setOpen] = useState(false);
+const SUGGEST: Record<number, string[]> = {
+  1: ['Which pattern fits the constraints?', 'What edge cases should I watch for?'],
+  2: ['Is my approach on the right track?', 'What is the weakest part of my code?'],
+  3: ['Where does my code first go wrong?', 'Why does the sample behave this way?'],
+  4: ['What is the time complexity of my code?', 'Which part is the bottleneck?'],
+  5: ['Explain it with an analogy', 'What invariant does it keep?'],
+  6: ['Teach me the data structure', 'Which problems should I practise next?'],
+};
+
+export const WIDE = '(min-width: 1180px)';
+
+export function MentorDock(p: { problemId: string; language: string; code: string; contestId: string | null; signedIn: boolean; open: boolean; setOpen: (v: boolean | ((o: boolean) => boolean)) => void }) {
+  const { open, setOpen } = p;
   const [modes, setModes] = useState<ModeInfo[] | null>(null);
   const [enabled, setEnabled] = useState(true);
   const [mode, setMode] = useState<number>(1);
   const [draft, setDraft] = useState('');
   const m = useMentor();
   const log = useRef<HTMLDivElement>(null);
-  const input = useRef<HTMLInputElement>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
   const arrive = useEnter(8);
 
   useEffect(() => {
@@ -45,7 +56,8 @@ export function MentorDock(p: { problemId: string; language: string; code: strin
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => input.current?.focus(), 30);
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    // on a wide screen the mentor is a column, not an overlay: escape is not its to take
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape' && !window.matchMedia(WIDE).matches) setOpen(false); };
     window.addEventListener('keydown', esc);
     return () => { clearTimeout(t); window.removeEventListener('keydown', esc); };
   }, [open]);
@@ -55,12 +67,9 @@ export function MentorDock(p: { problemId: string; language: string; code: strin
   const started = m.conversationId !== null || m.turns.length > 0;
 
   const pick = (id: number) => { if (id === mode) return; m.switchTo(mode, id); setMode(id); setDraft(''); };
-  const submit = () => {
-    if (m.busy) return;
-    const text = draft;
-    setDraft('');
-    void m.send({ problemId: p.problemId, mode, language: p.language, code: p.code, contestId: p.contestId }, text);
-  };
+  const sees = persona.needsExecution ? ['Statement', 'Your code', 'Runs it on sample 1'] : mode === 2 ? ['Statement', 'Your code', 'Recent verdicts'] : mode === 6 ? ['Statement', 'Related problems'] : ['Statement'];
+  const send = (text: string) => { if (m.busy) return; setDraft(''); void m.send({ problemId: p.problemId, mode, language: p.language, code: p.code, contestId: p.contestId }, text); };
+  const grow = (el: HTMLTextAreaElement) => { el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; };
 
   return (
     <>
@@ -72,12 +81,16 @@ export function MentorDock(p: { problemId: string; language: string; code: strin
 
       <section id="mentor-panel" className="dock-panel" data-open={open} aria-hidden={!open} aria-label="Mentor">
         <header className="dock-head">
-          <div>
-            <strong>Mentor</strong>
-            <div className="muted small">{persona.name} · {persona.needsExecution ? 'Runs your code in the sandbox first' : 'Reads the statement' + (mode === 2 ? ' and your code' : '')}</div>
+          <div className="row">
+            <Avatar mode={mode} />
+            <div>
+              <strong className="dock-title">{persona.name}</strong>
+              <div className="muted small">{BLURB[mode]}</div>
+            </div>
           </div>
           <div className="row">
-            {started && <button className="link small" onClick={() => { m.clear(mode); setDraft(''); }}>New conversation</button>}
+            {started && <button className="link small" onClick={() => { m.clear(mode); setDraft(''); }}>New chat</button>}
+            <button className="link small wide-only" onClick={() => setOpen(false)} aria-label="Hide the mentor">Hide</button>
           </div>
         </header>
 
@@ -92,39 +105,67 @@ export function MentorDock(p: { problemId: string; language: string; code: strin
 
         <div className="chat-log" ref={log}>
           {!started && (
-            <div className="opener">
-              <p><strong>{persona.name}</strong></p>
-              <p className="muted small">{BLURB[mode]}. Send a message, or just press Ask and it opens with:</p>
-              <p className="small quote">“{OPENER[mode]}”</p>
+            <div className="empty">
+              <Avatar mode={mode} size={44} />
+              <h2>{persona.name}</h2>
+              <p className="muted">{BLURB[mode]}.</p>
+              <div className="sees" aria-label="What the mentor sees">
+                {sees.map((x) => <span key={x} className="see">{x}</span>)}
+              </div>
+              <button className="primary-wide" onClick={() => send('')} disabled={!p.signedIn || m.busy}>{p.signedIn ? 'Start' : 'Sign in to start'}</button>
+              <p className="faint small opens">Opens with “{OPENER[mode]}”</p>
+              {p.signedIn && (
+                <div className="suggest">
+                  {SUGGEST[mode]!.map((q) => <button key={q} className="suggest-chip" onClick={() => send(q)} disabled={m.busy}>{q}</button>)}
+                </div>
+              )}
             </div>
           )}
-          {m.turns.map((t, i) => (
-            <motion.div key={i} className={`bubble ${t.role} ${t.blocked ? 'blocked' : ''}`} initial={arrive.initial} animate={arrive.animate} transition={arrive.transition} layout="position">
-              {t.cached && <span className="tag">Cached</span>}
-              {t.blocked && <span className="tag bad">Leak guard</span>}
-              {t.role === 'assistant' && !t.text && m.busy ? <span className="muted">{m.status ?? 'Thinking…'}</span> : <Reply text={t.text} />}
-              {t.role === 'assistant' && t.text && m.busy && i === m.turns.length - 1 && <span className="cursor">▍</span>}
-            </motion.div>
-          ))}
+          {m.turns.map((t, i) => {
+            const last = i === m.turns.length - 1;
+            return (
+              <motion.div key={i} className={`msg ${t.role} ${t.blocked ? 'blocked' : ''}`} initial={arrive.initial} animate={arrive.animate} transition={arrive.transition} layout="position">
+                {t.role === 'assistant' && <Avatar mode={mode} size={24} />}
+                <div className="msg-body">
+                  {(t.cached || t.blocked) && <div className="msg-tags">{t.cached && <span className="tag">Cached</span>}{t.blocked && <span className="tag bad">Stopped by the leak guard</span>}</div>}
+                  {t.role === 'assistant' && !t.text && m.busy
+                    ? <div className="typing" aria-label={m.status ?? 'Thinking'}><i /><i /><i />{m.status && <span className="muted small">{m.status}</span>}</div>
+                    : <Reply text={t.text} />}
+                  {t.role === 'assistant' && t.text && m.busy && last && <span className="cursor">▍</span>}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {m.error && <p className="error small dock-error">{m.error}</p>}
-        <form className="chat-input row" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-          <input
+        <form className="composer" onSubmit={(e) => { e.preventDefault(); if (draft.trim() || !started) send(draft); }}>
+          <textarea
             ref={input}
+            rows={1}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={p.signedIn ? (started ? `Reply to ${persona.name.toLowerCase()}…` : 'Ask, or leave empty for the opening question') : 'Sign in to talk to the mentor'}
+            onChange={(e) => { setDraft(e.target.value); grow(e.target); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (draft.trim()) { send(draft); } } }}
+            placeholder={p.signedIn ? (started ? `Reply to ${persona.name.toLowerCase()}…` : 'Ask anything about this problem') : 'Sign in to talk to the mentor'}
             disabled={!p.signedIn || m.busy}
             maxLength={4000}
           />
           {m.busy
-            ? <button type="button" className="secondary" onClick={m.stop}>Stop</button>
-            : <button type="submit" disabled={!p.signedIn || (started && !draft.trim())}>{started ? 'Send' : 'Ask'}</button>}
+            ? <button type="button" className="send stop" onClick={m.stop} aria-label="Stop"><svg width="12" height="12" viewBox="0 0 12 12"><rect width="12" height="12" rx="2.5" fill="currentColor" /></svg></button>
+            : <button type="submit" className="send" disabled={!p.signedIn || !draft.trim()} aria-label="Send"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 12V2M7 2L3 6M7 2l4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" /></svg></button>}
         </form>
-        {m.remaining !== null && !m.busy && <p className="muted small dock-foot">{m.remaining.toLocaleString()} tokens left today</p>}
+        <p className="faint small dock-foot">{m.remaining !== null && !m.busy ? `${m.remaining.toLocaleString()} tokens left today · ` : ''}Enter to send, Shift+Enter for a new line</p>
       </section>
     </>
+  );
+}
+
+const HUE: Record<number, string> = { 1: '#ff9f0a', 2: '#0a84ff', 3: '#30d158', 4: '#ff453a', 5: '#bf5af2', 6: '#64d2ff' };
+function Avatar({ mode, size = 32 }: { mode: number; size?: number }) {
+  return (
+    <span className="avatar" style={{ width: size, height: size, background: `linear-gradient(135deg, ${HUE[mode]}, color-mix(in srgb, ${HUE[mode]} 55%, #fff))` }} aria-hidden="true">
+      <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 16 16"><path d="M8 1.5l1.5 4 4 1.5-4 1.5L8 12.5 6.5 8.5l-4-1.5 4-1.5z" fill="#fff" /></svg>
+    </span>
   );
 }
 
