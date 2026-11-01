@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { connect, disconnect, mongoose, ContestModel, ProblemModel, RefreshTokenModel, SubmissionModel, TestcaseModel, UserModel } from '@oj/db';
 import { applyVerdict, projectVerdict, resetStandings, score, type UserState } from '@oj/judge';
 import { DEV_RATING, DEV_SOLUTIONS } from './dev-problems.js';
-import { CONTESTS, DEMO_PASSWORD, PEOPLE, type Person } from './people.js';
+import { CONTESTS, DEMO_PASSWORD, FORMER_USERNAMES, PEOPLE, type Person } from './people.js';
 import { hash, problemRating, rank, ratingDeltas, rng, solveChance, wrongAttempts, type Rng } from './sim.js';
 
 // the demo seed is a job: it builds a believable community on top of the
@@ -103,7 +103,7 @@ const problems: Prob[] = docs.filter((d) => solutions[d.source!.externalId!]).ma
 console.log(`${problems.length} bank problems`);
 
 // clear a previous run
-const old = await UserModel.find({ username: { $in: PEOPLE.map((p) => p.username) } }).select('_id').lean();
+const old = await UserModel.find({ username: { $in: [...PEOPLE.map((p) => p.username), ...FORMER_USERNAMES] } }).select('_id').lean();
 const oldContests = await ContestModel.find({ title: { $in: CONTESTS.map((c) => c.title) } }).select('_id').lean();
 await SubmissionModel.deleteMany({ $or: [{ userId: { $in: old.map((u) => u._id) } }, { contestId: { $in: oldContests.map((c) => c._id) } }] });
 await RefreshTokenModel.deleteMany({ userId: { $in: old.map((u) => u._id) } });
