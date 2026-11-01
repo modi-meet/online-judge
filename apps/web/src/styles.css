@@ -633,21 +633,21 @@ main[data-page="profile"] { max-width: 880px; }
 .t-heat i.l1 { background: color-mix(in srgb, var(--accent) 28%, var(--fill)); } .t-heat i.l2 { background: color-mix(in srgb, var(--accent) 50%, var(--fill)); }
 .t-heat i.l3 { background: color-mix(in srgb, var(--accent) 74%, var(--fill)); } .t-heat i.l4 { background: var(--accent); }
 
-/* ---- the navbar wears the footer: black, a little grain, quiet monospace,
+/* ---- the navbar wears the footer's tone (black, a little grain) in the body's type,
    and the accent only as a glow under the page you are on ---- */
 .nav { background: rgba(0, 0, 0, .86); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); box-shadow: 0 .5px 0 rgba(255, 255, 255, .08); }
-.nav::before { content: ''; position: absolute; inset: 0; pointer-events: none; background-image: var(--grain-img); background-size: 200px; opacity: .07; }
+.nav::before { content: ''; position: absolute; inset: 0; pointer-events: none; background-image: var(--grain-img); background-size: 200px; opacity: .04; }
 .nav::after { display: none; }
 .nav-inner { position: relative; }
-.brand { color: #f5f5f7; font-family: var(--mono); font-weight: 600; font-size: 13.5px; letter-spacing: .06em; }
-.nav nav a { color: #8e8e93; font-family: var(--mono); font-weight: 500; font-size: 12.5px; letter-spacing: .1em; border-radius: 0; padding: 8px 12px; transition: color 120ms ease; }
+.brand { color: #f5f5f7; font-family: var(--sans); font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
+.nav nav a { color: #a1a1a6; font-family: var(--sans); font-weight: 500; font-size: 14px; letter-spacing: -.004em; border-radius: 0; padding: 8px 12px; transition: color 120ms ease; }
 @media (hover: hover) and (pointer: fine) { .nav nav a:hover { color: #f5f5f7; } .nav nav .link:hover { color: #f5f5f7; } }
-.nav nav a.active { color: #f5f5f7; font-weight: 500; }
+.nav nav a.active { color: #f5f5f7; font-weight: 600; }
 .pill-bg { inset: auto 12px 1px 12px; height: 2px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 10px 1px color-mix(in srgb, var(--accent) 70%, transparent); }
-.nav nav .link { color: #8e8e93; font-family: var(--mono); font-size: 12.5px; letter-spacing: .1em; font-weight: 500; }
+.nav nav .link { color: #a1a1a6; font-family: var(--sans); font-size: 14px; letter-spacing: -.004em; font-weight: 500; }
 @media (prefers-reduced-transparency: reduce) { .nav { background: #000; -webkit-backdrop-filter: none; backdrop-filter: none; } }
 @media (prefers-contrast: more) { .nav { background: #000; box-shadow: 0 1px 0 #f5f5f7; } .nav::before { display: none; } .nav nav a { color: #d1d1d6; } }
-@media (max-width: 640px) { .nav nav a, .nav nav .link { font-size: 11.5px; letter-spacing: .06em; padding: 8px 8px; } .brand { font-size: 12.5px; } }
+@media (max-width: 640px) { .nav nav a, .nav nav .link { font-size: 13px; padding: 8px 8px; } .brand { font-size: 14px; } }
 
 /* languages: a name lights up under the pointer, the footer's glow in type */
 .l-langrow span { transition: color 220ms var(--ease-out), text-shadow 220ms var(--ease-out); cursor: default; }
