@@ -363,7 +363,14 @@ main[data-page="landing"] { max-width: none; padding: 0; }
 .l-bar span { margin-left: 10px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
 .l-body { display: grid; grid-template-columns: 1.25fr 1fr; gap: 0; }
 .l-code { margin: 0; padding: 22px 24px; font: 13px/1.7 var(--mono); color: var(--ink); overflow: hidden; }
-.c-k { color: var(--ink-2); font-weight: 600; } .c-f { color: var(--accent); }
+.l-code { color: light-dark(#000000, #d4d4d4); }
+/* vs code light+ / dark+ token colours, following the page's scheme */
+.t-ctl { color: light-dark(#af00db, #c586c0); }
+.t-kw { color: light-dark(#0000ff, #569cd6); }
+.t-ty { color: light-dark(#267f99, #4ec9b0); }
+.t-fn { color: light-dark(#795e26, #dcdcaa); }
+.t-v { color: light-dark(#001080, #9cdcfe); }
+.t-s { color: light-dark(#a31515, #ce9178); }
 .l-side { padding: 20px; display: grid; gap: 14px; align-content: start; background: var(--surface); border-left: .5px solid var(--hair); }
 .l-verdict { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; padding: 14px; border-radius: 14px; background: var(--bg); animation: pop 400ms var(--ease-out) both .9s; }
 .l-verdict .muted { grid-column: 1 / -1; font-size: 12.5px; }
