@@ -29,7 +29,7 @@ export function Layout() {
     <>
       <header className="nav">
         <div className="nav-inner">
-          <Link to={user ? '/problems' : '/'} className="brand"><span className="brand-mark" aria-hidden="true"><Icon name="code" size={13} /></span>Online Judge</Link>
+          <Link to={user ? '/problems' : '/'} className="brand"><span className="brand-mark" aria-hidden="true"><Icon name="code" size={20} /></span>Online Judge</Link>
           <nav>
             {item('/problems', 'Problems')}
             {item('/contests', 'Contests')}

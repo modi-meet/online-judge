@@ -723,3 +723,6 @@ table.list, .list, .board, .subs, th,
   .st-sandbox .st-media { min-height: 380px; }
 }
 @media (max-width: 560px) { .stages { grid-template-columns: 1fr; } .st-queue, .st-compile { grid-column: 1; margin-top: 0; } }
+
+/* the navbar wears the footer's mark: the bare glyph, no tile */
+.brand-mark { width: auto; height: auto; border-radius: 0; background: none; color: #f5f5f7; }
