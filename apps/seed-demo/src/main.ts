@@ -5,13 +5,15 @@ import { Redis } from 'ioredis';
 import { z } from 'zod';
 import { connect, disconnect, mongoose, ContestModel, ProblemModel, RefreshTokenModel, SubmissionModel, TestcaseModel, UserModel } from '@oj/db';
 import { applyVerdict, projectVerdict, resetStandings, score, type UserState } from '@oj/judge';
+import { DEV_RATING, DEV_SOLUTIONS } from './dev-problems.js';
 import { CONTESTS, DEMO_PASSWORD, PEOPLE, type Person } from './people.js';
 import { hash, problemRating, rank, ratingDeltas, rng, solveChance, wrongAttempts, type Rng } from './sim.js';
 
 // the demo seed is a job: it builds a believable community on top of the
 // problem bank. 22 people practise from the day they joined, take part in
-// seven past contests, and end up with ratings their results earned. it is
-// idempotent: a re-run removes its own users and contests first.
+// seven past contests (and any other contest that has already ended), and end
+// up with ratings their results earned. it is idempotent: a re-run removes its
+// own users and contests first.
 //   pnpm --filter @oj/seed-demo bank && pnpm --filter @oj/ingestor ingest -- --file ../seed-demo/out/dsa-bundle.json --public
 //   pnpm --filter @oj/seed-demo seed
 loadEnv({ path: new URL('../../../.env', import.meta.url) });
@@ -106,6 +108,7 @@ const oldContests = await ContestModel.find({ title: { $in: CONTESTS.map((c) => 
 await SubmissionModel.deleteMany({ $or: [{ userId: { $in: old.map((u) => u._id) } }, { contestId: { $in: oldContests.map((c) => c._id) } }] });
 await RefreshTokenModel.deleteMany({ userId: { $in: old.map((u) => u._id) } });
 await UserModel.deleteMany({ _id: { $in: old.map((u) => u._id) } });
+await ContestModel.updateMany({}, { $pull: { participants: { $in: old.map((u) => u._id) } } });
 for (const c of oldContests) await resetStandings(redis, String(c._id));
 await ContestModel.deleteMany({ _id: { $in: oldContests.map((c) => c._id) } });
 
@@ -135,15 +138,37 @@ const contests = CONTESTS.map((c) => {
   const start = new Date(`${c.date}T14:30:00Z`);
   return { _id: new mongoose.Types.ObjectId(Math.floor(start.getTime() / 1000)), plan: c, start, end: new Date(start.getTime() + c.minutes * MIN), set };
 });
+// contests made by hand that have already ended: the community took part in those too,
+// next to whoever was already on the board
+const ended = await ContestModel.find({ title: { $nin: CONTESTS.map((c) => c.title) }, endAt: { $lt: new Date(NOW) } }).lean();
+const others: (typeof contests[number] & { outside: Sub[]; outsiders: string[] })[] = [];
+for (const c of ended) {
+  const set: Prob[] = [];
+  for (const { problemId } of c.problems) {
+    const bank = problems.find((p) => p.id.equals(problemId));
+    const d = bank ? null : await ProblemModel.findById(problemId).select('_id slug difficulty timeLimitMs').lean();
+    const code = d && DEV_SOLUTIONS[d.slug];
+    if (bank) set.push(bank);
+    else if (d && code) set.push({ id: d._id, key: d.slug, slug: d.slug, difficulty: d.difficulty as Prob['difficulty'], rating: DEV_RATING[d.difficulty as Prob['difficulty']], tests: await TestcaseModel.countDocuments({ problemId: d._id }), limitMs: d.timeLimitMs ?? 1000, code });
+  }
+  if (set.length !== c.problems.length) { console.log(`skipping ${c.title}: a problem has no reference solution`); continue; }
+  const outside = (await SubmissionModel.find({ contestId: c._id }).lean()) as unknown as Sub[];
+  others.push({
+    _id: c._id, plan: { title: c.title, date: c.startAt.toISOString().slice(0, 10), minutes: Math.round((c.endAt.getTime() - c.startAt.getTime()) / MIN), size: set.length },
+    start: c.startAt, end: c.endAt, set, outside, outsiders: c.participants.map(String),
+  });
+}
+const rounds = [...contests.map((c) => ({ ...c, outside: [] as Sub[], outsiders: [] as string[] })), ...others].sort((a, b) => a.start.getTime() - b.start.getTime());
+
 const reservedUntil = new Map<string, number>();
-for (const c of contests) for (const p of c.set) reservedUntil.set(String(p.id), c.end.getTime());
+for (const c of rounds) for (const p of c.set) reservedUntil.set(String(p.id), c.end.getTime());
 
 const subs: Sub[] = [];
 const solvedAt = new Map<string, number>(); // `${user}:${problem}` → first ac time
 const tries = new Map<string, number>();    // `${user}:${problem}` → practice sessions that ended without an accept
 
 // contests first: a round is a fixed event, practice fills the days around it
-for (const c of contests) {
+for (const c of rounds) {
   const r = rng(hash(c.plan.title));
   for (const u of users) {
     const p = u.person;
@@ -232,18 +257,20 @@ for (const u of users) {
 const ratings = new Map(users.map((u) => [String(u._id), 1400]));
 const played = new Map<string, number>();
 const history = new Map<string, unknown[]>(users.map((u) => [String(u._id), []]));
-for (const c of contests) {
-  const inRound = subs.filter((s) => s.contestId?.equals(c._id)).sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime());
-  const state = new Map<string, UserState>(users.map((u) => [String(u._id), { problems: {} }]));
+for (const c of rounds) {
+  const inRound = [...c.outside, ...subs.filter((s) => s.contestId?.equals(c._id))].sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime());
+  const ids = [...users.map((u) => String(u._id)), ...c.outsiders];
+  const state = new Map<string, UserState>(ids.map((id) => [id, { problems: {} }]));
   for (const s of inRound) state.set(String(s.userId), applyVerdict(state.get(String(s.userId))!, { problemId: String(s.problemId), status: s.status, submittedAt: s.submittedAt }, c.start));
+  // the rank is on the whole board; ratings move only between the people the seed owns
+  const board = rank(ids.map((id) => ({ userId: id, ...score(state.get(id)!) })));
   const rows = users.map((u) => ({ userId: String(u._id), ...score(state.get(String(u._id))!) }));
-  const ranks = rank(rows);
-  const deltas = ratingDeltas(ratings, ranks, played);
+  const deltas = ratingDeltas(ratings, rank(rows), played);
   for (const row of rows) {
     const next = ratings.get(row.userId)! + deltas.get(row.userId)!;
     ratings.set(row.userId, next);
     played.set(row.userId, (played.get(row.userId) ?? 0) + 1);
-    history.get(row.userId)!.push({ contestId: c._id, title: c.plan.title, at: c.end, rank: ranks.get(row.userId)!, of: users.length, solved: row.solved, penalty: row.penalty, delta: deltas.get(row.userId)!, rating: next });
+    history.get(row.userId)!.push({ contestId: c._id, title: c.plan.title, at: c.end, rank: board.get(row.userId)!, of: ids.length, solved: row.solved, penalty: row.penalty, delta: deltas.get(row.userId)!, rating: next });
   }
 }
 
@@ -259,19 +286,20 @@ await ContestModel.collection.insertMany(contests.map((c) => ({
   problems: c.set.map((p, i) => ({ _id: new mongoose.Types.ObjectId(), problemId: p.id, points: 100 * (i + 1) })),
   participants: users.map((u) => u._id),
 })));
+for (const c of others) await ContestModel.updateOne({ _id: c._id }, { $addToSet: { participants: { $each: users.map((u) => u._id) } } });
 subs.sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime());
 for (let i = 0; i < subs.length; i += 2000) await SubmissionModel.collection.insertMany(subs.slice(i, i + 2000));
 
 // standings go through the same projection the live system uses
-for (const c of contests) {
+for (const c of rounds) {
   await resetStandings(redis, String(c._id));
-  for (const s of subs.filter((x) => x.contestId?.equals(c._id))) {
+  for (const s of [...c.outside, ...subs.filter((x) => x.contestId?.equals(c._id))].sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime())) {
     await projectVerdict(redis, String(c._id), String(s.userId), `seed:${String(s._id)}`, { problemId: String(s.problemId), status: s.status, submittedAt: s.submittedAt }, c.start);
   }
 }
 
 const top = users.map((u) => ({ name: u.doc.username, rating: ratings.get(String(u._id))!, solved: u.doc.solvedCount as number })).sort((a, b) => b.rating - a.rating);
-console.log(`${users.length} people, ${subs.length} submissions (${subs.filter((s) => s.contestId).length} in contests), ${contests.length} contests`);
+console.log(`${users.length} people, ${subs.length} submissions (${subs.filter((s) => s.contestId).length} in contests), ${contests.length} contests, joined ${others.map((c) => c.plan.title).join(', ') || 'no others'}`);
 for (const t of top) console.log(`  ${t.name.padEnd(16)} ${String(t.rating).padStart(5)}  ${t.solved} solved`);
 redis.disconnect();
 await disconnect();
