@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { usePageTitle } from '../components/PageHead';
 import { useAuth } from '../lib/auth';
 import { SiteFooter } from '../components/SiteFooter';
+import { MentorShowcase } from '../components/MentorShowcase';
 
 /** fades a section up the first time it scrolls into view. plain css does the motion; reduced motion turns it off there. */
 function useReveal<T extends HTMLElement>() {
@@ -18,7 +19,6 @@ function useReveal<T extends HTMLElement>() {
   return ref;
 }
 
-const PERSONAS = ['Intuition engine', 'Brainstorming partner', 'Dry-run simulator', 'Complexity auditor', 'Conceptual translator', 'Foundations architect'];
 
 export function LandingPage() {
   const { user } = useAuth();
@@ -69,12 +69,15 @@ export function LandingPage() {
             <p>ICPC scoring with penalties, updated as verdicts land.</p>
           </article>
           <article className="tile t-wide tint">
-            <p className="t-kicker">Mentor</p>
-            <h3>Six personas. One that fits where you’re stuck.</h3>
-            <div className="t-personas">{PERSONAS.map((p) => <span key={p}>{p}</span>)}</div>
+            <p className="t-kicker">Profiles</p>
+            <h3>Every run counts toward something.</h3>
+            <p>A year of activity, streaks, a rating that moves with each contest, and what you solve by difficulty.</p>
+            <div className="t-heat" aria-hidden="true">{Array.from({ length: 7 * 26 }, (_, i) => <i key={i} className={`l${(i * 7919 + (i % 7) * 31) % 11 > 6 ? ((i * 13) % 4) + 1 : 0}`} />)}</div>
           </article>
         </div>
       </section>
+
+      <MentorShowcase />
 
       <div className="l-band grain">
       <section ref={b} className="l-statement reveal">
