@@ -23,5 +23,8 @@ export function useEnter(dy = 8) {
 
 /** the user's colour scheme, live */
 export function prefersDark() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (typeof window === 'undefined') return false;
+  const forced = document.documentElement.dataset['theme'];
+  if (forced === 'dark' || forced === 'light') return forced === 'dark';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
