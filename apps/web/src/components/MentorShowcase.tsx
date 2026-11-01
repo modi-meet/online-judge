@@ -37,7 +37,7 @@ export function MentorShowcase() {
   const inView = useInView(ref, { amount: 0.4 });
   // a short "thinking" beat before each reply, so the exchange reads as one
   const [thinking, setThinking] = useState(false);
-  useEffect(() => { setThinking(true); const t = setTimeout(() => setThinking(false), reduce ? 0 : 650); return () => clearTimeout(t); }, [active, reduce]);
+  useEffect(() => { setThinking(true); const t = setTimeout(() => setThinking(false), reduce ? 0 : 900); return () => clearTimeout(t); }, [active, reduce]);
   useEffect(() => {
     if (!auto || !inView) return;
     const t = setTimeout(() => setActive((a) => (a + 1) % PERSONAS.length), 6500);
@@ -65,7 +65,7 @@ export function MentorShowcase() {
         </div>
 
         <div className="ms-chat" role="tabpanel" aria-live="polite">
-          <div className="l-bar"><i /><i /><i /><span>Longest increasing subsequence</span><span className="ms-mode">{p.runs ? 'Runs your code' : 'Reads your code'}</span></div>
+          <div className="l-bar ms-bar"><span>Longest increasing subsequence</span><span className="ms-mode">{p.runs ? 'Runs your code' : 'Reads your code'}</span></div>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={p.id} className="ms-thread" {...enter} transition={reduce ? { duration: 0.15 } : spring}>
               <div className="ms-msg me">{p.ask}</div>
@@ -74,7 +74,7 @@ export function MentorShowcase() {
                   <p className="ms-who"><span className="l-dot" /> {p.name}</p>
                   <AnimatePresence mode="wait" initial={false}>
                     {thinking ? (
-                      <motion.span key="dots" className="ms-dots" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}><i /><i /><i /></motion.span>
+                      <motion.span key="status" className="ms-status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}>{p.runs ? 'Running your code on the samples' : 'Reading your code'}</motion.span>
                     ) : (
                       <motion.div key="reply" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}>
                         {p.trace && <pre className="ms-trace">{p.trace}</pre>}
