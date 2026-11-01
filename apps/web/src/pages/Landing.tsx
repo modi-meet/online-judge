@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { usePageTitle } from '../components/PageHead';
 import { useAuth } from '../lib/auth';
+import { SiteFooter } from '../components/SiteFooter';
 
 /** fades a section up the first time it scrolls into view. plain css does the motion; reduced motion turns it off there. */
 function useReveal<T extends HTMLElement>() {
@@ -94,6 +95,7 @@ export function LandingPage() {
         <Link to={user ? '/problems' : '/register'} className="l-btn primary big">{user ? 'Open problems' : 'Create an account'}</Link>
         {!user && <p className="small"><Link to="/login">Already have one? Sign in</Link></p>}
       </section>
+      <SiteFooter />
     </div>
   );
 }

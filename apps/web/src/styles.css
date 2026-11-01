@@ -551,3 +551,37 @@ main[data-page="profile"] { max-width: 880px; }
 .bar .fill.easy { background: var(--ac); } .bar .fill.medium { background: var(--tle); } .bar .fill.hard { background: var(--wa); }
 .bar-row .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
 @media (max-width: 640px) { .ph-split { grid-template-columns: 1fr; gap: 24px; } .subs.history th:nth-child(4), .subs.history td:nth-child(4) { display: none; } }
+
+/* ---- the landing footer: a terminal-tree index over a skyline of verdicts ---- */
+.site-footer { margin-top: 110px; background: #000; color: #8e8e93; font-family: var(--mono); overflow: hidden; }
+.landing::after { display: none; }
+.ft-inner { max-width: 1240px; margin: 0 auto; padding: 44px 28px 0; }
+.ft-mark { display: inline-flex; color: #f5f5f7; }
+.ft-mark:hover { text-decoration: none; }
+.ft-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 24px; margin-top: 56px; }
+.ft-group + .ft-group { margin-top: 44px; }
+.ft-title { margin: 0 0 18px; color: #f5f5f7; font-size: 13px; letter-spacing: .08em; }
+.ft-group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
+.ft-group li { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; letter-spacing: .16em; white-space: nowrap; }
+.ft-branch { color: #48484a; letter-spacing: -.05em; }
+.ft-group a { color: #8e8e93; transition: color 120ms ease; overflow: hidden; text-overflow: ellipsis; }
+.ft-group a:hover { text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .ft-group a:hover { color: #f5f5f7; } }
+.ft-base { margin-top: 72px; display: flex; flex-direction: column; gap: 18px; }
+.ft-social { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 4px; background: #8e8e93; color: #000; transition: background-color 120ms ease; }
+@media (hover: hover) and (pointer: fine) { .ft-social:hover { background: #f5f5f7; } }
+.ft-copy { margin: 0; font-size: 12.5px; letter-spacing: .06em; }
+
+.ft-sky { display: grid; grid-template-columns: repeat(7, 1fr); align-items: end; height: clamp(160px, 26vw, 360px); margin-top: 24px; }
+.ft-bar { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+.ft-bar + .ft-bar { background-image: linear-gradient(rgba(255, 255, 255, .35) 50%, transparent 0); background-size: 1px 6px; background-repeat: repeat-y; background-position: left bottom; }
+.ft-bar + .ft-bar { background-size: 1px 6px; }
+.ft-fill { position: relative; display: block; height: var(--h); background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 30%, #000) 30%, color-mix(in srgb, var(--accent) 70%, #000) 70%, color-mix(in srgb, var(--accent) 80%, #fff)); transform-origin: bottom; }
+.ft-fill.grain { --grain-inv: 0; --grain-op: .35; }
+.ft-verdict { position: absolute; left: 10px; bottom: calc(var(--h) + 8px); font-size: 11px; letter-spacing: .14em; color: #48484a; }
+/* the skyline rises once, from the centre out, when it first scrolls into view */
+.ft-sky .ft-fill { transform: scaleY(.2); opacity: 0; transition: transform 700ms var(--ease-out) var(--d), opacity 500ms var(--ease-out) var(--d); }
+.ft-sky.in .ft-fill { transform: none; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .ft-sky .ft-fill { transform: none; opacity: 1; transition: none; } }
+@media (max-width: 960px) { .ft-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .ft-cols { grid-template-columns: 1fr; } .ft-group li { letter-spacing: .1em; } .ft-verdict { left: 4px; font-size: 9px; letter-spacing: .06em; } }
