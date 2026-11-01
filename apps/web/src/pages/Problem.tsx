@@ -82,7 +82,7 @@ export function ProblemPage() {
   const clock = `${Math.floor(remaining / 3600_000)}:${String(Math.floor((remaining % 3600_000) / 60_000)).padStart(2, '0')}:${String(Math.floor((remaining % 60_000) / 1000)).padStart(2, '0')}`;
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const on = () => setDark(mq.matches);
+    const on = () => setDark(prefersDark());   // a forced theme wins over the os
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
   }, []);

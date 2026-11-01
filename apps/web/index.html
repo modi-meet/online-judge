@@ -7,6 +7,22 @@
     <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
     <title>Online Judge</title>
+    <script>
+      // ?theme=dark | light | system. runs before the first paint so there is no flash.
+      // the choice is remembered; system clears it and follows the os again.
+      (function () {
+        try {
+          var q = new URLSearchParams(location.search).get('theme');
+          if (q === 'dark' || q === 'light') localStorage.setItem('oj-theme', q);
+          else if (q === 'system') localStorage.removeItem('oj-theme');
+          var t = localStorage.getItem('oj-theme');
+          if (t === 'dark' || t === 'light') {
+            document.documentElement.dataset.theme = t;
+            document.documentElement.style.colorScheme = t;
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
