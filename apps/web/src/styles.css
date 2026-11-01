@@ -605,11 +605,11 @@ main[data-page="profile"] { max-width: 880px; }
 @media (hover: hover) and (pointer: fine) { .ms-item:hover { filter: none; } .ms-item:not(.on):hover .ms-stage { color: var(--ink); } }
 .ms-thumb { position: absolute !important; left: 0; top: 14px; bottom: 14px; width: 2px; border-radius: 2px; background: var(--accent); }
 .ms-num { font: 500 12px/1 var(--mono); color: var(--ink-3); letter-spacing: .04em; }
-.ms-text { display: grid; gap: 3px; min-width: 0; }
+.ms-text { display: grid; gap: 4px; min-width: 0; }
 .ms-stage { font-size: 19px; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; color: var(--ink-3); transition: color 160ms ease; }
-.ms-name { font-size: 13.5px; font-weight: 500; color: var(--ink-3); }
+.ms-name { font-size: 14.5px; font-weight: 600; letter-spacing: -.005em; color: var(--ink-2); transition: color 160ms ease; }
 .ms-item.on .ms-stage { color: var(--ink); }
-.ms-item.on .ms-name { color: var(--ink-2); }
+.ms-item.on .ms-name { color: var(--accent); }
 .ms-progress { position: absolute !important; left: 16px; right: 0; bottom: -1px; height: 1px; background: var(--ink-3); transform-origin: left; }
 .ms-panel { border-top: .5px solid var(--hair); padding: 18px 0 0 8px; min-height: 440px; display: flex; flex-direction: column; }
 .ms-day { margin: 0 0 18px; text-align: center; font: 500 11.5px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
