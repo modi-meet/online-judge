@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useInView, useReducedMotion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { spring, springSnappy } from '../lib/motion';
 
 // one problem, six ways of being stuck on it. the same exchange a learner
@@ -44,8 +45,6 @@ export function MentorShowcase() {
     return () => clearTimeout(t);
   }, [auto, inView, active]);
   const p = PERSONAS[active]!;
-  const enter = reduce ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
-    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6, transition: { duration: 0.15 } } };
 
   return (
     <section ref={ref} className="l-section mentor-show">
@@ -65,25 +64,34 @@ export function MentorShowcase() {
         </div>
 
         <div className="ms-panel" role="tabpanel" aria-live="polite">
+          <p className="ms-day">Longest increasing subsequence</p>
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={p.id} {...enter} transition={reduce ? { duration: 0.15 } : spring}>
-              <p className="ms-label">You, on longest increasing subsequence</p>
-              <p className="ms-ask">“{p.ask}”</p>
-              <p className="ms-label"><span className="l-dot" />{p.name}<span className="ms-sep">·</span>{p.runs ? 'runs your code' : 'reads your code'}</p>
-              <div className="ms-answer">
-                <AnimatePresence mode="wait" initial={false}>
-                  {thinking ? (
-                    <motion.span key="status" className="ms-status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}>{p.runs ? 'Running your code on the samples' : 'Reading your code'}</motion.span>
-                  ) : (
-                    <motion.div key="reply" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}>
-                      {p.trace && <pre className="ms-trace">{p.trace}</pre>}
-                      <p className="ms-reply">{p.reply}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+            <motion.div key={p.id} className="ms-thread" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.12 } }}>
+              <motion.div className="ms-row me" initial={reduce ? false : { opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={reduce ? { duration: 0 } : spring}>
+                <p className="ms-bubble">{p.ask}</p>
+                <span className="ms-meta">You · just now</span>
+              </motion.div>
+              <motion.div className="ms-row them" initial={reduce ? false : { opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} transition={reduce ? { duration: 0 } : { ...spring, delay: 0.12 }}>
+                <span className="ms-meta"><span className="l-dot" />{p.name} · {p.runs ? 'ran your code' : 'read your code'}</span>
+                <div className="ms-bubble">
+                  <AnimatePresence mode="wait" initial={false}>
+                    {thinking ? (
+                      <motion.span key="status" className="ms-status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}>{p.runs ? 'Running your code on the samples' : 'Reading your code'}</motion.span>
+                    ) : (
+                      <motion.div key="reply" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}>
+                        {p.trace && <pre className="ms-trace">{p.trace}</pre>}
+                        <p className="ms-reply">{p.reply}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
             </motion.div>
           </AnimatePresence>
+          <Link to="/problems" className="ms-composer">
+            <span>Ask the {p.name.toLowerCase()} on a real problem</span>
+            <span className="ms-send" aria-hidden="true">↑</span>
+          </Link>
         </div>
       </div>
       <p className="ms-note muted small">Sample exchanges. The real mentor reads your code, the samples and the run, and never a hidden test.</p>
