@@ -655,3 +655,7 @@ main[data-page="profile"] { max-width: 880px; }
   .l-langrow span:hover { color: var(--ink); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
 }
 .nav nav a > .pill-bg { position: absolute; z-index: 0; top: auto; left: 12px; right: 12px; bottom: 1px; }
+
+/* the hero window and the mentor chat are pictures of the product, not text to copy */
+.l-window, .l-window *, .ms-panel .ms-thread, .ms-panel .ms-thread * { -webkit-user-select: none; user-select: none; }
+.l-window { cursor: default; }
