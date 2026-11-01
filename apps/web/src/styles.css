@@ -619,7 +619,12 @@ main[data-page="profile"] { max-width: 880px; }
 .ms-item.on .ms-stage { color: var(--ink); }
 .ms-item.on .ms-name { color: var(--accent); }
 .ms-progress { position: absolute !important; left: 16px; right: 0; bottom: -1px; height: 1px; background: var(--ink-3); transform-origin: left; }
-.ms-panel { border-top: .5px solid var(--hair); padding: 18px 0 0 8px; min-height: 440px; display: flex; flex-direction: column; }
+.ms-panel { position: relative; isolation: isolate; padding: 18px 20px 20px; min-height: 460px; display: flex; flex-direction: column; border-radius: 26px; overflow: hidden;
+  background-color: var(--fill); box-shadow: inset 0 0 0 .5px var(--hair); }
+/* a quiet chat wallpaper: a fine dot grid, fading out toward the composer */
+.ms-panel::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: radial-gradient(circle, light-dark(rgba(0, 0, 0, .11), rgba(255, 255, 255, .09)) .8px, transparent 1.2px); background-size: 16px 16px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%); }
 .ms-day { margin: 0 0 18px; text-align: center; font: 500 11.5px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
 .ms-thread { display: grid; gap: 18px; flex: 1; align-content: start; }
 .ms-row { display: grid; gap: 6px; max-width: 86%; }
@@ -632,16 +637,16 @@ main[data-page="profile"] { max-width: 880px; }
 .ms-row.them .ms-bubble { background: var(--surface); color: var(--ink); border-radius: 6px 20px 20px 20px; box-shadow: var(--shadow-sm); min-width: 220px; }
 .ms-reply { margin: 0; }
 .ms-trace { margin: 2px 0 12px; padding: 0 0 0 12px; border-left: 2px solid var(--hair); background: none; color: var(--ink-2); font: 12.5px/1.75 var(--mono); white-space: pre-wrap; overflow-x: auto; }
-.ms-composer { margin-top: 26px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 10px 10px 18px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 .5px var(--rule); color: var(--ink-3); font-size: 15px; transition: box-shadow 160ms ease, color 160ms ease; }
+.ms-composer { margin-top: 26px; box-shadow: var(--shadow-sm), inset 0 0 0 .5px var(--rule); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 10px 10px 18px; border-radius: 999px; background: var(--surface); color: var(--ink-3); font-size: 15px; transition: box-shadow 160ms ease, color 160ms ease; }
 .ms-composer:hover { text-decoration: none; }
-@media (hover: hover) and (pointer: fine) { .ms-composer:hover { color: var(--ink-2); box-shadow: inset 0 0 0 .5px var(--ink-3); } }
+@media (hover: hover) and (pointer: fine) { .ms-composer:hover { color: var(--ink-2); box-shadow: var(--shadow-sm), inset 0 0 0 .5px var(--ink-3); } }
 .ms-composer:active { transform: scale(.99); }
 .ms-send { flex: none; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 15px; }
 .ms-status { display: inline-block; padding: 2px 0; font: 500 12.5px/1.5 var(--mono); letter-spacing: .06em; color: var(--ink-3); animation: ms-pulse 1.2s ease-in-out infinite; }
 @keyframes ms-pulse { 50% { color: var(--ink-2); } }
 .ms-note { text-align: center; margin-top: 22px; }
 @media (prefers-reduced-motion: reduce) { .ms-status { animation: none; } }
-@media (max-width: 860px) { .ms-grid { grid-template-columns: 1fr; gap: 28px; } .ms-stage { font-size: 17px; } .ms-panel { min-height: 0; padding-left: 0; } .ms-row { max-width: 94%; } }
+@media (max-width: 860px) { .ms-grid { grid-template-columns: 1fr; gap: 28px; } .ms-stage { font-size: 17px; } .ms-panel { min-height: 0; padding: 16px 14px 14px; border-radius: 22px; } .ms-row { max-width: 94%; } }
 /* the profiles tile: a small, still activity grid */
 .t-heat { display: grid; grid-template-rows: repeat(7, 9px); grid-auto-flow: column; grid-auto-columns: 9px; gap: 3px; margin-top: auto; padding-top: 18px; }
 .t-heat i { border-radius: 2px; background: var(--fill); }
