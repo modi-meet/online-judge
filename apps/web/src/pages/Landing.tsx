@@ -102,7 +102,7 @@ export function LandingPage() {
             <p className="sv-line"><span className="chip bad">WA</span> Wrong answer on test case 6</p>
           </Stage>
           <Stage n="05" title="Counted" note="ICPC, live" area="board">
-            <div className="t-board"><div><b>1</b> mei_lin <span>6 · 427</span></div><div><b>2</b> tomasz_nowak <span>6 · 440</span></div><div><b>3</b> kavya_s <span>6 · 720</span></div><div><b>4</b> lukas_weber <span>5 · 331</span></div></div>
+            <div className="t-board"><div><b>1</b> arvind_r <span>6 · 427</span></div><div><b>2</b> srinivas_k <span>6 · 440</span></div><div><b>3</b> kavya_s <span>6 · 720</span></div><div><b>4</b> venkat_s <span>5 · 331</span></div></div>
           </Stage>
         </div>
       </section>
