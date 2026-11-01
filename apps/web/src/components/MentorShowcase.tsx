@@ -64,25 +64,23 @@ export function MentorShowcase() {
           ))}
         </div>
 
-        <div className="ms-chat" role="tabpanel" aria-live="polite">
-          <div className="l-bar ms-bar"><span>Longest increasing subsequence</span><span className="ms-mode">{p.runs ? 'Runs your code' : 'Reads your code'}</span></div>
+        <div className="ms-panel" role="tabpanel" aria-live="polite">
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={p.id} className="ms-thread" {...enter} transition={reduce ? { duration: 0.15 } : spring}>
-              <div className="ms-msg me">{p.ask}</div>
-              <div className="ms-msg them">
-                <div className="ms-body">
-                  <p className="ms-who"><span className="l-dot" /> {p.name}</p>
-                  <AnimatePresence mode="wait" initial={false}>
-                    {thinking ? (
-                      <motion.span key="status" className="ms-status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}>{p.runs ? 'Running your code on the samples' : 'Reading your code'}</motion.span>
-                    ) : (
-                      <motion.div key="reply" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}>
-                        {p.trace && <pre className="ms-trace">{p.trace}</pre>}
-                        <p>{p.reply}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+            <motion.div key={p.id} {...enter} transition={reduce ? { duration: 0.15 } : spring}>
+              <p className="ms-label">You, on longest increasing subsequence</p>
+              <p className="ms-ask">“{p.ask}”</p>
+              <p className="ms-label"><span className="l-dot" />{p.name}<span className="ms-sep">·</span>{p.runs ? 'runs your code' : 'reads your code'}</p>
+              <div className="ms-answer">
+                <AnimatePresence mode="wait" initial={false}>
+                  {thinking ? (
+                    <motion.span key="status" className="ms-status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}>{p.runs ? 'Running your code on the samples' : 'Reading your code'}</motion.span>
+                  ) : (
+                    <motion.div key="reply" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}>
+                      {p.trace && <pre className="ms-trace">{p.trace}</pre>}
+                      <p className="ms-reply">{p.reply}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </AnimatePresence>
