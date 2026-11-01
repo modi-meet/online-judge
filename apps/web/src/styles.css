@@ -359,7 +359,15 @@ main[data-page="landing"] { max-width: none; padding: 0; }
 .l-window { max-width: 920px; margin: 56px auto 0; text-align: left; border-radius: 18px; background: var(--bg); box-shadow: var(--shadow-md); overflow: hidden; animation: rise 600ms var(--ease-out) both .1s; }
 @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.98); } to { opacity: 1; transform: none; } }
 .l-bar { display: flex; align-items: center; gap: 7px; padding: 12px 16px; background: var(--surface); border-bottom: .5px solid var(--hair); }
-.l-bar i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; } .l-bar i:nth-child(2) { background: #febc2e; } .l-bar i:nth-child(3) { background: #28c840; }
+.tl { display: inline-flex; gap: 7px; }
+.l-bar .tl i { position: relative; width: 12px; height: 12px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 .5px rgba(0, 0, 0, .14); }
+.tl-close { background: #ff5f57; color: #4d0000; } .tl-min { background: #febc2e; color: #985700; } .tl-zoom { background: #28c840; color: #006500; }
+.tl svg { width: 8px; height: 8px; opacity: 0; transition: opacity 120ms ease; }
+.tl-close svg, .tl-min svg { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
+.tl-zoom svg { fill: currentColor; stroke: none; }
+/* macos draws the glyphs only while the pointer is over the three lights */
+@media (hover: hover) and (pointer: fine) { .tl:hover svg { opacity: 1; } }
+.l-bar .tl { margin-left: 0; }
 .l-bar span { margin-left: 10px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
 .l-body { display: grid; grid-template-columns: 1.25fr 1fr; gap: 0; }
 .l-code { margin: 0; padding: 22px 24px; font: 13px/1.7 var(--mono); color: var(--ink); overflow: hidden; }
