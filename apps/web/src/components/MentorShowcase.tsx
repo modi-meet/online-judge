@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useInView, useReducedMotion } from 'motion/react';
-import { Avatar } from './Mentor';
 import { spring, springSnappy } from '../lib/motion';
 
 // one problem, six ways of being stuck on it. the same exchange a learner
@@ -46,7 +45,7 @@ export function MentorShowcase() {
   }, [auto, inView, active]);
   const p = PERSONAS[active]!;
   const enter = reduce ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
-    : { initial: { opacity: 0, y: 10, filter: 'blur(4px)' }, animate: { opacity: 1, y: 0, filter: 'blur(0px)' }, exit: { opacity: 0, y: -6, filter: 'blur(2px)' } };
+    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6, transition: { duration: 0.15 } } };
 
   return (
     <section ref={ref} className="l-section mentor-show">
@@ -58,7 +57,7 @@ export function MentorShowcase() {
             <button key={x.id} role="tab" aria-selected={i === active} className={`ms-item ${i === active ? 'on' : ''}`}
               onClick={() => { setAuto(false); setActive(i); }}>
               {i === active && <motion.span layoutId="ms-thumb" className="ms-thumb" transition={reduce ? { duration: 0 } : springSnappy} />}
-              <Avatar mode={x.id} size={30} />
+              <span className="ms-num">{String(i + 1).padStart(2, '0')}</span>
               <span className="ms-text"><span className="ms-stage">{x.stage}</span><span className="ms-name">{x.name}</span></span>
               {i === active && auto && inView && !reduce && <motion.span key={`p${active}`} className="ms-progress" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 6.5, ease: 'linear' }} />}
             </button>
@@ -66,14 +65,13 @@ export function MentorShowcase() {
         </div>
 
         <div className="ms-chat" role="tabpanel" aria-live="polite">
-          <div className="ms-chat-bar"><span>Longest increasing subsequence</span><span className="muted">{p.runs ? 'Runs your code in the sandbox' : 'Reads the statement and your code'}</span></div>
+          <div className="l-bar"><i /><i /><i /><span>Longest increasing subsequence</span><span className="ms-mode">{p.runs ? 'Runs your code' : 'Reads your code'}</span></div>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={p.id} className="ms-thread" {...enter} transition={reduce ? { duration: 0.15 } : spring}>
               <div className="ms-msg me">{p.ask}</div>
               <div className="ms-msg them">
-                <Avatar mode={p.id} size={26} />
                 <div className="ms-body">
-                  <p className="ms-who">{p.name}</p>
+                  <p className="ms-who"><span className="l-dot" /> {p.name}</p>
                   <AnimatePresence mode="wait" initial={false}>
                     {thinking ? (
                       <motion.span key="dots" className="ms-dots" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}><i /><i /><i /></motion.span>
