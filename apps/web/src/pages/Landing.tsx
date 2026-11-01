@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { usePageTitle } from '../components/PageHead';
@@ -19,6 +19,16 @@ function useReveal<T extends HTMLElement>() {
   return ref;
 }
 
+
+/** one stage of the judging path: a picture of it, then its name and one true fact */
+function Stage({ n, title, note, area, dark, children }: { n: string; title: string; note: string; area: string; dark?: boolean; children: ReactNode }) {
+  return (
+    <article className={`stage st-${area}`}>
+      <div className={`st-frame ${dark ? 'dark' : ''}`}><div className="st-media">{children}</div></div>
+      <div className="st-cap"><span className="st-n">{n}</span><span className="st-title">{title}</span><span className="st-note">{note}</span></div>
+    </article>
+  );
+}
 
 export function LandingPage() {
   const { user } = useAuth();
@@ -47,33 +57,29 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section ref={a} id="judging" className="l-section reveal">
-        <h2 className="l-h2">What happens when you submit.</h2>
-        <div className="bento">
-          <article className="tile dark t-wide">
-            <p className="t-kicker">Execution</p>
-            <h3>Untrusted code stays in a box.</h3>
-            <p>Every run is a fresh container with no network, a read-only filesystem, a process cap and hard memory limits. Time is measured on the CPU, never the wall clock.</p>
+      <section ref={a} id="judging" className="l-section judging reveal">
+        <header className="jg-head">
+          <h2>What happens<br />when you submit</h2>
+          <p>Every submission takes the same path. It is queued, compiled once, run test by test in a fresh container, judged on CPU time, and only then counted. Nothing is guessed.</p>
+        </header>
+        <div className="stages">
+          <Stage n="01" title="Queued" note="p95 40 ms" area="queue">
+            <div className="sv-queue"><span className="mono">POST /submit</span><b>202</b><span className="muted">Accepted. A worker takes it from here.</span></div>
+          </Stage>
+          <Stage n="02" title="Compiled once" note="g++ 13 · -O2" area="compile">
+            <pre className="sv-log">{'$ g++ -O2 -std=c++17 \\\n    main.cpp -o main\n\n  compiled in 1.4 s\n  reused for all 8 tests'}</pre>
+          </Stage>
+          <Stage n="03" title="Run in a sandbox" note="cgroup limits" area="sandbox" dark>
+            <p className="sv-lede">Untrusted code stays in a box: a fresh container per run, a read-only filesystem, hard memory limits.</p>
             <ul className="t-facts"><li><b>0</b><span>network</span></li><li><b>64</b><span>processes</span></li><li><b>1</b><span>pinned core</span></li></ul>
-          </article>
-          <article className="tile">
-            <p className="t-kicker">Verdicts</p>
-            <h3>Precise, never vague.</h3>
+          </Stage>
+          <Stage n="04" title="Judged" note="first failing test" area="verdict">
             <div className="t-chips"><span className="chip good">AC</span><span className="chip bad">WA</span><span className="chip tle">TLE</span><span className="chip tle">MLE</span><span className="chip bad">RE</span><span className="chip">CE</span></div>
-            <p>You see which test failed first and why, with the compiler log or the stderr tail when it matters.</p>
-          </article>
-          <article className="tile">
-            <p className="t-kicker">Contests</p>
-            <h3>Live standings.</h3>
-            <div className="t-board"><div><b>1</b> meet <span>2 · 31</span></div><div><b>2</b> ada <span>2 · 48</span></div><div><b>3</b> linus <span>1 · 12</span></div></div>
-            <p>ICPC scoring with penalties, updated as verdicts land.</p>
-          </article>
-          <article className="tile t-wide tint">
-            <p className="t-kicker">Profiles</p>
-            <h3>Every run counts toward something.</h3>
-            <p>A year of activity, streaks, a rating that moves with each contest, and what you solve by difficulty.</p>
-            <div className="t-heat" aria-hidden="true">{Array.from({ length: 7 * 26 }, (_, i) => <i key={i} className={`l${(i * 7919 + (i % 7) * 31) % 11 > 6 ? ((i * 13) % 4) + 1 : 0}`} />)}</div>
-          </article>
+            <p className="sv-line"><span className="chip bad">WA</span> Wrong answer on test case 6</p>
+          </Stage>
+          <Stage n="05" title="Counted" note="ICPC, live" area="board">
+            <div className="t-board"><div><b>1</b> mei_lin <span>6 · 427</span></div><div><b>2</b> tomasz_nowak <span>6 · 440</span></div><div><b>3</b> kavya_s <span>6 · 720</span></div><div><b>4</b> lukas_weber <span>5 · 331</span></div></div>
+          </Stage>
         </div>
       </section>
 

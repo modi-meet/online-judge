@@ -674,3 +674,52 @@ table.list, .list, .board, .subs, th,
 .l-cta, .l-langrow, .uavatar, .avatar, button, .l-btn {
   -webkit-user-select: none; user-select: none;
 }
+
+/* ---- how judging works: an architect's project index. a split header, then
+   five stages of uneven size and uneven tops, each a picture with a caption
+   and one true fact. on hover the picture steps back inside a dark mat. ---- */
+.judging { max-width: 1240px; }
+.jg-head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: end; margin-bottom: 64px; }
+.jg-head h2 { margin: 0; font-size: clamp(2.6rem, 6.4vw, 5rem); line-height: .98; letter-spacing: -.045em; font-weight: 700; }
+.jg-head p { margin: 0 0 8px; max-width: 34ch; justify-self: end; font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+.stages { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 18px; row-gap: 56px; align-items: start; }
+.st-sandbox { grid-column: 1 / span 6; grid-row: 1 / span 2; }
+.st-queue { grid-column: 7 / span 3; }
+.st-compile { grid-column: 10 / span 3; margin-top: 72px; }
+.st-verdict { grid-column: 7 / span 6; margin-top: 8px; }
+.st-board { grid-column: 3 / span 6; margin-top: 24px; }
+.st-frame { position: relative; overflow: hidden; border-radius: 4px; background: var(--ink); }
+.st-media { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 28px; background: var(--surface); color: var(--ink); transition: transform 380ms var(--ease-out); transform-origin: center; }
+.st-frame.dark .st-media { background: #1d1d1f; color: #f5f5f7; }
+.st-sandbox .st-media { min-height: 560px; justify-content: flex-end; }
+.st-queue .st-media, .st-compile .st-media { min-height: 230px; }
+.st-verdict .st-media { min-height: 220px; }
+.st-board .st-media { min-height: 260px; }
+@media (hover: hover) and (pointer: fine) { .stage:hover .st-media { transform: scale(.94); } }
+@media (prefers-reduced-motion: reduce) { .st-media { transition: none; } .stage:hover .st-media { transform: none; } }
+.st-cap { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.st-n { font: 500 12px/1 var(--mono); color: var(--ink-3); letter-spacing: .04em; }
+.st-title { font-size: 17px; font-weight: 600; letter-spacing: -.015em; }
+.st-note { margin-left: auto; padding: 7px 12px; border-radius: 2px; background: var(--ink); color: var(--bg); font: 500 11.5px/1 var(--mono); letter-spacing: .06em; white-space: nowrap; }
+.sv-queue { display: grid; gap: 6px; }
+.sv-queue b { font-size: 64px; line-height: 1; letter-spacing: -.05em; font-weight: 700; }
+.sv-queue .mono { color: var(--ink-3); }
+.sv-log { margin: 0; font: 12.5px/1.8 var(--mono); color: var(--ink-2); white-space: pre-wrap; }
+.sv-lede { margin: 0 0 auto; max-width: 36ch; font-size: 19px; line-height: 1.4; letter-spacing: -.015em; color: #f5f5f7; }
+.st-sandbox .t-facts { margin-top: 28px; }
+.sv-line { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--ink-2); }
+.st-verdict .t-chips { margin: 0; padding: 0; }
+.st-board .t-board { margin: 0; padding: 0; font-size: 15px; }
+.l-section.judging.reveal .stage { opacity: 0; transform: translateY(16px); transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out); }
+.l-section.judging.reveal.in .stage { opacity: 1; transform: none; }
+.l-section.judging.reveal.in .stage:nth-child(2) { transition-delay: 60ms; } .l-section.judging.reveal.in .stage:nth-child(3) { transition-delay: 120ms; }
+.l-section.judging.reveal.in .stage:nth-child(4) { transition-delay: 180ms; } .l-section.judging.reveal.in .stage:nth-child(5) { transition-delay: 240ms; }
+@media (prefers-reduced-motion: reduce) { .l-section.judging.reveal .stage { opacity: 1; transform: none; transition: none; } }
+@media (max-width: 900px) {
+  .jg-head { grid-template-columns: 1fr; gap: 18px; margin-bottom: 40px; } .jg-head p { justify-self: start; }
+  .stages { grid-template-columns: 1fr 1fr; row-gap: 36px; }
+  .st-sandbox, .st-verdict, .st-board { grid-column: 1 / -1; grid-row: auto; margin-top: 0; }
+  .st-queue { grid-column: 1; } .st-compile { grid-column: 2; margin-top: 40px; }
+  .st-sandbox .st-media { min-height: 380px; }
+}
+@media (max-width: 560px) { .stages { grid-template-columns: 1fr; } .st-queue, .st-compile { grid-column: 1; margin-top: 0; } }
