@@ -593,8 +593,8 @@ main[data-page="profile"] { max-width: 880px; }
 .ft-bar + .ft-bar { background-size: 1px 6px; }
 .ft-fill { position: relative; display: block; height: var(--h); background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 30%, #000) 30%, color-mix(in srgb, var(--accent) 70%, #000) 70%, color-mix(in srgb, var(--accent) 80%, #fff)); transform-origin: bottom; }
 .ft-fill.grain { --grain-inv: 0; --grain-op: .35; }
-/* the top of each bar, grain and all, dissolves into the footer's black - no edge */
-.ft-fill { -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .35) 22%, #000 62%); mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .35) 22%, #000 62%); }
+/* just the top edge of each bar, grain and all, softens into the black */
+.ft-fill { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28px); mask-image: linear-gradient(to bottom, transparent, #000 28px); }
 .ft-verdict { position: absolute; left: 10px; bottom: calc(var(--h) + 8px); font-size: 11px; letter-spacing: .14em; color: #48484a; }
 /* the skyline rises once, from the centre out, when it first scrolls into view */
 .ft-sky .ft-fill { transform: scaleY(.2); opacity: 0; transition: transform 700ms var(--ease-out) var(--d), opacity 500ms var(--ease-out) var(--d); }
