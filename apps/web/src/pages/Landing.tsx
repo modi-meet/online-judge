@@ -47,7 +47,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section ref={a} className="l-section reveal">
+      <section ref={a} id="judging" className="l-section reveal">
         <h2 className="l-h2">What happens when you submit.</h2>
         <div className="bento">
           <article className="tile dark t-wide">
