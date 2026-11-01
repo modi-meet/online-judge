@@ -140,6 +140,7 @@ for (const c of contests) for (const p of c.set) reservedUntil.set(String(p.id),
 
 const subs: Sub[] = [];
 const solvedAt = new Map<string, number>(); // `${user}:${problem}` → first ac time
+const tries = new Map<string, number>();    // `${user}:${problem}` → practice sessions that ended without an accept
 
 // contests first: a round is a fixed event, practice fills the days around it
 for (const c of contests) {
@@ -195,15 +196,20 @@ for (const u of users) {
     if (!r.chance(Math.min(0.98, p.activity * (weekend ? p.weekendBoost : 1)))) continue;
     let clock = day * DAY + ((r.int(p.hours[0] * 60, p.hours[1] * 60 - 30) - p.tz * 60) * MIN);
     if (clock > NOW - 30 * MIN) continue;
-    const sessions = p.activity > 0.9 ? 1 : r.int(1, weekend ? 4 : 3);
+    const sessions = p.activity > 0.9 ? 1 : r.int(1, weekend ? 3 : 2);
     for (let s = 0; s < sessions; s++) {
-      const open = problems.filter((q) => !solvedAt.has(`${u._id}:${q.id}`) && (reservedUntil.get(String(q.id)) ?? 0) < clock);
+      // a problem someone has failed twice is one they have given up on
+      const open = problems.filter((q) => !solvedAt.has(`${u._id}:${q.id}`) && (tries.get(`${u._id}:${q.id}`) ?? 0) < 2 && (reservedUntil.get(String(q.id)) ?? 0) < clock);
       if (open.length === 0) break;
       // people pick near their level, a little above when they are feeling brave
-      const prob = r.weighted(open, (q) => Math.exp(-Math.abs(q.rating - (p.skill - 80 + r.normal() * 120)) / 220));
+      const reach = open.filter((q) => q.rating - p.skill <= 300);
+      const prob = r.weighted(reach.length && !r.chance(0.15) ? reach : open, (q) => Math.exp(-Math.abs(q.rating - (p.skill - 80 + r.normal() * 120)) / 220));
+      // far above their level, most people read the statement and close the tab
+      if (prob.rating - p.skill > 300 && !r.chance(0.2)) continue;
       const lang = langFor(r, p);
-      const solves = r.chance(solveChance(p.skill, prob.rating));
+      const solves = r.chance(solveChance(p.skill, prob.rating, 100));
       const wrong = solves ? wrongAttempts(r, p.skill, prob.rating) : r.int(1, 3);
+      if (!solves) tries.set(`${u._id}:${prob.id}`, (tries.get(`${u._id}:${prob.id}`) ?? 0) + 1);
       clock += r.int(8, 40) * MIN;
       for (let i = 0; i < wrong && clock < NOW; i++) {
         subs.push(makeSub(r, u, prob, lang, wrongVerdict(r, lang), new Date(clock), null));
@@ -213,6 +219,8 @@ for (const u of users) {
         subs.push(makeSub(r, u, prob, lang, 'AC', new Date(clock), null));
         solvedAt.set(`${u._id}:${prob.id}`, clock);
         // now and then the same idea in the other language, to compare
+        // sometimes they tidy it up or make it faster and submit again
+        if (r.chance(0.12)) subs.push(makeSub(r, u, prob, lang, 'AC', new Date(clock + r.int(6, 40) * MIN), null));
         if (p.otherLang && r.chance(0.08)) subs.push(makeSub(r, u, prob, lang === 'cpp17' ? 'python3' : 'cpp17', 'AC', new Date(clock + r.int(4, 15) * MIN), null));
       }
       clock += r.int(5, 30) * MIN;

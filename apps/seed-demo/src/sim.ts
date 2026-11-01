@@ -80,7 +80,7 @@ export function ratingDeltas(ratings: Map<string, number>, ranks: Map<string, nu
       const actual = ranks.get(a)! < ranks.get(b)! ? 1 : ranks.get(a)! === ranks.get(b)! ? 0.5 : 0;
       sum += actual - expected;
     }
-    const k = (contestsPlayed.get(a) ?? 0) < 3 ? 180 : 110;
+    const k = (contestsPlayed.get(a) ?? 0) < 3 ? 260 : 150;
     out.set(a, Math.round((k * sum) / (ids.length - 1)));
   }
   return out;
