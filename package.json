@@ -13,6 +13,7 @@
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "stack:up": "docker compose -f infra/docker-compose.yml up -d",
+    "demo:seed": "pnpm --filter @oj/seed-demo bank && pnpm --filter @oj/ingestor ingest --file ../seed-demo/out/dsa-bundle.json --public && pnpm --filter @oj/seed-demo seed",
     "stack:down": "docker compose -f infra/docker-compose.yml down",
     "docs:pdf": "./docs/build-pdf.sh all"
   },

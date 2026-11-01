@@ -12,6 +12,21 @@ const userSchema = new Schema(
     bio: { type: String, default: '', trim: true },
     location: { type: String, default: '', trim: true },
     avatar: { type: String, default: '' },
+    /** one row per rated contest, oldest first. written when a contest's results are final. */
+    ratingHistory: {
+      type: [{
+        contestId: { type: Schema.Types.ObjectId, ref: 'Contest', required: true },
+        title: { type: String, required: true },
+        at: { type: Date, required: true },
+        rank: { type: Number, required: true },
+        of: { type: Number, required: true },
+        solved: { type: Number, required: true },
+        penalty: { type: Number, required: true },
+        delta: { type: Number, required: true },
+        rating: { type: Number, required: true },
+      }],
+      default: [],
+    },
     deletedAt: { type: Date, default: null },
   },
   { timestamps: { createdAt: true, updatedAt: false } },

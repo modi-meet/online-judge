@@ -5,10 +5,16 @@ import { usePageTitle } from '../components/PageHead';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { UserAvatar, resizeToAvatar } from '../components/UserAvatar';
+import { Breakdown, ContestHistory, Heatmap, RatingChart, type ContestRow } from '../components/ProfileHistory';
+import { LANGUAGE_SPEC, type Language } from '@oj/contracts';
 
 interface Profile {
   user: { username: string; displayName: string; bio: string; location: string; avatar: string; role: string; email?: string; rating: number; solvedCount: number; joinedAt: string };
-  stats: { total: number; accepted: number };
+  stats: { total: number; accepted: number; currentStreak: number; longestStreak: number };
+  activity: { date: string; count: number }[];
+  languages: { language: string; count: number }[];
+  solvedByDifficulty: Record<'easy' | 'medium' | 'hard', number>;
+  contests: ContestRow[];
   recent: { id: string; slug: string | null; title: string; language: string; status: string; timeMs: number | null; submittedAt: string }[];
 }
 
@@ -36,12 +42,20 @@ export function ProfilePage() {
       </div>
       {editing && <EditProfile p={p} onCancel={() => setEditing(false)} onSaved={(u) => { setP({ ...p, user: { ...p.user, ...u } }); setEditing(false); }} />}
       <dl className="stats">
-        <div><dt>Rating</dt><dd>{p.user.rating}</dd></div>
+        <div><dt>Rating</dt><dd>{p.contests.length ? p.user.rating : '—'}</dd></div>
         <div><dt>Solved</dt><dd>{p.user.solvedCount}</dd></div>
         <div><dt>Submissions</dt><dd>{p.stats.total}</dd></div>
         <div><dt>Accepted</dt><dd>{p.stats.accepted}</dd></div>
       </dl>
-      <p className="muted">Joined {new Date(p.user.joinedAt).toLocaleDateString()}</p>
+      <p className="muted profile-since">
+        Joined {new Date(p.user.joinedAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+        {p.stats.longestStreak > 1 && <> · Longest streak {p.stats.longestStreak} days</>}
+        {p.stats.currentStreak > 1 && <> · On a {p.stats.currentStreak}-day streak</>}
+      </p>
+      <Heatmap days={p.activity} />
+      <RatingChart rows={p.contests} />
+      <ContestHistory rows={p.contests} />
+      {p.user.solvedCount > 0 && <Breakdown byDifficulty={p.solvedByDifficulty} languages={p.languages} />}
       {p.recent.length > 0 && (
         <>
           <h3>Recent submissions</h3>
@@ -50,7 +64,7 @@ export function ProfilePage() {
               <tr key={s.id}>
                 <td><VerdictChip status={s.status} /></td>
                 <td>{s.slug ? <Link to={`/problems/${s.slug}`}>{s.title}</Link> : s.title}</td>
-                <td className="mono muted">{s.language}</td>
+                <td className="muted">{LANGUAGE_SPEC[s.language as Language]?.name ?? s.language}</td>
                 <td className="muted">{new Date(s.submittedAt).toLocaleString()}</td>
               </tr>
             ))}
