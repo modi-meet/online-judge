@@ -66,7 +66,11 @@ export function LandingPage() {
         </div>
 
         <div className="l-window" aria-hidden="true">
-          <div className="l-bar"><i /><i /><i /><span>Longest increasing subsequence</span></div>
+          <div className="l-bar"><span className="tl" aria-hidden="true">
+            <i className="tl-close"><svg viewBox="0 0 8 8"><path d="M2 2l4 4M6 2L2 6" /></svg></i>
+            <i className="tl-min"><svg viewBox="0 0 8 8"><path d="M1.6 4h4.8" /></svg></i>
+            <i className="tl-zoom"><svg viewBox="0 0 8 8"><path d="M2 5.6V2h3.6zM6 2.4V6H2.4z" /></svg></i>
+          </span><span>Longest increasing subsequence</span></div>
           <div className="l-body">
             <pre className="l-code">{CODE.map((line, n) => <span key={n} className="ln">{line.map(([k, t], m) => (k ? <span key={m} className={`t-${k}`}>{t}</span> : t))}{"\n"}</span>)}</pre>
             <div className="l-side">
