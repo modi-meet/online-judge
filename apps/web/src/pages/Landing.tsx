@@ -20,6 +20,26 @@ function useReveal<T extends HTMLElement>() {
 }
 
 
+
+// the hero's sample, tokenised the way vs code colours c++:
+// ctl = control flow and preprocessor, kw = keywords and primitive types,
+// ty = types and namespaces, fn = functions, v = variables, s = strings
+type Tok = [string, string];
+const CODE: Tok[][] = [
+  [['ctl', '#include'], ['', ' '], ['s', '<bits/stdc++.h>']],
+  [['kw', 'using'], ['', ' '], ['kw', 'namespace'], ['', ' '], ['ty', 'std'], ['', ';']],
+  [],
+  [['kw', 'int'], ['', ' '], ['fn', 'solve'], ['', '('], ['kw', 'const'], ['', ' '], ['ty', 'vector'], ['', '<'], ['kw', 'int'], ['', '>& '], ['v', 'a'], ['', ') {']],
+  [['', '    '], ['ty', 'vector'], ['', '<'], ['kw', 'int'], ['', '> '], ['v', 'tails'], ['', ';']],
+  [['', '    '], ['ctl', 'for'], ['', ' ('], ['kw', 'int'], ['', ' '], ['v', 'x'], ['', ' : '], ['v', 'a'], ['', ') {']],
+  [['', '        '], ['kw', 'auto'], ['', ' '], ['v', 'it'], ['', ' = '], ['fn', 'lower_bound'], ['', '('], ['v', 'tails'], ['', '.'], ['fn', 'begin'], ['', '(), '], ['v', 'tails'], ['', '.'], ['fn', 'end'], ['', '(), '], ['v', 'x'], ['', ');']],
+  [['', '        '], ['ctl', 'if'], ['', ' ('], ['v', 'it'], ['', ' == '], ['v', 'tails'], ['', '.'], ['fn', 'end'], ['', '()) '], ['v', 'tails'], ['', '.'], ['fn', 'push_back'], ['', '('], ['v', 'x'], ['', ');']],
+  [['', '        '], ['ctl', 'else'], ['', ' *'], ['v', 'it'], ['', ' = '], ['v', 'x'], ['', ';']],
+  [['', '    }']],
+  [['', '    '], ['ctl', 'return'], ['', ' '], ['v', 'tails'], ['', '.'], ['fn', 'size'], ['', '();']],
+  [['', '}']],
+];
+
 /** one stage of the judging path: a picture of it, then its name and one true fact */
 function Stage({ n, title, note, area, dark, children }: { n: string; title: string; note: string; area: string; dark?: boolean; children: ReactNode }) {
   return (
@@ -48,7 +68,7 @@ export function LandingPage() {
         <div className="l-window" aria-hidden="true">
           <div className="l-bar"><i /><i /><i /><span>Longest increasing subsequence</span></div>
           <div className="l-body">
-            <pre className="l-code"><span className="c-k">#include</span> &lt;bits/stdc++.h&gt;{'\n'}<span className="c-k">using namespace</span> std;{'\n\n'}<span className="c-k">int</span> <span className="c-f">solve</span>(<span className="c-k">const</span> vector&lt;<span className="c-k">int</span>&gt;&amp; a) {'{'}{'\n'}    vector&lt;<span className="c-k">int</span>&gt; tails;{'\n'}    <span className="c-k">for</span> (<span className="c-k">int</span> x : a) {'{'}{'\n'}        <span className="c-k">auto</span> it = <span className="c-f">lower_bound</span>(tails.<span className="c-f">begin</span>(), tails.<span className="c-f">end</span>(), x);{'\n'}        <span className="c-k">if</span> (it == tails.<span className="c-f">end</span>()) tails.<span className="c-f">push_back</span>(x);{'\n'}        <span className="c-k">else</span> *it = x;{'\n'}    {'}'}{'\n'}    <span className="c-k">return</span> tails.<span className="c-f">size</span>();{'\n'}{'}'}</pre>
+            <pre className="l-code">{CODE.map((line, n) => <span key={n} className="ln">{line.map(([k, t], m) => (k ? <span key={m} className={`t-${k}`}>{t}</span> : t))}{"\n"}</span>)}</pre>
             <div className="l-side">
               <div className="l-verdict"><span className="chip good">AC</span><b>Accepted</b><span className="muted">5 of 5 tests · 12 ms · 9 MB</span></div>
               <div className="l-bubble"><span className="l-dot" /> <b>Complexity auditor</b><p>Measured growth looks like n log n. The binary search is what keeps the loop from repeating work.</p></div>
