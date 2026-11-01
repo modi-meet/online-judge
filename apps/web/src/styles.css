@@ -659,3 +659,18 @@ main[data-page="profile"] { max-width: 880px; }
 /* the hero window and the mentor chat are pictures of the product, not text to copy */
 .l-window, .l-window *, .ms-panel .ms-thread, .ms-panel .ms-thread * { -webkit-user-select: none; user-select: none; }
 .l-window { cursor: default; }
+
+/* ---- what is chrome, not content, cannot be text-selected. labels, chips,
+   lists, standings, stats and navigation are things you click or read at a
+   glance; statements, samples, output, logs, the editor and replies stay
+   selectable because people copy them. ---- */
+.chip, .tag, .tagchip, .pill, .diff, .lbl, .solved, .live-dot,
+table.list, .list, .board, .subs, th,
+.stats, .status-row, .ctile, .tiles,
+.nav, .site-footer, .seg, .tabs, .toolbar, .page-head .row, .filter-note,
+.ms-list, .ms-composer, .ms-meta, .ms-day, .t-chips, .t-board, .t-facts, .t-heat, .t-kicker,
+.heat, .heat-legend, .rating-chart, .bar-row, .ph-head, .profile-since,
+.verdict .chip, .tab-note, .empty-state, .dock-head, .personas, .suggest, .suggest-chip, .ms-num,
+.l-cta, .l-langrow, .uavatar, .avatar, button, .l-btn {
+  -webkit-user-select: none; user-select: none;
+}
