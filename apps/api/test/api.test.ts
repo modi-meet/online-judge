@@ -1,7 +1,7 @@
 import './setup.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { connect, disconnect, mongoose } from '@oj/db';
+import { connect, disconnect, mongoose, ProblemModel } from '@oj/db';
 import { DockerExecutor } from '@oj/sandbox';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -145,6 +145,28 @@ describe('problems', () => {
     expect(b.body.items).toHaveLength(2);
     const ids = [...a.body.items, ...b.body.items].map((p: { id: string }) => p.id);
     expect(new Set(ids).size).toBe(4);
+  });
+
+  it('lists in a shuffled order that is stable and pages without gaps or repeats', async () => {
+    const walk = async () => {
+      const seen: string[] = []; let cursor = '';
+      for (let i = 0; i < 20; i++) {
+        const r = await agent().get(`/api/problems?limit=3${cursor ? `&cursor=${cursor}` : ''}`);
+        seen.push(...r.body.items.map((p: { id: string }) => p.id));
+        if (!r.body.nextCursor) break;
+        cursor = r.body.nextCursor;
+      }
+      return seen;
+    };
+    const first = await walk();
+    expect(new Set(first).size).toBe(first.length);
+    expect(first.length).toBe(await ProblemModel.countDocuments({ isPublic: true }));
+    expect(await walk()).toEqual(first);
+  });
+
+  it('rejects a cursor it did not issue', async () => {
+    const r = await agent().get(`/api/problems?cursor=${Buffer.from('not-a-cursor').toString('base64url')}`);
+    expect(r.status).toBe(422);
   });
 
   it('hides non-public problems from plain users but not from setters', async () => {

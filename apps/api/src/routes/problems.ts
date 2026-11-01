@@ -10,11 +10,14 @@ import { validate } from '../middleware/validate.js';
 export function problemsRouter(store: ObjectStore) {
 const problemsRouter = Router();
 
-const enc = (id: Types.ObjectId) => Buffer.from(String(id)).toString('base64url');
+// the cursor is the last row's (order, _id): the catalogue is sorted by a random
+// key fixed per problem, with _id breaking ties, so pages never overlap or skip
+const enc = (order: number, id: Types.ObjectId) => Buffer.from(`${order}:${String(id)}`).toString('base64url');
 const dec = (c: string) => {
-  const s = Buffer.from(c, 'base64url').toString();
-  if (!Types.ObjectId.isValid(s)) throw new AppError('VALIDATION_FAILED', 'Bad cursor');
-  return new Types.ObjectId(s);
+  const [o, s] = Buffer.from(c, 'base64url').toString().split(':');
+  const order = Number(o);
+  if (!Number.isSafeInteger(order) || !s || !Types.ObjectId.isValid(s)) throw new AppError('VALIDATION_FAILED', 'Bad cursor');
+  return { order, id: new Types.ObjectId(s) };
 };
 
 // cursor pagination, never skip. lld §4.4
@@ -27,12 +30,12 @@ problemsRouter.get('/', authenticate, validate('query', ListQuery), async (req, 
     if (q.difficulty) filter['difficulty'] = q.difficulty;
     if (q.tag) filter['tags'] = q.tag;
     if (q.q) filter['title'] = { $regex: q.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
-    if (q.cursor) filter['_id'] = { $lt: dec(q.cursor) };
+    if (q.cursor) { const c = dec(q.cursor); filter['$or'] = [{ order: { $gt: c.order } }, { order: c.order, _id: { $gt: c.id } }]; }
 
     const rows = await ProblemModel.find(filter)
-      .sort({ _id: -1 })
+      .sort({ order: 1, _id: 1 })
       .limit(q.limit + 1)
-      .select('slug title difficulty tags isPublic')
+      .select('slug title difficulty tags isPublic order')
       .lean();
     const page = rows.slice(0, q.limit);
     // the solved badge, for a signed-in user: one query over the (problemId, userId, status) index
@@ -43,7 +46,7 @@ problemsRouter.get('/', authenticate, validate('query', ListQuery), async (req, 
     }
     res.json({
       items: page.map((p) => ({ id: String(p._id), slug: p.slug, title: p.title, difficulty: p.difficulty, tags: p.tags, isPublic: p.isPublic, solved: solved.has(String(p._id)) })),
-      nextCursor: rows.length > q.limit ? enc(page[page.length - 1]!._id) : null,
+      nextCursor: rows.length > q.limit ? enc(page[page.length - 1]!.order ?? 0, page[page.length - 1]!._id) : null,
     });
   } catch (e) { next(e); }
 });

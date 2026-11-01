@@ -22,6 +22,8 @@ const problemSchema = new Schema(
       license: String,
     },
     isPublic: { type: Boolean, default: false },
+    /** a random key fixed at creation. the catalogue lists by it, so difficulties come mixed and the order is stable across pages. */
+    order: { type: Number, default: () => Math.floor(Math.random() * 2 ** 31) },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: { createdAt: true, updatedAt: true } },
@@ -29,6 +31,7 @@ const problemSchema = new Schema(
 
 // catalogue list + cursor pagination
 problemSchema.index({ isPublic: 1, difficulty: 1, _id: -1 });
+problemSchema.index({ isPublic: 1, order: 1, _id: 1 });
 problemSchema.index({ tags: 1 });
 // ingestor upsert key; sparse so original problems do not collide on null
 problemSchema.index({ 'source.site': 1, 'source.externalId': 1 }, { unique: true, sparse: true });

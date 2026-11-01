@@ -15,4 +15,9 @@ for (const name of mongoose.modelNames()) {
   await m.syncIndexes();
   console.log(`indexes synced: ${m.collection.collectionName}`);
 }
+// backfill: problems created before the shuffled catalogue get their random order key
+const Problem = mongoose.model('Problem');
+const missing = await Problem.find({ order: { $exists: false } }).select('_id').lean();
+for (const p of missing) await Problem.updateOne({ _id: p._id }, { $set: { order: Math.floor(Math.random() * 2 ** 31) } });
+if (missing.length) console.log(`problems given an order key: ${missing.length}`);
 await disconnect();
