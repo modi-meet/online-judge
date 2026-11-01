@@ -293,6 +293,34 @@ importers:
         specifier: ^11.3.0
         version: 11.3.0
 
+  apps/seed-demo:
+    dependencies:
+      '@oj/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@oj/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@oj/judge':
+        specifier: workspace:*
+        version: link:../../packages/judge
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.6.1
+      ioredis:
+        specifier: ^5.4.1
+        version: 5.11.1
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
+
   apps/web:
     dependencies:
       '@monaco-editor/react':
