@@ -22,7 +22,10 @@ const Env = z
     LOG_LEVEL: z.string().default('info'),
   });
 
-const parsed = Env.safeParse(process.env);
+// on vercel the storage integrations inject their own names (atlas: MONGODB_URI,
+// upstash: KV_URL); the canonical names win when both are set
+const env = { ...process.env, MONGO_URI: process.env['MONGO_URI'] || process.env['MONGODB_URI'], REDIS_URL: process.env['REDIS_URL'] || process.env['KV_URL'] };
+const parsed = Env.safeParse(env);
 if (!parsed.success) {
   console.error('invalid environment:');
   for (const i of parsed.error.issues) console.error(`  ${i.path.join('.') || '(root)'}: ${i.message}`);
