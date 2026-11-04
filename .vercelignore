@@ -1,0 +1,9 @@
+# never upload local secrets or build output; vercel installs and builds itself
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+**/dist
+apps/seed-demo/out
+.claude
