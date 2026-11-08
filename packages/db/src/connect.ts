@@ -6,7 +6,9 @@ let connecting: Promise<typeof mongoose> | null = null;
 export function connect(uri: string) {
   if (!connecting) {
     mongoose.set('strictQuery', true);
-    connecting = mongoose.connect(uri, { serverSelectionTimeoutMS: 5_000 });
+    // a uri without a database (atlas hands these out) would land in "test"
+    const named = /^mongodb(\+srv)?:\/\/[^/]+\/[^/?]+/.test(uri);
+    connecting = mongoose.connect(uri, { serverSelectionTimeoutMS: 5_000, ...(named ? {} : { dbName: 'oj' }) });
   }
   return connecting;
 }
